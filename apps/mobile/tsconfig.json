@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["esnext", "dom"],
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "types": [],
+    "typeRoots": ["./node_modules/@types", "../../node_modules/@types"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@bv/core": ["../../packages/core/src/index.ts"],
+      "@bv/core/*": ["../../packages/core/src/*"]
+    }
+  },
+  "include": ["app/**/*", "src/**/*", "*.ts", "expo-env.d.ts"],
+  "exclude": ["node_modules"]
+}

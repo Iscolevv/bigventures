@@ -1,0 +1,30 @@
+node_modules/
+.pnpm-store/
+dist/
+build/
+.next/
+out/
+.expo/
+.turbo/
+coverage/
+
+# env
+.env
+.env.*
+!.env.example
+
+# drizzle
+packages/db/drizzle/meta/_journal.bak
+
+# os / editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# mobile
+*.keystore
+apps/mobile/android/
+apps/mobile/ios/

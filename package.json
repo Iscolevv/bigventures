@@ -1,0 +1,23 @@
+{
+  "name": "big-ventures",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "db:generate": "pnpm --filter @bv/db generate",
+    "db:migrate": "pnpm --filter @bv/db migrate",
+    "db:studio": "pnpm --filter @bv/db studio",
+    "db:seed": "pnpm --filter @bv/db seed",
+    "dev:dashboard": "pnpm --filter @bv/dashboard dev",
+    "dev:mobile": "pnpm --filter @bv/mobile start",
+    "build": "pnpm --filter @bv/dashboard build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Big Ventures Driver",
+    "slug": "big-ventures-driver",
+    "scheme": "bigventures",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "android": {
+      "package": "ke.co.bigventures.driver",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CAMERA",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-sqlite",
+      ["expo-image-picker", { "cameraPermission": "Big Ventures needs the camera to capture proof of delivery." }],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Big Ventures records your trip route and confirms arrival at loading and drop points.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ]
+    ],
+    "extra": {
+      "apiBaseUrl": "http://localhost:3000"
+    }
+  }
+}
