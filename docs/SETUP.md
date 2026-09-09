@@ -6,9 +6,11 @@ Two are already done. Two more get you 100 %.
 |---|---|---|---|---|
 | 1 | **Neon Postgres** | ✅ done (shared with Moody Treats, `bigventures` schema) | all data | on the existing plan |
 | 2 | **Better Auth** | ✅ done (`BETTER_AUTH_SECRET` set on Vercel) | sign-in, RBAC | free |
-| 3 | **Vercel Blob** | ⬜ **you do this** — 2 min, no external account | document / POD / receipt uploads | free tier: 1 GB storage, 10 GB bandwidth/mo |
-| 4 | **Google Maps Platform** | ⬜ optional (Phase 2) | planned route on trip creation, address → coordinates | ~$0 at this volume (— $200/mo free credit) |
-| — | **CRON_SECRET** | ⬜ optional, 10 sec | locks the nightly alert-scan endpoint | free |
+| 3 | **Vercel Blob** | ✅ done — verified end-to-end (upload → URL → retrievable) | document / POD / receipt uploads | free tier: 1 GB storage, 10 GB bandwidth/mo |
+| 4 | **Google Maps Platform** | ✅ done (`GOOGLE_MAPS_SERVER_KEY` set) | planned route on trip sync, address → coordinates | ~$0 at this volume ($200/mo free credit) |
+| — | **CRON_SECRET** | ⬜ optional, 30 sec | locks the nightly job endpoint | free |
+
+Check any time (signed in as admin): **`/api/health`**.
 
 ---
 
