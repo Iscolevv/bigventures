@@ -19,7 +19,8 @@ export function proxy(req: NextRequest) {
     pathname.startsWith('/api/mobile') ||
     pathname.startsWith('/api/uploads') ||
     pathname.startsWith('/api/cron') || // guarded by CRON_SECRET
-    pathname.startsWith('/api/export'); // guarded by requirePermission
+    pathname.startsWith('/api/export') || // guarded by requirePermission
+    pathname === '/api/health';
 
   if (!isAuthed && !isPublic) {
     return NextResponse.redirect(new URL('/login', req.url));
