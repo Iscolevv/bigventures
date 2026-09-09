@@ -3,6 +3,7 @@ import { dto } from '@bv/core';
 import { rowScope } from '@bv/core/rbac';
 import { db, schema, eq, and, sql } from '@bv/db';
 import { getMobileActor } from '@/lib/mobile-auth';
+import { mapsEnabled, geocode, directions } from '@/lib/maps';
 
 const { syncBatchSchema } = dto;
 
@@ -332,6 +333,20 @@ export async function POST(req: Request) {
     }
   }
 
+  // --- enrich new trips with a planned route (Google Directions) ------
+  // No-ops entirely when GOOGLE_MAPS_SERVER_KEY is unset.
+  if (mapsEnabled()) {
+    for (const t of batch.trips) {
+      const serverId = idMap[t.clientId];
+      if (!serverId) continue;
+      try {
+        await enrichTripRoute(serverId);
+      } catch {
+        /* best effort — a trip without a planned route still works */
+      }
+    }
+  }
+
   const status = rejected.length
     ? conflicts.length || Object.keys(idMap).length
       ? 'partial'
@@ -368,6 +383,83 @@ export async function POST(req: Request) {
     rejected,
     serverTime: new Date().toISOString(),
   });
+}
+
+/**
+ * Fill in a trip's loading coordinates (geocode if the driver didn't pin),
+ * geocode any drop that came in address-only, then call Directions for the
+ * planned polyline + distance + duration, and update the trip + drops.
+ */
+async function enrichTripRoute(tripServerId: string) {
+  const [trip] = await db
+    .select({
+      id: schema.trips.id,
+      loadingAddr: schema.trips.loading_point_address,
+      lat: schema.trips.loading_lat,
+      lng: schema.trips.loading_lng,
+      polyline: schema.trips.planned_polyline,
+    })
+    .from(schema.trips)
+    .where(eq(schema.trips.id, tripServerId))
+    .limit(1);
+  if (!trip || trip.polyline) return; // already has a route
+
+  let origin = trip.lat != null && trip.lng != null ? { lat: trip.lat, lng: trip.lng } : null;
+  if (!origin && trip.loadingAddr) {
+    const g = await geocode(trip.loadingAddr);
+    if (g) {
+      origin = { lat: g.lat, lng: g.lng };
+      await db
+        .update(schema.trips)
+        .set({ loading_lat: g.lat, loading_lng: g.lng })
+        .where(eq(schema.trips.id, tripServerId));
+    }
+  }
+  if (!origin) return;
+
+  const dropRows = await db
+    .select({
+      id: schema.drops.id,
+      seq: schema.drops.sequence,
+      addr: schema.drops.destination_address,
+      lat: schema.drops.dest_lat,
+      lng: schema.drops.dest_lng,
+    })
+    .from(schema.drops)
+    .where(eq(schema.drops.trip_id, tripServerId))
+    .orderBy(schema.drops.sequence);
+  if (dropRows.length === 0) return;
+
+  const points: { lat: number; lng: number }[] = [];
+  for (const d of dropRows) {
+    if (d.lat != null && d.lng != null) {
+      points.push({ lat: d.lat, lng: d.lng });
+    } else {
+      const g = await geocode(d.addr);
+      if (g) {
+        points.push({ lat: g.lat, lng: g.lng });
+        await db
+          .update(schema.drops)
+          .set({ dest_lat: g.lat, dest_lng: g.lng })
+          .where(eq(schema.drops.id, d.id));
+      }
+    }
+  }
+  if (points.length === 0) return;
+
+  const destination = points[points.length - 1]!;
+  const waypoints = points.slice(0, -1);
+  const route = await directions(origin, destination, waypoints);
+  if (!route) return;
+
+  await db
+    .update(schema.trips)
+    .set({
+      planned_polyline: route.polyline,
+      planned_distance_m: route.distanceM,
+      planned_duration_s: route.durationS,
+    })
+    .where(eq(schema.trips.id, tripServerId));
 }
 
 async function nextTripRef(): Promise<string> {

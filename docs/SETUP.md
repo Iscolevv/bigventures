@@ -22,9 +22,19 @@ That's it. `/documents` → "Upload document" now works, and the driver app's PO
 
 > Prefer Cloudflare R2 (cheaper at photo scale, no egress fees)? Set `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` instead — the storage layer auto-detects and uses R2 when those are present. Blob is the faster start.
 
-## 4. Google Maps Platform (optional — Phase 2 route planning)
+## 4. Google Maps Platform (optional — planned routes + geocoding)
 
-Only needed for auto-generating the planned route line on a trip and turning typed addresses into map pins. The dashboard's trip map already works without it (it draws the actual GPS trail).
+Wired and ready — the code no-ops until the key is set, then:
+- every trip synced from the app gets a **planned route** (encoded polyline +
+  distance + duration) from Directions, shown dashed on the trip map next to
+  the actual GPS trail;
+- drops/loading points that came in **address-only** (driver didn't drop a pin)
+  get **geocoded** to coordinates;
+- trip detail gets a **"Compute planned route"** button to (re)run it for
+  existing trips.
+
+The dashboard's trip map already works without Maps (it draws the actual GPS
+trail); this just adds the planned line and address resolution.
 
 1. https://console.cloud.google.com → create a project (e.g. `big-ventures`).
 2. Enable billing (required; you stay inside the $200/mo free credit at this fleet size).
