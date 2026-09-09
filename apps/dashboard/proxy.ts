@@ -4,8 +4,10 @@ import { getSessionCookie } from 'better-auth/cookies';
 /**
  * Coarse gate only — real authz happens in server components / route handlers
  * via lib/session. This just bounces anonymous users to /login.
+ *
+ * (Next 16 renamed the `middleware` convention to `proxy`.)
  */
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const isAuthed = !!getSessionCookie(req);
   const { pathname } = req.nextUrl;
 

@@ -4,7 +4,15 @@ Monorepo for the Big Ventures fleet, trip, fuel, cost and delivery system:
 an offline-first Android driver app and a management dashboard sharing one
 Postgres backend.
 
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full design.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — full design, data model, phase plan
+- [`docs/DEPLOY.md`](docs/DEPLOY.md) — Vercel setup + first-login steps
+
+## Database
+
+This project shares a Neon database with Moody Treats. Every Big Ventures table
+lives in a dedicated **`bigventures`** Postgres schema (Better Auth included), so
+there is zero collision with Moody Treats' `public` tables. `drizzle.config.ts`
+sets `schemaFilter: ['bigventures']` — migrations never touch `public`.
 
 ## Layout
 
