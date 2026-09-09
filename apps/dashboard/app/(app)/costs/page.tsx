@@ -72,7 +72,7 @@ export default async function CostsPage({
             data={byCat.map((c) => ({ category: c.category, total: c.total }))}
             xKey="category"
             yKey="total"
-            format={(v) => kes(v)}
+            format="kes"
           />
         ) : (
           <p className="text-sm text-muted">No costs recorded in this window.</p>

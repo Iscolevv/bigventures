@@ -63,12 +63,7 @@ export default async function FuelPage({
 
       <Card title="Consumption per vehicle (L / 100 km)" className="mt-6">
         {chartData.length ? (
-          <BarChartCard
-            data={chartData}
-            xKey="vehicle"
-            yKey="l100"
-            highlight={(d) => Number(d.l100) > (fleetL100 ?? 0) * 1.2}
-          />
+          <BarChartCard data={chartData} xKey="vehicle" yKey="l100" format="oneDp" highlightAbove={(fleetL100 ?? 0) * 1.2} />
         ) : (
           <p className="text-sm text-muted">Not enough odometer data in this window.</p>
         )}

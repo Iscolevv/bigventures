@@ -72,8 +72,8 @@ export default async function RoiPage({
           data={roi.map((r) => ({ vehicle: r.registration, net: Math.round(r.netContribution) }))}
           xKey="vehicle"
           yKey="net"
-          highlight={(d) => Number(d.net) < 0}
-          format={(v) => kes(v)}
+          highlightBelow={0}
+          format="kes"
         />
       </Card>
 
