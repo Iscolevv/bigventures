@@ -3,6 +3,9 @@
 The dashboard (`apps/dashboard`) is a Next.js 16 app in a pnpm monorepo. It
 serves both the management UI and the mobile API.
 
+**Live:** https://venturesbig.vercel.app — deployed, DB-connected, seeded.
+Admin login: `levismokaya220@gmail.com` (change the password).
+
 ## One-time setup
 
 1. **vercel.com → Add New… → Project → Import** `Iscolevv/bigventures`.
@@ -51,8 +54,12 @@ DB.) Then sign in at the deployed URL.
 
 ## After deploy
 
-- Set `BETTER_AUTH_URL` to the real domain and redeploy.
-- The mobile app's `EXPO_PUBLIC_API_BASE_URL` should point at this same URL.
+- Add `BETTER_AUTH_URL=https://venturesbig.vercel.app` to Vercel env vars and
+  redeploy. (Login already works via Vercel's own `VERCEL_PROJECT_PRODUCTION_URL`
+  fallback, but set it explicitly before pointing a custom domain or the mobile
+  app at it.)
+- The mobile app already points here (`apps/mobile/app.json` →
+  `extra.apiBaseUrl`).
 
 ## Migrations on future schema changes
 

@@ -33,7 +33,7 @@
       ]
     ],
     "extra": {
-      "apiBaseUrl": "http://localhost:3000"
+      "apiBaseUrl": "https://venturesbig.vercel.app"
     }
   }
 }
