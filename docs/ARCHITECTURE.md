@@ -181,12 +181,16 @@ to a single VPS later without a rewrite if that ever makes sense.
 
 ## 9. Build phasing
 
-| Phase | Scope | Included here |
+| Phase | Scope | Status |
 |---|---|---|
-| **1 — MVP** | Driver: trip logging, vehicle check, fuel entry, POD capture, document upload. Dashboard: trip log, fleet & driver overview, fuel consumption view. Offline sync end-to-end. | schema ✔, sync API ✔, RBAC ✔, app shell ✔, dashboard shell + fleet view ✔ |
-| **2** | Trip mapping / geofencing, cost & advance tracking, ROI dashboard, route-cost analytics. | geo + ROI calc ✔, trail task ✔ |
-| **3** | Incentive engine, invoicing automation, exception/alerts panel, accounting (CSV/Excel) export. | incentive + payroll calc ✔, alerts schema ✔ |
-| **4 — later** | Client portal, predictive maintenance, driver-behaviour scoring. Architected for, not built. |
+| **1 — MVP** | Driver: trip logging, vehicle check, fuel entry, POD capture, document upload. Dashboard: trip log, fleet & driver overview, fuel consumption. Offline sync end-to-end. | **built** — sync API, RBAC, all Phase-1 screens both sides |
+| **2** | Trip mapping / geofencing, cost & advance tracking, ROI dashboard, route-cost analytics. | **built** — trail task + geofence, trip map (planned vs actual), costs & advances views, per-vehicle ROI, route roll-up |
+| **3** | Incentive engine, invoicing automation, exception/alerts panel, accounting (CSV/Excel) export. | **built** — live incentive/payroll preview + runs, invoice-from-trips, 10-scanner alert engine + nightly cron, CSV export, audit trail |
+| **4 — later** | Client portal, predictive maintenance, driver-behaviour scoring. Architected for, not built. | not started |
+
+Remaining polish before a pilot: Google Directions on trip creation (needs the
+Maps key), push notifications, driver behaviour scoring, and hardening the
+mobile sync loop under real field conditions.
 
 ---
 

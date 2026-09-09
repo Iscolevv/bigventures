@@ -45,7 +45,18 @@ pnpm typecheck
 
 ## Status
 
-Phase 1 foundation in place: full schema + RBAC + shared calculations +
-idempotent offline-sync API + both app shells. Next up per phase plan:
-Phase 1 driver flows (vehicle check UI, POD camera capture, fuel form) and
-the Phase 1 dashboard views (trip log, fuel consumption).
+**Phases 1–3 built.** Live dashboard: https://venturesbig.vercel.app
+
+- **Dashboard** — overview, fleet, drivers, trips (+ detail with route map),
+  fuel & consumption anomalies, costs & advances, ROI & route analytics,
+  incentives & payroll (editable rule, generate/approve runs), invoicing
+  (draft-from-trips), documents, alerts panel, audit trail, settings. All
+  RBAC-gated. CSV export on the money views.
+- **Backend** — idempotent mobile sync API, R2 presigned uploads, 10-scanner
+  alert engine + nightly Vercel cron, append-only audit log.
+- **Mobile** — offline-first driver app: trips, vehicle check, multi-drop with
+  GPS pin, camera-only POD, fuel entry, document upload, background GPS
+  trail + geofence.
+
+Phase 4 (client portal, predictive maintenance, behaviour scoring) is
+architected, not built. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) §9.

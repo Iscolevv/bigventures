@@ -13,6 +13,8 @@ import {
   TriangleAlert,
   BarChart3,
   Coins,
+  ScrollText,
+  Settings,
 } from 'lucide-react';
 import type { AppRole } from '@/lib/auth';
 import { can } from '@bv/core/rbac';
@@ -30,6 +32,8 @@ const NAV: Array<{ href: string; label: string; icon: typeof Truck; perm: Parame
   { href: '/invoicing', label: 'Invoicing', icon: Receipt, perm: 'invoice:read' },
   { href: '/documents', label: 'Documents', icon: FileText, perm: 'document:read' },
   { href: '/alerts', label: 'Alerts', icon: TriangleAlert, perm: 'alert:read' },
+  { href: '/audit', label: 'Audit trail', icon: ScrollText, perm: 'audit:read' },
+  { href: '/settings', label: 'Settings', icon: Settings, perm: 'settings:read' },
 ];
 
 export function Sidebar({ role, name }: { role: AppRole; name: string }) {

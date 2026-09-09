@@ -55,7 +55,7 @@ export async function runAlertScan(db: DB): Promise<number> {
     join bigventures.advances a on a.driver_id = d.id and a.direction = 'disbursed'
     where d.advance_balance::numeric > 0
     group by d.id, d.full_name, d.advance_balance
-    having (current_date - max(a.issued_at)) > ${ALERT_THRESHOLDS.advanceOverdueDays}
+    having (current_date - max(a.issued_at)) > ${sql.raw(String(ALERT_THRESHOLDS.advanceOverdueDays))}
   `);
   for (const r of adv.rows as { driver_id: string; full_name: string; advance_balance: string; age_days: number }[]) {
     c.push({
@@ -73,7 +73,7 @@ export async function runAlertScan(db: DB): Promise<number> {
     select id, invoice_number, (total::numeric - amount_paid::numeric) as outstanding,
       (current_date - due_date) as days_over
     from bigventures.invoices
-    where status not in ('paid','void') and due_date < current_date - ${ALERT_THRESHOLDS.invoiceOverdueGraceDays}
+    where status not in ('paid','void') and due_date < current_date - ${sql.raw(String(ALERT_THRESHOLDS.invoiceOverdueGraceDays))}
   `);
   for (const r of inv.rows as { id: string; invoice_number: string; outstanding: string; days_over: number }[]) {
     c.push({
@@ -92,7 +92,7 @@ export async function runAlertScan(db: DB): Promise<number> {
       (next_service_due_km::numeric - odometer_km::numeric) as km_to_service
     from bigventures.vehicles
     where next_service_due_km is not null
-      and next_service_due_km::numeric - odometer_km::numeric <= ${ALERT_THRESHOLDS.serviceDueKm}
+      and next_service_due_km::numeric - odometer_km::numeric <= ${sql.raw(String(ALERT_THRESHOLDS.serviceDueKm))}
   `);
   for (const r of maint.rows as { id: string; registration: string; km_to_service: string }[]) {
     c.push({
@@ -113,7 +113,7 @@ export async function runAlertScan(db: DB): Promise<number> {
     left join bigventures.trips t on t.vehicle_id = v.id
     where v.status = 'active'
     group by v.id, v.registration
-    having max(t.started_at) is null or (current_date - max(t.started_at)::date) > ${ALERT_THRESHOLDS.vehicleIdleDays}
+    having max(t.started_at) is null or (current_date - max(t.started_at)::date) > ${sql.raw(String(ALERT_THRESHOLDS.vehicleIdleDays))}
   `);
   for (const r of idle.rows as { id: string; registration: string; idle_days: number | null }[]) {
     c.push({
@@ -153,6 +153,7 @@ export async function runAlertScan(db: DB): Promise<number> {
     join bigventures.trips t on t.id = d.trip_id
     where d.status = 'delivered'
       and d.completed_at < now() - interval '${sql.raw(String(ALERT_THRESHOLDS.missingPodHours))} hours'
+      and d.completed_at > now() - interval '4 days'
       and not exists (select 1 from bigventures.pod_photos pp where pp.drop_id = d.id)
   `);
   for (const r of pod.rows as { id: string; destination_address: string; reference_code: string; trip_id: string }[]) {
@@ -171,7 +172,7 @@ export async function runAlertScan(db: DB): Promise<number> {
     select d.id, d.issue_category, d.destination_address, t.reference_code, t.id as trip_id
     from bigventures.drops d
     join bigventures.trips t on t.id = d.trip_id
-    where d.issue_category is not null and t.started_at > now() - interval '30 days'
+    where d.issue_category is not null and t.started_at > now() - interval '14 days'
   `);
   for (const r of iss.rows as { id: string; issue_category: string; destination_address: string; reference_code: string; trip_id: string }[]) {
     c.push({

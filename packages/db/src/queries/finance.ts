@@ -231,46 +231,58 @@ export interface VehicleRoiRow {
 
 export async function vehicleRoiTable(db: DB, p: Period): Promise<VehicleRoiRow[]> {
   const months = monthsBetween(p.from, p.to);
-  const rows = await db
-    .select({
-      vehicleId: vehicles.id,
-      registration: vehicles.registration,
-      monthlyFinance: vehicles.monthly_finance_cost,
-      revenue: sql<string>`coalesce((
-        select sum(${invoiceLines.line_total}) from ${invoiceLines}
-        join ${trips} t2 on t2.id = ${invoiceLines.trip_id}
-        where t2.vehicle_id = ${vehicles.id}
-          and t2.started_at >= ${p.from} and t2.started_at < ${p.to}
-      ),0)`,
-      fuelCost: sql<string>`coalesce((
-        select sum(${fuelEntries.total_cost}) from ${fuelEntries}
-        where ${fuelEntries.vehicle_id} = ${vehicles.id}
-          and ${fuelEntries.filled_at} >= ${p.from} and ${fuelEntries.filled_at} < ${p.to}
-      ),0)`,
-      runningCost: sql<string>`coalesce((
-        select sum(${costEntries.amount}) from ${costEntries}
-        where ${costEntries.vehicle_id} = ${vehicles.id}
-          and ${costEntries.incurred_at} >= ${p.from.toISOString().slice(0, 10)}
-          and ${costEntries.incurred_at} < ${p.to.toISOString().slice(0, 10)}
-      ),0)`,
-      tripCount: sql<number>`(select count(*)::int from ${trips} where ${trips.vehicle_id} = ${vehicles.id} and ${trips.started_at} >= ${p.from} and ${trips.started_at} < ${p.to})`,
-      distanceKm: sql<string>`coalesce((
-        select sum(greatest(coalesce(${trips.end_odometer_km},0) - coalesce(${trips.start_odometer_km},0), 0))
-        from ${trips} where ${trips.vehicle_id} = ${vehicles.id} and ${trips.started_at} >= ${p.from} and ${trips.started_at} < ${p.to}
-      ),0)`,
-    })
-    .from(vehicles)
-    .orderBy(vehicles.registration);
+  const from = p.from.toISOString();
+  const to = p.to.toISOString();
+  const fromD = p.from.toISOString().slice(0, 10);
+  const toD = p.to.toISOString().slice(0, 10);
+
+  const result = await db.execute(sql`
+    select
+      v.id as vehicle_id,
+      v.registration,
+      v.monthly_finance_cost as monthly_finance,
+      coalesce((
+        select sum(il.line_total::numeric) from bigventures.invoice_lines il
+        join bigventures.trips t2 on t2.id = il.trip_id
+        where t2.vehicle_id = v.id and t2.started_at >= ${from} and t2.started_at < ${to}
+      ), 0) as revenue,
+      coalesce((
+        select sum(fe.total_cost::numeric) from bigventures.fuel_entries fe
+        where fe.vehicle_id = v.id and fe.filled_at >= ${from} and fe.filled_at < ${to}
+      ), 0) as fuel_cost,
+      coalesce((
+        select sum(ce.amount::numeric) from bigventures.cost_entries ce
+        where ce.vehicle_id = v.id and ce.incurred_at >= ${fromD} and ce.incurred_at < ${toD}
+      ), 0) as running_cost,
+      (select count(*)::int from bigventures.trips t
+        where t.vehicle_id = v.id and t.started_at >= ${from} and t.started_at < ${to}) as trip_count,
+      coalesce((
+        select sum(greatest(coalesce(t.end_odometer_km::numeric,0) - coalesce(t.start_odometer_km::numeric,0), 0))
+        from bigventures.trips t where t.vehicle_id = v.id and t.started_at >= ${from} and t.started_at < ${to}
+      ), 0) as distance_km
+    from bigventures.vehicles v
+    order by v.registration
+  `);
+  const rows = (result.rows ?? result) as {
+    vehicle_id: string;
+    registration: string;
+    monthly_finance: string;
+    revenue: string;
+    fuel_cost: string;
+    running_cost: string;
+    trip_count: number;
+    distance_km: string;
+  }[];
 
   return rows.map((r) => {
     const revenue = money(r.revenue);
-    const fuelCost = money(r.fuelCost);
-    const runningCost = money(r.runningCost);
-    const overhead = money(r.monthlyFinance) * months;
+    const fuelCost = money(r.fuel_cost);
+    const runningCost = money(r.running_cost);
+    const overhead = money(r.monthly_finance) * months;
     const netContribution = revenue - fuelCost - runningCost - overhead;
-    const distanceKm = money(r.distanceKm);
+    const distanceKm = money(r.distance_km);
     return {
-      vehicleId: r.vehicleId,
+      vehicleId: r.vehicle_id,
       registration: r.registration,
       revenue,
       fuelCost,
@@ -278,7 +290,7 @@ export async function vehicleRoiTable(db: DB, p: Period): Promise<VehicleRoiRow[
       overhead,
       netContribution,
       marginPct: revenue > 0 ? (netContribution / revenue) * 100 : null,
-      tripCount: r.tripCount,
+      tripCount: r.trip_count,
       distanceKm,
       costPerKm: distanceKm > 0 ? (fuelCost + runningCost + overhead) / distanceKm : null,
     };
@@ -348,34 +360,35 @@ export async function invoiceList(db: DB) {
 
 /** Delivered trips with a valid POD that aren't on any invoice line yet. */
 export async function unbilledTrips(db: DB) {
-  const rows = await db
-    .select({
-      id: trips.id,
-      ref: trips.reference_code,
-      client: clients.name,
-      startedAt: trips.started_at,
-      vehicle: vehicles.registration,
-      deliveredDrops: sql<number>`(select count(*)::int from drops d where d.trip_id = ${trips.id} and d.status in ('delivered','partial'))`,
-    })
-    .from(trips)
-    .leftJoin(clients, eq(clients.id, trips.client_id))
-    .leftJoin(vehicles, eq(vehicles.id, trips.vehicle_id))
-    .where(
-      and(
-        eq(trips.status, 'completed'),
-        sql`not exists (select 1 from ${invoiceLines} where ${invoiceLines.trip_id} = ${trips.id})`,
-        sql`exists (select 1 from drops d where d.trip_id = ${trips.id} and d.status = 'delivered')`,
-      ),
-    )
-    .orderBy(desc(trips.started_at))
-    .limit(200);
+  const result = await db.execute(sql`
+    select t.id, t.reference_code as ref, c.name as client, t.started_at,
+      v.registration as vehicle,
+      (select count(*)::int from bigventures.drops d
+        where d.trip_id = t.id and d.status in ('delivered','partial')) as delivered_drops
+    from bigventures.trips t
+    left join bigventures.clients c on c.id = t.client_id
+    left join bigventures.vehicles v on v.id = t.vehicle_id
+    where t.status = 'completed'
+      and not exists (select 1 from bigventures.invoice_lines il where il.trip_id = t.id)
+      and exists (select 1 from bigventures.drops d where d.trip_id = t.id and d.status = 'delivered')
+    order by t.started_at desc
+    limit 200
+  `);
+  const rows = (result.rows ?? result) as {
+    id: string;
+    ref: string;
+    client: string | null;
+    started_at: string;
+    vehicle: string | null;
+    delivered_drops: number;
+  }[];
   return rows.map((r) => ({
     id: r.id,
     ref: r.ref,
     client: r.client,
-    startedAt: r.startedAt,
+    startedAt: r.started_at ? new Date(r.started_at) : null,
     vehicle: r.vehicle,
-    deliveredDrops: r.deliveredDrops,
+    deliveredDrops: r.delivered_drops,
   }));
 }
 

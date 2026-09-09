@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function OverviewPage() {
   const user = await requireDashboardUser();
-  const p = resolvePeriod('month');
+  const p = resolvePeriod('30d');
 
   const [fleet, tripsSum, fin, alerts, recentTrips] = await Promise.all([
     q.fleetSummary(db),
@@ -29,9 +29,9 @@ export default async function OverviewPage() {
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Trips this month" value={tripsSum.total} hint={`${tripsSum.flagged} flagged · ${tripsSum.inProgress} live`} tone={tripsSum.flagged > 0 ? 'warn' : 'default'} />
-        <StatTile label="Revenue (MTD)" value={kes(fin.revenue)} />
-        <StatTile label="Gross profit (MTD)" value={kes(grossProfit)} hint={`fuel ${kes(fin.fuelCost)} · running ${kes(fin.runningCost)}`} tone={grossProfit >= 0 ? 'ok' : 'crit'} />
+        <StatTile label="Trips (30d)" value={tripsSum.total} hint={`${tripsSum.flagged} flagged · ${tripsSum.inProgress} live`} tone={tripsSum.flagged > 0 ? 'warn' : 'default'} />
+        <StatTile label="Revenue (30d)" value={kes(fin.revenue)} />
+        <StatTile label="Gross profit (30d)" value={kes(grossProfit)} hint={`fuel ${kes(fin.fuelCost)} · running ${kes(fin.runningCost)}`} tone={grossProfit >= 0 ? 'ok' : 'crit'} />
         <StatTile label="Open alerts" value={alerts.total} hint={`${alerts.critical} critical · ${alerts.warning} warning`} tone={alerts.critical > 0 ? 'crit' : alerts.total > 0 ? 'warn' : 'ok'} />
       </div>
 
@@ -39,7 +39,7 @@ export default async function OverviewPage() {
         <StatTile label="Vehicles" value={`${fleet.vehiclesActive}/${fleet.vehicles}`} hint={`${fleet.vehiclesInRepair} in repair`} />
         <StatTile label="Drivers" value={fleet.driversActive} />
         <StatTile label="Receivables" value={kes(fin.receivablesOutstanding)} hint={`${kes(fin.receivablesOverdue)} overdue`} tone={fin.receivablesOverdue > 0 ? 'warn' : 'default'} />
-        <StatTile label="Completed trips" value={tripsSum.completed} />
+        <StatTile label="Completed (30d)" value={tripsSum.completed} />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">

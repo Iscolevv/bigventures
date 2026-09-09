@@ -7,7 +7,7 @@ export interface ResolvedPeriod {
 
 export function resolvePeriod(period: string | undefined): ResolvedPeriod {
   const to = new Date();
-  const key = period ?? 'month';
+  const key = period ?? '30d';
   if (key === '30d')
     return { from: new Date(to.getTime() - 30 * 86_400_000), to, key, label: 'last 30 days' };
   if (key === '90d')

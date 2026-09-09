@@ -9,6 +9,7 @@ export * from './trips';
 export * from './finance';
 export * from './alerts';
 export * from './incentives';
+export * from './audit';
 
 // legacy name kept for the earlier fuel view
 export { fuelByVehicle as fuelConsumptionByVehicle } from './finance';

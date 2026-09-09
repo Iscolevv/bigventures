@@ -1,6 +1,6 @@
-import { sql, eq, and, gte, lt, desc } from 'drizzle-orm';
+import { sql, eq, desc } from 'drizzle-orm';
 import type { DB } from '../index';
-import { drivers, trips, drops, podPhotos, vehicleChecks, qualitySnapshots, payrollRuns, incentiveRules } from '../schema';
+import { drivers, payrollRuns, incentiveRules } from '../schema';
 import { money, type Period } from './_util';
 import { evaluateIncentive, runPayroll, qualityScore, type IncentiveResult, type PayrollResult } from '@bv/core/calc';
 
@@ -31,24 +31,40 @@ export async function incentivePreview(
   p: Period,
   ruleConfig: unknown,
 ): Promise<IncentivePreviewRow[]> {
-  const rows = await db
-    .select({
-      driverId: drivers.id,
-      driver: drivers.full_name,
-      baseSalary: drivers.base_salary,
-      advanceBalance: drivers.advance_balance,
-      lossBalance: drivers.loss_balance,
-      tripCount: sql<number>`(select count(*)::int from ${trips} where ${trips.driver_id} = ${drivers.id} and ${trips.started_at} >= ${p.from} and ${trips.started_at} < ${p.to} and ${trips.status} in ('completed','flagged'))`,
-      totalDrops: sql<number>`(select count(*)::int from ${drops} d join ${trips} t on t.id = d.trip_id where t.driver_id = ${drivers.id} and t.started_at >= ${p.from} and t.started_at < ${p.to})`,
-      onTimeDrops: sql<number>`(select count(*)::int from ${drops} d join ${trips} t on t.id = d.trip_id where t.driver_id = ${drivers.id} and t.started_at >= ${p.from} and t.started_at < ${p.to} and d.geofence_entered_at is not null)`,
-      cleanDrops: sql<number>`(select count(*)::int from ${drops} d join ${trips} t on t.id = d.trip_id where t.driver_id = ${drivers.id} and t.started_at >= ${p.from} and t.started_at < ${p.to} and d.issue_category is null and d.status = 'delivered')`,
-      deliveredTrips: sql<number>`(select count(*)::int from ${trips} where ${trips.driver_id} = ${drivers.id} and ${trips.started_at} >= ${p.from} and ${trips.started_at} < ${p.to} and ${trips.status} = 'completed')`,
-      documentedTrips: sql<number>`(select count(*)::int from ${trips} t where t.driver_id = ${drivers.id} and t.started_at >= ${p.from} and t.started_at < ${p.to} and t.status = 'completed' and not exists (select 1 from ${drops} d where d.trip_id = t.id and d.status = 'delivered' and not exists (select 1 from ${podPhotos} pp where pp.drop_id = d.id)))`,
-      checksRequired: sql<number>`(select count(*)::int from ${trips} where ${trips.driver_id} = ${drivers.id} and ${trips.started_at} >= ${p.from} and ${trips.started_at} < ${p.to})`,
-      checksDone: sql<number>`(select count(distinct ${vehicleChecks.trip_id})::int from ${vehicleChecks} join ${trips} t on t.id = ${vehicleChecks.trip_id} where t.driver_id = ${drivers.id} and t.started_at >= ${p.from} and t.started_at < ${p.to})`,
-    })
-    .from(drivers)
-    .orderBy(drivers.full_name);
+  const from = p.from.toISOString();
+  const to = p.to.toISOString();
+  const result = await db.execute(sql`
+    select
+      d.id as driver_id, d.full_name as driver,
+      d.base_salary, d.advance_balance, d.loss_balance,
+      (select count(*)::int from bigventures.trips t where t.driver_id = d.id and t.started_at >= ${from} and t.started_at < ${to} and t.status in ('completed','flagged')) as trip_count,
+      (select count(*)::int from bigventures.drops dr join bigventures.trips t on t.id = dr.trip_id where t.driver_id = d.id and t.started_at >= ${from} and t.started_at < ${to}) as total_drops,
+      (select count(*)::int from bigventures.drops dr join bigventures.trips t on t.id = dr.trip_id where t.driver_id = d.id and t.started_at >= ${from} and t.started_at < ${to} and dr.geofence_entered_at is not null) as on_time_drops,
+      (select count(*)::int from bigventures.drops dr join bigventures.trips t on t.id = dr.trip_id where t.driver_id = d.id and t.started_at >= ${from} and t.started_at < ${to} and dr.issue_category is null and dr.status = 'delivered') as clean_drops,
+      (select count(*)::int from bigventures.trips t where t.driver_id = d.id and t.started_at >= ${from} and t.started_at < ${to} and t.status = 'completed') as delivered_trips,
+      (select count(*)::int from bigventures.trips t where t.driver_id = d.id and t.started_at >= ${from} and t.started_at < ${to} and t.status = 'completed'
+        and not exists (select 1 from bigventures.drops dr where dr.trip_id = t.id and dr.status = 'delivered'
+          and not exists (select 1 from bigventures.pod_photos pp where pp.drop_id = dr.id))) as documented_trips,
+      (select count(*)::int from bigventures.trips t where t.driver_id = d.id and t.started_at >= ${from} and t.started_at < ${to}) as checks_required,
+      (select count(distinct vc.trip_id)::int from bigventures.vehicle_checks vc join bigventures.trips t on t.id = vc.trip_id where t.driver_id = d.id and t.started_at >= ${from} and t.started_at < ${to}) as checks_done
+    from bigventures.drivers d
+    order by d.full_name
+  `);
+  const rows = ((result.rows ?? result) as Record<string, unknown>[]).map((x) => ({
+    driverId: x.driver_id as string,
+    driver: x.driver as string,
+    baseSalary: x.base_salary as string,
+    advanceBalance: x.advance_balance as string,
+    lossBalance: x.loss_balance as string,
+    tripCount: Number(x.trip_count),
+    totalDrops: Number(x.total_drops),
+    onTimeDrops: Number(x.on_time_drops),
+    cleanDrops: Number(x.clean_drops),
+    deliveredTrips: Number(x.delivered_trips),
+    documentedTrips: Number(x.documented_trips),
+    checksRequired: Number(x.checks_required),
+    checksDone: Number(x.checks_done),
+  }));
 
   return rows.map((r) => {
     const q = qualityScore({

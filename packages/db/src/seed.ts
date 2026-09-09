@@ -89,7 +89,7 @@ async function main() {
     .where(eq(s.vehicles.registration, 'KCY 046L'));
 
   // ---------- drivers + users ----------
-  const today = new Date('2026-09-01T06:00:00Z');
+  const today = new Date('2026-09-09T18:00:00Z');
   const dSeed = [
     ['Nahashon Gitau', 30000, 'DL0451221', 90],
     ['Simon Wanyoike', 25000, 'DL0338910', 20],
@@ -229,7 +229,7 @@ async function main() {
   const localClient = ['Papa Distributors', 'CST Wholesalers', 'Ajab Flour Mills'];
   let tripSeq = 0;
 
-  for (let w = 0; w < 8; w++) {
+  for (let w = 0; w < 10; w++) {
     for (let day = 0; day < 6; day++) {
       const date = addDays(start, w * 7 + day);
       if (date > today) continue;

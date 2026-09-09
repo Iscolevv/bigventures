@@ -17,7 +17,9 @@ export function proxy(req: NextRequest) {
     pathname === '/mobile-only' ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/mobile') ||
-    pathname.startsWith('/api/uploads');
+    pathname.startsWith('/api/uploads') ||
+    pathname.startsWith('/api/cron') || // guarded by CRON_SECRET
+    pathname.startsWith('/api/export'); // guarded by requirePermission
 
   if (!isAuthed && !isPublic) {
     return NextResponse.redirect(new URL('/login', req.url));

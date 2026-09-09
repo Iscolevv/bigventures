@@ -102,6 +102,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'report:read',
     'report:export',
     'user:read',
+    'settings:read',
+    'settings:update',
   ],
 
   management: [
@@ -129,6 +131,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     'report:read',
     'report:export',
     'user:read',
+    'settings:read',
   ],
 
   admin: ['*'],
