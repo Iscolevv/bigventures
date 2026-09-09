@@ -61,6 +61,19 @@ DB.) Then sign in at the deployed URL.
 - The mobile app already points here (`apps/mobile/app.json` →
   `extra.apiBaseUrl`).
 
+## Demo data & alerts
+
+```bash
+pnpm db:seed                                   # wipe + regenerate ~420 trips etc.
+cd apps/dashboard
+node --env-file=../../.env --import tsx scripts/scan-alerts.ts   # populate the alerts panel
+```
+
+The nightly Vercel cron (`/api/cron/nightly`, see `vercel.json`) does the alert
+scan automatically once `CRON_SECRET` is set in Vercel env (Vercel injects the
+matching `Authorization: Bearer` header). Without `CRON_SECRET` the endpoint is
+open — fine for the pilot, lock it down before real traffic.
+
 ## Migrations on future schema changes
 
 ```bash
