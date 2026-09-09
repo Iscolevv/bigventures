@@ -1,15 +1,15 @@
 import { sql } from 'drizzle-orm';
-import { pgTable, text, timestamp, numeric, integer, date, index, uniqueIndex } from 'drizzle-orm/pg-core';
+import { text, timestamp, numeric, integer, date, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import type { DriverStatus, VehicleType, VehicleStatus } from '@bv/core/enums';
 import { user } from './auth';
-import { pk, timestamps } from './_shared';
+import { bv, pk, timestamps } from './_shared';
 
 /**
  * Driver = profile extension of a `user` whose role is `driver`. Drivers sign
  * in to the mobile app with their user account; this table holds the HR /
  * compliance / payroll fields the dashboard needs.
  */
-export const drivers = pgTable(
+export const drivers = bv.table(
   'drivers',
   {
     id: pk(),
@@ -37,7 +37,7 @@ export const drivers = pgTable(
   (t) => [index('drivers_status_idx').on(t.status)],
 );
 
-export const vehicles = pgTable(
+export const vehicles = bv.table(
   'vehicles',
   {
     id: pk(),
@@ -70,7 +70,7 @@ export const vehicles = pgTable(
 );
 
 /** History of which driver was assigned which vehicle. `end_date` null = current. */
-export const vehicleAssignments = pgTable(
+export const vehicleAssignments = bv.table(
   'vehicle_assignments',
   {
     id: pk(),

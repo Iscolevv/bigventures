@@ -1,6 +1,5 @@
 import { sql } from 'drizzle-orm';
 import {
-  pgTable,
   text,
   timestamp,
   jsonb,
@@ -17,10 +16,10 @@ import type {
 } from '@bv/core/enums';
 import { user } from './auth';
 import { drivers } from './fleet';
-import { pk } from './_shared';
+import { bv, pk } from './_shared';
 
 /** Registered driver devices — for push notifications and sync attribution. */
-export const devices = pgTable(
+export const devices = bv.table(
   'devices',
   {
     id: pk(),
@@ -37,7 +36,7 @@ export const devices = pgTable(
 );
 
 /** One row per mobile sync POST — idempotency + a record of what came in. */
-export const syncBatches = pgTable(
+export const syncBatches = bv.table(
   'sync_batches',
   {
     id: pk(),
@@ -55,7 +54,7 @@ export const syncBatches = pgTable(
 );
 
 /** Exception / alerts panel feed. Raised by background jobs and inline events. */
-export const alerts = pgTable(
+export const alerts = bv.table(
   'alerts',
   {
     id: pk(),
@@ -89,7 +88,7 @@ export const alerts = pgTable(
 );
 
 /** Append-only audit trail. Every mutation to a tracked entity writes one row. */
-export const auditLog = pgTable(
+export const auditLog = bv.table(
   'audit_log',
   {
     id: pk(),
@@ -113,7 +112,7 @@ export const auditLog = pgTable(
 );
 
 /** App-wide settings (single row, keyed 'default'). Company doc fields, tax %, etc. */
-export const settings = pgTable('settings', {
+export const settings = bv.table('settings', {
   key: text('key').primaryKey().default('default'),
   company_name: text('company_name').notNull().default('Big Ventures'),
   company_kra_pin: text('company_kra_pin'),

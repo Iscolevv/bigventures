@@ -1,5 +1,4 @@
 import {
-  pgTable,
   text,
   timestamp,
   numeric,
@@ -23,11 +22,11 @@ import type {
 import { user } from './auth';
 import { drivers, vehicles } from './fleet';
 import { trips, drops } from './trips';
-import { pk, timestamps } from './_shared';
+import { bv, pk, timestamps } from './_shared';
 
 // --- Clients & rates --------------------------------------------------
 
-export const clients = pgTable('clients', {
+export const clients = bv.table('clients', {
   id: pk(),
   name: text('name').notNull(),
   contact_name: text('contact_name'),
@@ -40,7 +39,7 @@ export const clients = pgTable('clients', {
   ...timestamps,
 });
 
-export const clientRates = pgTable(
+export const clientRates = bv.table(
   'client_rates',
   {
     id: pk(),
@@ -61,7 +60,7 @@ export const clientRates = pgTable(
 
 // --- Fuel -----------------------------------------------------------
 
-export const fuelEntries = pgTable(
+export const fuelEntries = bv.table(
   'fuel_entries',
   {
     id: pk(),
@@ -93,7 +92,7 @@ export const fuelEntries = pgTable(
 
 // --- Costs (repairs, service, parking, police, fines...) ------------
 
-export const costEntries = pgTable(
+export const costEntries = bv.table(
   'cost_entries',
   {
     id: pk(),
@@ -123,7 +122,7 @@ export const costEntries = pgTable(
 
 // --- Advances ledger ----------------------------------------------
 
-export const advances = pgTable(
+export const advances = bv.table(
   'advances',
   {
     id: pk(),
@@ -150,7 +149,7 @@ export const advances = pgTable(
 
 // --- Incentive rules (editable by ops/management) -----------------
 
-export const incentiveRules = pgTable('incentive_rules', {
+export const incentiveRules = bv.table('incentive_rules', {
   id: pk(),
   name: text('name').notNull(),
   active: boolean('active').notNull().default(true),
@@ -164,7 +163,7 @@ export const incentiveRules = pgTable('incentive_rules', {
 
 // --- Quality snapshots (per driver per period) -------------------
 
-export const qualitySnapshots = pgTable(
+export const qualitySnapshots = bv.table(
   'quality_snapshots',
   {
     id: pk(),
@@ -185,7 +184,7 @@ export const qualitySnapshots = pgTable(
 
 // --- Payroll runs ------------------------------------------------
 
-export const payrollRuns = pgTable(
+export const payrollRuns = bv.table(
   'payroll_runs',
   {
     id: pk(),
@@ -218,7 +217,7 @@ export const payrollRuns = pgTable(
 
 // --- Invoicing --------------------------------------------------
 
-export const invoices = pgTable(
+export const invoices = bv.table(
   'invoices',
   {
     id: pk(),
@@ -246,7 +245,7 @@ export const invoices = pgTable(
   ],
 );
 
-export const invoiceLines = pgTable(
+export const invoiceLines = bv.table(
   'invoice_lines',
   {
     id: pk(),
@@ -266,7 +265,7 @@ export const invoiceLines = pgTable(
   ],
 );
 
-export const payments = pgTable(
+export const payments = bv.table(
   'payments',
   {
     id: pk(),

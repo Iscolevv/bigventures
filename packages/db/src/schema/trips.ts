@@ -1,5 +1,4 @@
 import {
-  pgTable,
   text,
   timestamp,
   numeric,
@@ -22,7 +21,7 @@ import type {
 import type { TrailPoint } from '@bv/core/geo';
 import { user } from './auth';
 import { drivers, vehicles } from './fleet';
-import { pk, timestamps } from './_shared';
+import { bv, pk, timestamps } from './_shared';
 
 /**
  * A named origin+destination pattern. Trips optionally reference one so the
@@ -30,7 +29,7 @@ import { pk, timestamps } from './_shared';
  * `route_key` (see @bv/core geo.routeKey) is also stored on the trip itself so
  * grouping works even for ad-hoc trips with no route row.
  */
-export const routes = pgTable('routes', {
+export const routes = bv.table('routes', {
   id: pk(),
   name: text('name').notNull(),
   origin_label: text('origin_label').notNull(),
@@ -41,7 +40,7 @@ export const routes = pgTable('routes', {
   ...timestamps,
 });
 
-export const trips = pgTable(
+export const trips = bv.table(
   'trips',
   {
     id: pk(),
@@ -95,7 +94,7 @@ export const trips = pgTable(
   ],
 );
 
-export const drops = pgTable(
+export const drops = bv.table(
   'drops',
   {
     id: pk(),
@@ -131,7 +130,7 @@ export const drops = pgTable(
 );
 
 /** Proof-of-delivery photos. Files live in R2; this row is the metadata + audit. */
-export const podPhotos = pgTable(
+export const podPhotos = bv.table(
   'pod_photos',
   {
     id: pk(),
@@ -155,7 +154,7 @@ export const podPhotos = pgTable(
   (t) => [index('pod_photos_drop_idx').on(t.drop_id)],
 );
 
-export const vehicleChecks = pgTable(
+export const vehicleChecks = bv.table(
   'vehicle_checks',
   {
     id: pk(),
@@ -182,7 +181,7 @@ export const vehicleChecks = pgTable(
   ],
 );
 
-export const vehicleCheckItems = pgTable(
+export const vehicleCheckItems = bv.table(
   'vehicle_check_items',
   {
     id: pk(),
@@ -205,7 +204,7 @@ export const vehicleCheckItems = pgTable(
  * GPS trail, stored in batches rather than one row per fix. The mobile app
  * flushes a segment every N points / minutes; keeps write volume sane.
  */
-export const trailSegments = pgTable(
+export const trailSegments = bv.table(
   'trail_segments',
   {
     id: pk(),
@@ -222,7 +221,7 @@ export const trailSegments = pgTable(
   (t) => [index('trail_segments_trip_idx').on(t.trip_id)],
 );
 
-export const tripDeviations = pgTable(
+export const tripDeviations = bv.table(
   'trip_deviations',
   {
     id: pk(),

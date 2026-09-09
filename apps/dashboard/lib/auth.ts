@@ -1,11 +1,22 @@
 import { betterAuth } from 'better-auth';
+import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
 import { ROLES } from '@bv/core/enums';
 
+/**
+ * This Neon database is shared with Moody Treats, which also uses Better Auth.
+ * We keep every Big Ventures table (including Better Auth's `user`, `session`,
+ * `account`, `verification`) in a dedicated `bigventures` Postgres schema, so
+ * Better Auth gets a Kysely instance pinned to that schema.
+ */
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+const authDb = new Kysely<Record<string, never>>({
+  dialect: new PostgresDialect({ pool }),
+}).withSchema('bigventures');
+
 export const auth = betterAuth({
-  database: pool,
+  database: { db: authDb, type: 'postgres' },
   baseURL:
     process.env.BETTER_AUTH_URL ??
     (process.env.VERCEL_PROJECT_PRODUCTION_URL

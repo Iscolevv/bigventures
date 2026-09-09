@@ -1,5 +1,12 @@
 import { sql } from 'drizzle-orm';
-import { text, timestamp } from 'drizzle-orm/pg-core';
+import { pgSchema, text, timestamp } from 'drizzle-orm/pg-core';
+
+/**
+ * All Big Ventures tables live in a dedicated Postgres schema so this database
+ * can be shared with other apps (Moody Treats) without table-name collisions.
+ * Both use Better Auth, so both would otherwise want `public.user` etc.
+ */
+export const bv = pgSchema('bigventures');
 
 /** text PK defaulting to a uuid, matching the supplyportal convention. */
 export const pk = () => text('id').primaryKey().default(sql`gen_random_uuid()::text`);

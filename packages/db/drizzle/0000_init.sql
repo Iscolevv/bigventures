@@ -1,4 +1,4 @@
-CREATE TABLE "account" (
+CREATE TABLE "bigventures"."account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"accountId" text NOT NULL,
 	"providerId" text NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE "account" (
 	"updatedAt" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "session" (
+CREATE TABLE "bigventures"."session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expiresAt" timestamp NOT NULL,
 	"token" text NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE "session" (
 	CONSTRAINT "session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
-CREATE TABLE "user" (
+CREATE TABLE "bigventures"."user" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"email" text NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE "user" (
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-CREATE TABLE "verification" (
+CREATE TABLE "bigventures"."verification" (
 	"id" text PRIMARY KEY NOT NULL,
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE "verification" (
 	"updatedAt" timestamp DEFAULT now()
 );
 --> statement-breakpoint
-CREATE TABLE "drivers" (
+CREATE TABLE "bigventures"."drivers" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"user_id" text NOT NULL,
 	"full_name" text NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE "drivers" (
 	CONSTRAINT "drivers_user_id_unique" UNIQUE("user_id")
 );
 --> statement-breakpoint
-CREATE TABLE "vehicle_assignments" (
+CREATE TABLE "bigventures"."vehicle_assignments" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"vehicle_id" text NOT NULL,
 	"driver_id" text NOT NULL,
@@ -81,7 +81,7 @@ CREATE TABLE "vehicle_assignments" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "vehicles" (
+CREATE TABLE "bigventures"."vehicles" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"registration" text NOT NULL,
 	"make" text,
@@ -102,7 +102,7 @@ CREATE TABLE "vehicles" (
 	CONSTRAINT "vehicles_registration_unique" UNIQUE("registration")
 );
 --> statement-breakpoint
-CREATE TABLE "drops" (
+CREATE TABLE "bigventures"."drops" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"trip_id" text NOT NULL,
 	"sequence" integer NOT NULL,
@@ -125,7 +125,7 @@ CREATE TABLE "drops" (
 	CONSTRAINT "drops_client_uuid_unique" UNIQUE("client_uuid")
 );
 --> statement-breakpoint
-CREATE TABLE "pod_photos" (
+CREATE TABLE "bigventures"."pod_photos" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"drop_id" text NOT NULL,
 	"storage_key" text NOT NULL,
@@ -143,7 +143,7 @@ CREATE TABLE "pod_photos" (
 	CONSTRAINT "pod_photos_client_uuid_unique" UNIQUE("client_uuid")
 );
 --> statement-breakpoint
-CREATE TABLE "routes" (
+CREATE TABLE "bigventures"."routes" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"name" text NOT NULL,
 	"origin_label" text NOT NULL,
@@ -155,7 +155,7 @@ CREATE TABLE "routes" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "trail_segments" (
+CREATE TABLE "bigventures"."trail_segments" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"trip_id" text NOT NULL,
 	"points" jsonb DEFAULT '[]'::jsonb NOT NULL,
@@ -167,7 +167,7 @@ CREATE TABLE "trail_segments" (
 	CONSTRAINT "trail_segments_client_uuid_unique" UNIQUE("client_uuid")
 );
 --> statement-breakpoint
-CREATE TABLE "trip_deviations" (
+CREATE TABLE "bigventures"."trip_deviations" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"trip_id" text NOT NULL,
 	"type" text NOT NULL,
@@ -181,7 +181,7 @@ CREATE TABLE "trip_deviations" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "trips" (
+CREATE TABLE "bigventures"."trips" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"reference_code" text NOT NULL,
 	"vehicle_id" text NOT NULL,
@@ -215,7 +215,7 @@ CREATE TABLE "trips" (
 	CONSTRAINT "trips_client_uuid_unique" UNIQUE("client_uuid")
 );
 --> statement-breakpoint
-CREATE TABLE "vehicle_check_items" (
+CREATE TABLE "bigventures"."vehicle_check_items" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"check_id" text NOT NULL,
 	"item_key" text NOT NULL,
@@ -225,7 +225,7 @@ CREATE TABLE "vehicle_check_items" (
 	"notes" text
 );
 --> statement-breakpoint
-CREATE TABLE "vehicle_checks" (
+CREATE TABLE "bigventures"."vehicle_checks" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"trip_id" text,
 	"vehicle_id" text NOT NULL,
@@ -242,7 +242,7 @@ CREATE TABLE "vehicle_checks" (
 	CONSTRAINT "vehicle_checks_client_uuid_unique" UNIQUE("client_uuid")
 );
 --> statement-breakpoint
-CREATE TABLE "advances" (
+CREATE TABLE "bigventures"."advances" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"driver_id" text NOT NULL,
 	"amount" numeric(14, 2) NOT NULL,
@@ -258,7 +258,7 @@ CREATE TABLE "advances" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "client_rates" (
+CREATE TABLE "bigventures"."client_rates" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"client_id" text NOT NULL,
 	"route_id" text,
@@ -272,7 +272,7 @@ CREATE TABLE "client_rates" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "clients" (
+CREATE TABLE "bigventures"."clients" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"name" text NOT NULL,
 	"contact_name" text,
@@ -286,7 +286,7 @@ CREATE TABLE "clients" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "cost_entries" (
+CREATE TABLE "bigventures"."cost_entries" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"vehicle_id" text,
 	"driver_id" text,
@@ -306,7 +306,7 @@ CREATE TABLE "cost_entries" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "fuel_entries" (
+CREATE TABLE "bigventures"."fuel_entries" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"vehicle_id" text NOT NULL,
 	"driver_id" text,
@@ -328,7 +328,7 @@ CREATE TABLE "fuel_entries" (
 	CONSTRAINT "fuel_entries_client_uuid_unique" UNIQUE("client_uuid")
 );
 --> statement-breakpoint
-CREATE TABLE "incentive_rules" (
+CREATE TABLE "bigventures"."incentive_rules" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"name" text NOT NULL,
 	"active" boolean DEFAULT true NOT NULL,
@@ -340,7 +340,7 @@ CREATE TABLE "incentive_rules" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "invoice_lines" (
+CREATE TABLE "bigventures"."invoice_lines" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"invoice_id" text NOT NULL,
 	"trip_id" text,
@@ -351,7 +351,7 @@ CREATE TABLE "invoice_lines" (
 	"line_total" numeric(14, 2) NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "invoices" (
+CREATE TABLE "bigventures"."invoices" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"invoice_number" text NOT NULL,
 	"client_id" text NOT NULL,
@@ -370,7 +370,7 @@ CREATE TABLE "invoices" (
 	CONSTRAINT "invoices_invoice_number_unique" UNIQUE("invoice_number")
 );
 --> statement-breakpoint
-CREATE TABLE "payments" (
+CREATE TABLE "bigventures"."payments" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"invoice_id" text NOT NULL,
 	"amount" numeric(14, 2) NOT NULL,
@@ -381,7 +381,7 @@ CREATE TABLE "payments" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "payroll_runs" (
+CREATE TABLE "bigventures"."payroll_runs" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"driver_id" text NOT NULL,
 	"period_key" text NOT NULL,
@@ -404,7 +404,7 @@ CREATE TABLE "payroll_runs" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "quality_snapshots" (
+CREATE TABLE "bigventures"."quality_snapshots" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"driver_id" text NOT NULL,
 	"period_key" text NOT NULL,
@@ -417,7 +417,7 @@ CREATE TABLE "quality_snapshots" (
 	"computed_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "documents" (
+CREATE TABLE "bigventures"."documents" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"owner_type" text NOT NULL,
 	"owner_id" text,
@@ -439,7 +439,7 @@ CREATE TABLE "documents" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "alerts" (
+CREATE TABLE "bigventures"."alerts" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"type" text NOT NULL,
 	"severity" text NOT NULL,
@@ -457,7 +457,7 @@ CREATE TABLE "alerts" (
 	"resolution_notes" text
 );
 --> statement-breakpoint
-CREATE TABLE "audit_log" (
+CREATE TABLE "bigventures"."audit_log" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"actor_id" text,
 	"actor_role" text,
@@ -472,7 +472,7 @@ CREATE TABLE "audit_log" (
 	"at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "devices" (
+CREATE TABLE "bigventures"."devices" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"device_id" text NOT NULL,
 	"driver_id" text,
@@ -485,7 +485,7 @@ CREATE TABLE "devices" (
 	CONSTRAINT "devices_device_id_unique" UNIQUE("device_id")
 );
 --> statement-breakpoint
-CREATE TABLE "settings" (
+CREATE TABLE "bigventures"."settings" (
 	"key" text PRIMARY KEY DEFAULT 'default' NOT NULL,
 	"company_name" text DEFAULT 'Big Ventures' NOT NULL,
 	"company_kra_pin" text,
@@ -498,7 +498,7 @@ CREATE TABLE "settings" (
 	"extra" jsonb
 );
 --> statement-breakpoint
-CREATE TABLE "sync_batches" (
+CREATE TABLE "bigventures"."sync_batches" (
 	"id" text PRIMARY KEY DEFAULT gen_random_uuid()::text NOT NULL,
 	"batch_id" text NOT NULL,
 	"device_id" text NOT NULL,
@@ -512,107 +512,107 @@ CREATE TABLE "sync_batches" (
 	CONSTRAINT "sync_batches_batch_id_unique" UNIQUE("batch_id")
 );
 --> statement-breakpoint
-ALTER TABLE "account" ADD CONSTRAINT "account_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "session" ADD CONSTRAINT "session_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "drivers" ADD CONSTRAINT "drivers_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "vehicle_assignments" ADD CONSTRAINT "vehicle_assignments_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "vehicle_assignments" ADD CONSTRAINT "vehicle_assignments_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "vehicle_assignments" ADD CONSTRAINT "vehicle_assignments_assigned_by_user_id_fk" FOREIGN KEY ("assigned_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "drops" ADD CONSTRAINT "drops_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "public"."trips"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "pod_photos" ADD CONSTRAINT "pod_photos_drop_id_drops_id_fk" FOREIGN KEY ("drop_id") REFERENCES "public"."drops"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "trail_segments" ADD CONSTRAINT "trail_segments_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "public"."trips"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "trip_deviations" ADD CONSTRAINT "trip_deviations_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "public"."trips"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "trip_deviations" ADD CONSTRAINT "trip_deviations_reviewed_by_user_id_fk" FOREIGN KEY ("reviewed_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "trips" ADD CONSTRAINT "trips_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "trips" ADD CONSTRAINT "trips_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "trips" ADD CONSTRAINT "trips_route_id_routes_id_fk" FOREIGN KEY ("route_id") REFERENCES "public"."routes"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "trips" ADD CONSTRAINT "trips_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "vehicle_check_items" ADD CONSTRAINT "vehicle_check_items_check_id_vehicle_checks_id_fk" FOREIGN KEY ("check_id") REFERENCES "public"."vehicle_checks"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "vehicle_checks" ADD CONSTRAINT "vehicle_checks_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "public"."trips"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "vehicle_checks" ADD CONSTRAINT "vehicle_checks_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "vehicle_checks" ADD CONSTRAINT "vehicle_checks_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "vehicle_checks" ADD CONSTRAINT "vehicle_checks_overridden_by_user_id_fk" FOREIGN KEY ("overridden_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "advances" ADD CONSTRAINT "advances_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "advances" ADD CONSTRAINT "advances_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "public"."trips"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "advances" ADD CONSTRAINT "advances_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "client_rates" ADD CONSTRAINT "client_rates_client_id_clients_id_fk" FOREIGN KEY ("client_id") REFERENCES "public"."clients"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "cost_entries" ADD CONSTRAINT "cost_entries_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "cost_entries" ADD CONSTRAINT "cost_entries_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "cost_entries" ADD CONSTRAINT "cost_entries_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "public"."trips"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "cost_entries" ADD CONSTRAINT "cost_entries_approved_by_user_id_fk" FOREIGN KEY ("approved_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "cost_entries" ADD CONSTRAINT "cost_entries_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "fuel_entries" ADD CONSTRAINT "fuel_entries_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "public"."vehicles"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "fuel_entries" ADD CONSTRAINT "fuel_entries_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "fuel_entries" ADD CONSTRAINT "fuel_entries_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "public"."trips"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "fuel_entries" ADD CONSTRAINT "fuel_entries_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "incentive_rules" ADD CONSTRAINT "incentive_rules_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "invoice_lines" ADD CONSTRAINT "invoice_lines_invoice_id_invoices_id_fk" FOREIGN KEY ("invoice_id") REFERENCES "public"."invoices"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "invoice_lines" ADD CONSTRAINT "invoice_lines_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "public"."trips"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "invoice_lines" ADD CONSTRAINT "invoice_lines_drop_id_drops_id_fk" FOREIGN KEY ("drop_id") REFERENCES "public"."drops"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "invoices" ADD CONSTRAINT "invoices_client_id_clients_id_fk" FOREIGN KEY ("client_id") REFERENCES "public"."clients"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "invoices" ADD CONSTRAINT "invoices_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payments" ADD CONSTRAINT "payments_invoice_id_invoices_id_fk" FOREIGN KEY ("invoice_id") REFERENCES "public"."invoices"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payments" ADD CONSTRAINT "payments_recorded_by_user_id_fk" FOREIGN KEY ("recorded_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payroll_runs" ADD CONSTRAINT "payroll_runs_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payroll_runs" ADD CONSTRAINT "payroll_runs_incentive_rule_id_incentive_rules_id_fk" FOREIGN KEY ("incentive_rule_id") REFERENCES "public"."incentive_rules"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "payroll_runs" ADD CONSTRAINT "payroll_runs_approved_by_user_id_fk" FOREIGN KEY ("approved_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "quality_snapshots" ADD CONSTRAINT "quality_snapshots_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "documents" ADD CONSTRAINT "documents_reviewed_by_user_id_fk" FOREIGN KEY ("reviewed_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "documents" ADD CONSTRAINT "documents_uploaded_by_user_id_fk" FOREIGN KEY ("uploaded_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "alerts" ADD CONSTRAINT "alerts_acknowledged_by_user_id_fk" FOREIGN KEY ("acknowledged_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "alerts" ADD CONSTRAINT "alerts_resolved_by_user_id_fk" FOREIGN KEY ("resolved_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_actor_id_user_id_fk" FOREIGN KEY ("actor_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "devices" ADD CONSTRAINT "devices_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "settings" ADD CONSTRAINT "settings_updated_by_user_id_fk" FOREIGN KEY ("updated_by") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "sync_batches" ADD CONSTRAINT "sync_batches_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "public"."drivers"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "drivers_status_idx" ON "drivers" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "vehicle_assignments_vehicle_idx" ON "vehicle_assignments" USING btree ("vehicle_id");--> statement-breakpoint
-CREATE INDEX "vehicle_assignments_driver_idx" ON "vehicle_assignments" USING btree ("driver_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "vehicle_assignments_open_per_vehicle" ON "vehicle_assignments" USING btree ("vehicle_id") WHERE "vehicle_assignments"."end_date" is null;--> statement-breakpoint
-CREATE INDEX "vehicles_status_idx" ON "vehicles" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "drops_trip_idx" ON "drops" USING btree ("trip_id");--> statement-breakpoint
-CREATE INDEX "drops_status_idx" ON "drops" USING btree ("status");--> statement-breakpoint
-CREATE UNIQUE INDEX "drops_trip_sequence_key" ON "drops" USING btree ("trip_id","sequence");--> statement-breakpoint
-CREATE INDEX "pod_photos_drop_idx" ON "pod_photos" USING btree ("drop_id");--> statement-breakpoint
-CREATE INDEX "trail_segments_trip_idx" ON "trail_segments" USING btree ("trip_id");--> statement-breakpoint
-CREATE INDEX "trip_deviations_trip_idx" ON "trip_deviations" USING btree ("trip_id");--> statement-breakpoint
-CREATE INDEX "trip_deviations_reviewed_idx" ON "trip_deviations" USING btree ("reviewed");--> statement-breakpoint
-CREATE INDEX "trips_vehicle_idx" ON "trips" USING btree ("vehicle_id");--> statement-breakpoint
-CREATE INDEX "trips_driver_idx" ON "trips" USING btree ("driver_id");--> statement-breakpoint
-CREATE INDEX "trips_status_idx" ON "trips" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "trips_started_at_idx" ON "trips" USING btree ("started_at");--> statement-breakpoint
-CREATE INDEX "trips_route_key_idx" ON "trips" USING btree ("route_key");--> statement-breakpoint
-CREATE INDEX "vehicle_check_items_check_idx" ON "vehicle_check_items" USING btree ("check_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "vehicle_check_items_check_key" ON "vehicle_check_items" USING btree ("check_id","item_key");--> statement-breakpoint
-CREATE INDEX "vehicle_checks_trip_idx" ON "vehicle_checks" USING btree ("trip_id");--> statement-breakpoint
-CREATE INDEX "vehicle_checks_vehicle_idx" ON "vehicle_checks" USING btree ("vehicle_id");--> statement-breakpoint
-CREATE INDEX "advances_driver_idx" ON "advances" USING btree ("driver_id");--> statement-breakpoint
-CREATE INDEX "advances_issued_at_idx" ON "advances" USING btree ("issued_at");--> statement-breakpoint
-CREATE INDEX "client_rates_client_idx" ON "client_rates" USING btree ("client_id");--> statement-breakpoint
-CREATE INDEX "cost_entries_vehicle_idx" ON "cost_entries" USING btree ("vehicle_id");--> statement-breakpoint
-CREATE INDEX "cost_entries_driver_idx" ON "cost_entries" USING btree ("driver_id");--> statement-breakpoint
-CREATE INDEX "cost_entries_category_idx" ON "cost_entries" USING btree ("category");--> statement-breakpoint
-CREATE INDEX "cost_entries_incurred_at_idx" ON "cost_entries" USING btree ("incurred_at");--> statement-breakpoint
-CREATE INDEX "fuel_entries_vehicle_idx" ON "fuel_entries" USING btree ("vehicle_id");--> statement-breakpoint
-CREATE INDEX "fuel_entries_filled_at_idx" ON "fuel_entries" USING btree ("filled_at");--> statement-breakpoint
-CREATE INDEX "fuel_entries_trip_idx" ON "fuel_entries" USING btree ("trip_id");--> statement-breakpoint
-CREATE INDEX "invoice_lines_invoice_idx" ON "invoice_lines" USING btree ("invoice_id");--> statement-breakpoint
-CREATE INDEX "invoice_lines_trip_idx" ON "invoice_lines" USING btree ("trip_id");--> statement-breakpoint
-CREATE INDEX "invoices_client_idx" ON "invoices" USING btree ("client_id");--> statement-breakpoint
-CREATE INDEX "invoices_status_idx" ON "invoices" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "invoices_due_date_idx" ON "invoices" USING btree ("due_date");--> statement-breakpoint
-CREATE INDEX "payments_invoice_idx" ON "payments" USING btree ("invoice_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "payroll_runs_driver_period_key" ON "payroll_runs" USING btree ("driver_id","period_key");--> statement-breakpoint
-CREATE UNIQUE INDEX "quality_snapshots_driver_period_key" ON "quality_snapshots" USING btree ("driver_id","period_key");--> statement-breakpoint
-CREATE INDEX "documents_owner_idx" ON "documents" USING btree ("owner_type","owner_id");--> statement-breakpoint
-CREATE INDEX "documents_expiry_idx" ON "documents" USING btree ("expiry_date");--> statement-breakpoint
-CREATE INDEX "documents_status_idx" ON "documents" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "alerts_status_idx" ON "alerts" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "alerts_type_idx" ON "alerts" USING btree ("type");--> statement-breakpoint
-CREATE INDEX "alerts_entity_idx" ON "alerts" USING btree ("entity_type","entity_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "alerts_open_dedupe_key" ON "alerts" USING btree ("dedupe_key") WHERE "alerts"."dedupe_key" is not null and "alerts"."status" in ('open','acknowledged');--> statement-breakpoint
-CREATE INDEX "audit_log_entity_idx" ON "audit_log" USING btree ("entity_type","entity_id");--> statement-breakpoint
-CREATE INDEX "audit_log_actor_idx" ON "audit_log" USING btree ("actor_id");--> statement-breakpoint
-CREATE INDEX "audit_log_at_idx" ON "audit_log" USING btree ("at");--> statement-breakpoint
-CREATE INDEX "devices_driver_idx" ON "devices" USING btree ("driver_id");--> statement-breakpoint
-CREATE INDEX "sync_batches_device_idx" ON "sync_batches" USING btree ("device_id");
+ALTER TABLE "bigventures"."account" ADD CONSTRAINT "account_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "bigventures"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."session" ADD CONSTRAINT "session_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "bigventures"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."drivers" ADD CONSTRAINT "drivers_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "bigventures"."user"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."vehicle_assignments" ADD CONSTRAINT "vehicle_assignments_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "bigventures"."vehicles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."vehicle_assignments" ADD CONSTRAINT "vehicle_assignments_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "bigventures"."drivers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."vehicle_assignments" ADD CONSTRAINT "vehicle_assignments_assigned_by_user_id_fk" FOREIGN KEY ("assigned_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."drops" ADD CONSTRAINT "drops_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "bigventures"."trips"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."pod_photos" ADD CONSTRAINT "pod_photos_drop_id_drops_id_fk" FOREIGN KEY ("drop_id") REFERENCES "bigventures"."drops"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."trail_segments" ADD CONSTRAINT "trail_segments_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "bigventures"."trips"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."trip_deviations" ADD CONSTRAINT "trip_deviations_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "bigventures"."trips"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."trip_deviations" ADD CONSTRAINT "trip_deviations_reviewed_by_user_id_fk" FOREIGN KEY ("reviewed_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."trips" ADD CONSTRAINT "trips_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "bigventures"."vehicles"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."trips" ADD CONSTRAINT "trips_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "bigventures"."drivers"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."trips" ADD CONSTRAINT "trips_route_id_routes_id_fk" FOREIGN KEY ("route_id") REFERENCES "bigventures"."routes"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."trips" ADD CONSTRAINT "trips_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."vehicle_check_items" ADD CONSTRAINT "vehicle_check_items_check_id_vehicle_checks_id_fk" FOREIGN KEY ("check_id") REFERENCES "bigventures"."vehicle_checks"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."vehicle_checks" ADD CONSTRAINT "vehicle_checks_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "bigventures"."trips"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."vehicle_checks" ADD CONSTRAINT "vehicle_checks_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "bigventures"."vehicles"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."vehicle_checks" ADD CONSTRAINT "vehicle_checks_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "bigventures"."drivers"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."vehicle_checks" ADD CONSTRAINT "vehicle_checks_overridden_by_user_id_fk" FOREIGN KEY ("overridden_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."advances" ADD CONSTRAINT "advances_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "bigventures"."drivers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."advances" ADD CONSTRAINT "advances_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "bigventures"."trips"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."advances" ADD CONSTRAINT "advances_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."client_rates" ADD CONSTRAINT "client_rates_client_id_clients_id_fk" FOREIGN KEY ("client_id") REFERENCES "bigventures"."clients"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."cost_entries" ADD CONSTRAINT "cost_entries_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "bigventures"."vehicles"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."cost_entries" ADD CONSTRAINT "cost_entries_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "bigventures"."drivers"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."cost_entries" ADD CONSTRAINT "cost_entries_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "bigventures"."trips"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."cost_entries" ADD CONSTRAINT "cost_entries_approved_by_user_id_fk" FOREIGN KEY ("approved_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."cost_entries" ADD CONSTRAINT "cost_entries_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."fuel_entries" ADD CONSTRAINT "fuel_entries_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "bigventures"."vehicles"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."fuel_entries" ADD CONSTRAINT "fuel_entries_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "bigventures"."drivers"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."fuel_entries" ADD CONSTRAINT "fuel_entries_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "bigventures"."trips"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."fuel_entries" ADD CONSTRAINT "fuel_entries_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."incentive_rules" ADD CONSTRAINT "incentive_rules_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."invoice_lines" ADD CONSTRAINT "invoice_lines_invoice_id_invoices_id_fk" FOREIGN KEY ("invoice_id") REFERENCES "bigventures"."invoices"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."invoice_lines" ADD CONSTRAINT "invoice_lines_trip_id_trips_id_fk" FOREIGN KEY ("trip_id") REFERENCES "bigventures"."trips"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."invoice_lines" ADD CONSTRAINT "invoice_lines_drop_id_drops_id_fk" FOREIGN KEY ("drop_id") REFERENCES "bigventures"."drops"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."invoices" ADD CONSTRAINT "invoices_client_id_clients_id_fk" FOREIGN KEY ("client_id") REFERENCES "bigventures"."clients"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."invoices" ADD CONSTRAINT "invoices_created_by_user_id_fk" FOREIGN KEY ("created_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."payments" ADD CONSTRAINT "payments_invoice_id_invoices_id_fk" FOREIGN KEY ("invoice_id") REFERENCES "bigventures"."invoices"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."payments" ADD CONSTRAINT "payments_recorded_by_user_id_fk" FOREIGN KEY ("recorded_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."payroll_runs" ADD CONSTRAINT "payroll_runs_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "bigventures"."drivers"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."payroll_runs" ADD CONSTRAINT "payroll_runs_incentive_rule_id_incentive_rules_id_fk" FOREIGN KEY ("incentive_rule_id") REFERENCES "bigventures"."incentive_rules"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."payroll_runs" ADD CONSTRAINT "payroll_runs_approved_by_user_id_fk" FOREIGN KEY ("approved_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."quality_snapshots" ADD CONSTRAINT "quality_snapshots_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "bigventures"."drivers"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."documents" ADD CONSTRAINT "documents_reviewed_by_user_id_fk" FOREIGN KEY ("reviewed_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."documents" ADD CONSTRAINT "documents_uploaded_by_user_id_fk" FOREIGN KEY ("uploaded_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."alerts" ADD CONSTRAINT "alerts_acknowledged_by_user_id_fk" FOREIGN KEY ("acknowledged_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."alerts" ADD CONSTRAINT "alerts_resolved_by_user_id_fk" FOREIGN KEY ("resolved_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."audit_log" ADD CONSTRAINT "audit_log_actor_id_user_id_fk" FOREIGN KEY ("actor_id") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."devices" ADD CONSTRAINT "devices_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "bigventures"."drivers"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."settings" ADD CONSTRAINT "settings_updated_by_user_id_fk" FOREIGN KEY ("updated_by") REFERENCES "bigventures"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "bigventures"."sync_batches" ADD CONSTRAINT "sync_batches_driver_id_drivers_id_fk" FOREIGN KEY ("driver_id") REFERENCES "bigventures"."drivers"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "drivers_status_idx" ON "bigventures"."drivers" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "vehicle_assignments_vehicle_idx" ON "bigventures"."vehicle_assignments" USING btree ("vehicle_id");--> statement-breakpoint
+CREATE INDEX "vehicle_assignments_driver_idx" ON "bigventures"."vehicle_assignments" USING btree ("driver_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "vehicle_assignments_open_per_vehicle" ON "bigventures"."vehicle_assignments" USING btree ("vehicle_id") WHERE "bigventures"."vehicle_assignments"."end_date" is null;--> statement-breakpoint
+CREATE INDEX "vehicles_status_idx" ON "bigventures"."vehicles" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "drops_trip_idx" ON "bigventures"."drops" USING btree ("trip_id");--> statement-breakpoint
+CREATE INDEX "drops_status_idx" ON "bigventures"."drops" USING btree ("status");--> statement-breakpoint
+CREATE UNIQUE INDEX "drops_trip_sequence_key" ON "bigventures"."drops" USING btree ("trip_id","sequence");--> statement-breakpoint
+CREATE INDEX "pod_photos_drop_idx" ON "bigventures"."pod_photos" USING btree ("drop_id");--> statement-breakpoint
+CREATE INDEX "trail_segments_trip_idx" ON "bigventures"."trail_segments" USING btree ("trip_id");--> statement-breakpoint
+CREATE INDEX "trip_deviations_trip_idx" ON "bigventures"."trip_deviations" USING btree ("trip_id");--> statement-breakpoint
+CREATE INDEX "trip_deviations_reviewed_idx" ON "bigventures"."trip_deviations" USING btree ("reviewed");--> statement-breakpoint
+CREATE INDEX "trips_vehicle_idx" ON "bigventures"."trips" USING btree ("vehicle_id");--> statement-breakpoint
+CREATE INDEX "trips_driver_idx" ON "bigventures"."trips" USING btree ("driver_id");--> statement-breakpoint
+CREATE INDEX "trips_status_idx" ON "bigventures"."trips" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "trips_started_at_idx" ON "bigventures"."trips" USING btree ("started_at");--> statement-breakpoint
+CREATE INDEX "trips_route_key_idx" ON "bigventures"."trips" USING btree ("route_key");--> statement-breakpoint
+CREATE INDEX "vehicle_check_items_check_idx" ON "bigventures"."vehicle_check_items" USING btree ("check_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "vehicle_check_items_check_key" ON "bigventures"."vehicle_check_items" USING btree ("check_id","item_key");--> statement-breakpoint
+CREATE INDEX "vehicle_checks_trip_idx" ON "bigventures"."vehicle_checks" USING btree ("trip_id");--> statement-breakpoint
+CREATE INDEX "vehicle_checks_vehicle_idx" ON "bigventures"."vehicle_checks" USING btree ("vehicle_id");--> statement-breakpoint
+CREATE INDEX "advances_driver_idx" ON "bigventures"."advances" USING btree ("driver_id");--> statement-breakpoint
+CREATE INDEX "advances_issued_at_idx" ON "bigventures"."advances" USING btree ("issued_at");--> statement-breakpoint
+CREATE INDEX "client_rates_client_idx" ON "bigventures"."client_rates" USING btree ("client_id");--> statement-breakpoint
+CREATE INDEX "cost_entries_vehicle_idx" ON "bigventures"."cost_entries" USING btree ("vehicle_id");--> statement-breakpoint
+CREATE INDEX "cost_entries_driver_idx" ON "bigventures"."cost_entries" USING btree ("driver_id");--> statement-breakpoint
+CREATE INDEX "cost_entries_category_idx" ON "bigventures"."cost_entries" USING btree ("category");--> statement-breakpoint
+CREATE INDEX "cost_entries_incurred_at_idx" ON "bigventures"."cost_entries" USING btree ("incurred_at");--> statement-breakpoint
+CREATE INDEX "fuel_entries_vehicle_idx" ON "bigventures"."fuel_entries" USING btree ("vehicle_id");--> statement-breakpoint
+CREATE INDEX "fuel_entries_filled_at_idx" ON "bigventures"."fuel_entries" USING btree ("filled_at");--> statement-breakpoint
+CREATE INDEX "fuel_entries_trip_idx" ON "bigventures"."fuel_entries" USING btree ("trip_id");--> statement-breakpoint
+CREATE INDEX "invoice_lines_invoice_idx" ON "bigventures"."invoice_lines" USING btree ("invoice_id");--> statement-breakpoint
+CREATE INDEX "invoice_lines_trip_idx" ON "bigventures"."invoice_lines" USING btree ("trip_id");--> statement-breakpoint
+CREATE INDEX "invoices_client_idx" ON "bigventures"."invoices" USING btree ("client_id");--> statement-breakpoint
+CREATE INDEX "invoices_status_idx" ON "bigventures"."invoices" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "invoices_due_date_idx" ON "bigventures"."invoices" USING btree ("due_date");--> statement-breakpoint
+CREATE INDEX "payments_invoice_idx" ON "bigventures"."payments" USING btree ("invoice_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "payroll_runs_driver_period_key" ON "bigventures"."payroll_runs" USING btree ("driver_id","period_key");--> statement-breakpoint
+CREATE UNIQUE INDEX "quality_snapshots_driver_period_key" ON "bigventures"."quality_snapshots" USING btree ("driver_id","period_key");--> statement-breakpoint
+CREATE INDEX "documents_owner_idx" ON "bigventures"."documents" USING btree ("owner_type","owner_id");--> statement-breakpoint
+CREATE INDEX "documents_expiry_idx" ON "bigventures"."documents" USING btree ("expiry_date");--> statement-breakpoint
+CREATE INDEX "documents_status_idx" ON "bigventures"."documents" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "alerts_status_idx" ON "bigventures"."alerts" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "alerts_type_idx" ON "bigventures"."alerts" USING btree ("type");--> statement-breakpoint
+CREATE INDEX "alerts_entity_idx" ON "bigventures"."alerts" USING btree ("entity_type","entity_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "alerts_open_dedupe_key" ON "bigventures"."alerts" USING btree ("dedupe_key") WHERE "bigventures"."alerts"."dedupe_key" is not null and "bigventures"."alerts"."status" in ('open','acknowledged');--> statement-breakpoint
+CREATE INDEX "audit_log_entity_idx" ON "bigventures"."audit_log" USING btree ("entity_type","entity_id");--> statement-breakpoint
+CREATE INDEX "audit_log_actor_idx" ON "bigventures"."audit_log" USING btree ("actor_id");--> statement-breakpoint
+CREATE INDEX "audit_log_at_idx" ON "bigventures"."audit_log" USING btree ("at");--> statement-breakpoint
+CREATE INDEX "devices_driver_idx" ON "bigventures"."devices" USING btree ("driver_id");--> statement-breakpoint
+CREATE INDEX "sync_batches_device_idx" ON "bigventures"."sync_batches" USING btree ("device_id");

@@ -6,10 +6,11 @@
  * Enum-ish text columns use `.$type<>()` for the TS type only; value
  * validation happens at the API boundary with the Zod schemas in @bv/core.
  */
-import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import type { Role, UserStatus } from '@bv/core/enums';
+import { bv } from './_shared';
 
-export const user = pgTable('user', {
+export const user = bv.table('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
@@ -22,7 +23,7 @@ export const user = pgTable('user', {
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });
 
-export const session = pgTable('session', {
+export const session = bv.table('session', {
   id: text('id').primaryKey(),
   expiresAt: timestamp('expiresAt').notNull(),
   token: text('token').notNull().unique(),
@@ -35,7 +36,7 @@ export const session = pgTable('session', {
     .references(() => user.id, { onDelete: 'cascade' }),
 });
 
-export const account = pgTable('account', {
+export const account = bv.table('account', {
   id: text('id').primaryKey(),
   accountId: text('accountId').notNull(),
   providerId: text('providerId').notNull(),
@@ -53,7 +54,7 @@ export const account = pgTable('account', {
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });
 
-export const verification = pgTable('verification', {
+export const verification = bv.table('verification', {
   id: text('id').primaryKey(),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, date, index } from 'drizzle-orm/pg-core';
+import { text, timestamp, integer, date, index } from 'drizzle-orm/pg-core';
 import type {
   DocumentOwnerType,
   DocumentType,
@@ -6,14 +6,14 @@ import type {
   Role,
 } from '@bv/core/enums';
 import { user } from './auth';
-import { pk, timestamps } from './_shared';
+import { bv, pk, timestamps } from './_shared';
 
 /**
  * One repository for every compliance document — driver, vehicle, and company.
  * `owner_type` + `owner_id` is a soft polymorphic link (owner_id null for
  * company docs). Expiry feeds the alerts panel via the document_expiry job.
  */
-export const documents = pgTable(
+export const documents = bv.table(
   'documents',
   {
     id: pk(),
