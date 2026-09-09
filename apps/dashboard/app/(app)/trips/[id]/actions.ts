@@ -2,7 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { requirePermission } from '@/lib/session';
 import { db, schema, eq } from '@bv/db';
-import { mapsEnabled, geocode, directions } from '@/lib/maps';
+import { mapsEnabled, geocode, directions, lastMapsError } from '@/lib/maps';
 
 /**
  * Compute (or refresh) the planned route for one trip using Google Directions.
@@ -52,10 +52,14 @@ export async function recomputeRoute(tripId: string) {
       }
     }
   }
-  if (points.length === 0) return { error: 'No drop coordinates could be resolved' };
+  if (points.length === 0) {
+    return { error: `Could not resolve drop coordinates${lastMapsError ? ` (${lastMapsError})` : ''}` };
+  }
 
   const route = await directions(origin, points[points.length - 1]!, points.slice(0, -1));
-  if (!route) return { error: 'Directions API returned no route' };
+  if (!route) {
+    return { error: lastMapsError ? `Directions failed — ${lastMapsError}` : 'Directions API returned no route' };
+  }
 
   await db
     .update(schema.trips)

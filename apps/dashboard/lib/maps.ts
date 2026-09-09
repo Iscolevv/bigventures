@@ -17,6 +17,14 @@ export interface GeocodeResult extends LatLng {
   formattedAddress: string;
 }
 
+/** Last Google API status seen — used to surface real errors to the UI. */
+export let lastMapsError: string | null = null;
+
+function note(api: string, status: string, message?: string) {
+  lastMapsError = `${api}: ${status}${message ? ` — ${message}` : ''}`;
+  if (status !== 'OK' && status !== 'ZERO_RESULTS') console.error('[maps]', lastMapsError);
+}
+
 /** Address string → coordinates. Biased to Kenya. */
 export async function geocode(address: string): Promise<GeocodeResult | null> {
   if (!KEY || !address.trim()) return null;
@@ -29,8 +37,10 @@ export async function geocode(address: string): Promise<GeocodeResult | null> {
     const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
     const data = (await res.json()) as {
       status: string;
+      error_message?: string;
       results?: { geometry: { location: LatLng }; formatted_address: string }[];
     };
+    note('Geocoding', data.status, data.error_message);
     const hit = data.results?.[0];
     if (data.status !== 'OK' || !hit) return null;
     return {
@@ -38,21 +48,18 @@ export async function geocode(address: string): Promise<GeocodeResult | null> {
       lng: hit.geometry.location.lng,
       formattedAddress: hit.formatted_address,
     };
-  } catch {
+  } catch (e) {
+    note('Geocoding', 'FETCH_FAILED', e instanceof Error ? e.message : String(e));
     return null;
   }
 }
 
 export interface RouteResult {
-  polyline: string; // encoded, precision 5
+  polyline: string;
   distanceM: number;
   durationS: number;
 }
 
-/**
- * Directions for origin → [waypoints…] → destination, driving. Waypoints are
- * kept in the given order (drops are sequenced).
- */
 export async function directions(
   origin: LatLng,
   destination: LatLng,
@@ -71,11 +78,13 @@ export async function directions(
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
     const data = (await res.json()) as {
       status: string;
+      error_message?: string;
       routes?: {
         overview_polyline: { points: string };
         legs: { distance: { value: number }; duration: { value: number } }[];
       }[];
     };
+    note('Directions', data.status, data.error_message);
     const route = data.routes?.[0];
     if (data.status !== 'OK' || !route) return null;
     return {
@@ -83,7 +92,8 @@ export async function directions(
       distanceM: route.legs.reduce((s, l) => s + l.distance.value, 0),
       durationS: route.legs.reduce((s, l) => s + l.duration.value, 0),
     };
-  } catch {
+  } catch (e) {
+    note('Directions', 'FETCH_FAILED', e instanceof Error ? e.message : String(e));
     return null;
   }
 }
