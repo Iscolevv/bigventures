@@ -8,6 +8,9 @@ export default function DriverLayout() {
       <Stack.Screen name="trip/[id]" options={{ title: 'Trip' }} />
       <Stack.Screen name="check/[tripId]" options={{ title: 'Vehicle check' }} />
       <Stack.Screen name="drop/[id]" options={{ title: 'Delivery' }} />
+      <Stack.Screen name="add-drop/[tripId]" options={{ title: 'Add drop', presentation: 'modal' }} />
+      <Stack.Screen name="fuel/[tripId]" options={{ title: 'Fuel', presentation: 'modal' }} />
+      <Stack.Screen name="documents" options={{ title: 'My documents' }} />
     </Stack>
   );
 }

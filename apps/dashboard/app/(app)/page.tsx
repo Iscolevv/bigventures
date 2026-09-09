@@ -1,65 +1,86 @@
+import Link from 'next/link';
 import { requireDashboardUser } from '@/lib/session';
-import { db, schema, sql } from '@bv/db';
-import { PageHeader, StatTile, Card, EmptyState } from '@/components/ui';
+import { db } from '@bv/db';
+import * as q from '@bv/db/queries';
+import { PageHeader, StatTile, Card, Badge, kes, dateTime } from '@/components/ui';
+import { resolvePeriod } from '@/lib/period';
 
-async function counts() {
-  const [v] = await db.select({ n: sql<number>`count(*)::int` }).from(schema.vehicles);
-  const [d] = await db.select({ n: sql<number>`count(*)::int` }).from(schema.drivers);
-  const [openAlerts] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(schema.alerts)
-    .where(sql`${schema.alerts.status} in ('open','acknowledged')`);
-  const [activeTrips] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(schema.trips)
-    .where(sql`${schema.trips.status} in ('in_progress','pre_check')`);
-  return {
-    vehicles: v?.n ?? 0,
-    drivers: d?.n ?? 0,
-    openAlerts: openAlerts?.n ?? 0,
-    activeTrips: activeTrips?.n ?? 0,
-  };
-}
+export const dynamic = 'force-dynamic';
 
 export default async function OverviewPage() {
   const user = await requireDashboardUser();
-  const c = await counts();
+  const p = resolvePeriod('month');
+
+  const [fleet, tripsSum, fin, alerts, recentTrips] = await Promise.all([
+    q.fleetSummary(db),
+    q.tripsSummary(db, p.from, p.to),
+    q.financeSummary(db, p),
+    q.alertCounts(db),
+    q.tripList(db, { limit: 8 }),
+  ]);
+
+  const grossProfit = fin.revenue - fin.fuelCost - fin.runningCost;
 
   return (
     <>
-      <PageHeader title={`Welcome, ${user.name.split(' ')[0]}`} subtitle="Fleet snapshot" />
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatTile label="Vehicles" value={c.vehicles} />
-        <StatTile label="Drivers" value={c.drivers} />
-        <StatTile label="Trips in progress" value={c.activeTrips} />
-        <StatTile
-          label="Open alerts"
-          value={c.openAlerts}
-          tone={c.openAlerts > 0 ? 'warn' : 'ok'}
-        />
+      <PageHeader
+        title={`Welcome, ${user.name.split(' ')[0]}`}
+        subtitle={`Snapshot — ${p.label}`}
+      />
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatTile label="Trips this month" value={tripsSum.total} hint={`${tripsSum.flagged} flagged · ${tripsSum.inProgress} live`} tone={tripsSum.flagged > 0 ? 'warn' : 'default'} />
+        <StatTile label="Revenue (MTD)" value={kes(fin.revenue)} />
+        <StatTile label="Gross profit (MTD)" value={kes(grossProfit)} hint={`fuel ${kes(fin.fuelCost)} · running ${kes(fin.runningCost)}`} tone={grossProfit >= 0 ? 'ok' : 'crit'} />
+        <StatTile label="Open alerts" value={alerts.total} hint={`${alerts.critical} critical · ${alerts.warning} warning`} tone={alerts.critical > 0 ? 'crit' : alerts.total > 0 ? 'warn' : 'ok'} />
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <h2 className="text-sm font-semibold">Today&apos;s deliveries</h2>
-          <p className="mt-2 text-xs text-muted">
-            Trip and drop feed lands here once the driver app is syncing (Phase 1).
-          </p>
-        </Card>
-        <Card>
-          <h2 className="text-sm font-semibold">Exceptions</h2>
-          <p className="mt-2 text-xs text-muted">
-            Failed checks, delivery issues, fuel anomalies, document expiries and overdue advances
-            surface here (Phase 3).
-          </p>
-        </Card>
+      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatTile label="Vehicles" value={`${fleet.vehiclesActive}/${fleet.vehicles}`} hint={`${fleet.vehiclesInRepair} in repair`} />
+        <StatTile label="Drivers" value={fleet.driversActive} />
+        <StatTile label="Receivables" value={kes(fin.receivablesOutstanding)} hint={`${kes(fin.receivablesOverdue)} overdue`} tone={fin.receivablesOverdue > 0 ? 'warn' : 'default'} />
+        <StatTile label="Completed trips" value={tripsSum.completed} />
       </div>
 
-      <div className="mt-6">
-        <EmptyState
-          title="Analytics warm up as data arrives"
-          hint="Seed the demo dataset with pnpm db:seed, then start logging trips from the mobile app."
-        />
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <Card title="Recent trips" className="lg:col-span-2">
+          <div className="divide-y">
+            {recentTrips.map((t) => (
+              <Link key={t.id} href={`/trips/${t.id}`} className="flex items-center justify-between py-2.5 text-sm hover:opacity-80">
+                <div>
+                  <span className="font-medium">{t.ref}</span>{' '}
+                  <span className="text-muted">
+                    {t.vehicle} · {t.driver}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-muted">{t.drops} drops</span>
+                  {t.issues > 0 && <Badge tone="warn">{t.issues} issue</Badge>}
+                  <span className="text-muted">{dateTime(t.startedAt)}</span>
+                </div>
+              </Link>
+            ))}
+            {recentTrips.length === 0 && <p className="py-4 text-sm text-muted">No trips yet.</p>}
+          </div>
+        </Card>
+
+        <Card title="Alerts by type">
+          {Object.keys(alerts.byType).length === 0 ? (
+            <p className="text-sm text-muted">All clear.</p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {Object.entries(alerts.byType).map(([type, n]) => (
+                <li key={type} className="flex justify-between">
+                  <span className="capitalize">{type.replace(/_/g, ' ')}</span>
+                  <span className="font-medium tabular-nums">{n}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link href="/alerts" className="mt-4 inline-block text-xs font-medium text-brand">
+            Open alerts panel →
+          </Link>
+        </Card>
       </div>
     </>
   );

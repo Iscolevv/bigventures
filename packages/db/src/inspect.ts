@@ -11,7 +11,7 @@ async function main() {
     select schema_name from information_schema.schemata
     where schema_name not in ('pg_catalog','information_schema','pg_toast')
     order by schema_name`;
-  console.log('schemas:', schemas.map((s: { schema_name: string }) => s.schema_name).join(', '));
+  console.log('schemas:', (schemas as { schema_name: string }[]).map((r) => r.schema_name).join(', '));
 
   const tables = await sql`
     select table_schema, table_name from information_schema.tables

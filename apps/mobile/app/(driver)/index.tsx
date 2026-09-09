@@ -51,9 +51,16 @@ export default function TripList() {
         keyExtractor={(t) => t.client_id}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         ListHeaderComponent={
-          <Text style={styles.sync}>
-            {lastSyncAt ? `Last synced ${new Date(lastSyncAt).toLocaleTimeString()}` : 'Not yet synced'}
-          </Text>
+          <View style={styles.headerRow}>
+            <Text style={styles.sync}>
+              {lastSyncAt ? `Last synced ${new Date(lastSyncAt).toLocaleTimeString()}` : 'Not yet synced'}
+            </Text>
+            <Link href="/(driver)/documents" asChild>
+              <Pressable>
+                <Text style={styles.docsLink}>My documents</Text>
+              </Pressable>
+            </Link>
+          </View>
         }
         ListEmptyComponent={<Text style={styles.empty}>No trips yet. Tap “Start a trip”.</Text>}
         renderItem={({ item }) => (
@@ -80,7 +87,9 @@ export default function TripList() {
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: '#f7f7f6' },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingRight: 12 },
   sync: { padding: 12, color: '#6b7280', fontSize: 12 },
+  docsLink: { color: '#1f5f4f', fontWeight: '600', fontSize: 13 },
   empty: { padding: 24, textAlign: 'center', color: '#6b7280' },
   card: { backgroundColor: 'white', marginHorizontal: 12, marginVertical: 4, padding: 14, borderRadius: 10 },
   ref: { fontWeight: '700' },
