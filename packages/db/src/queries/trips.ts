@@ -14,15 +14,14 @@ import {
   fuelEntries,
   costEntries,
 } from '../schema';
-import { money } from './_util';
+import { money, pageBounds, paged, type PageArgs, type Paged } from './_util';
 
-export interface TripListFilter {
+export interface TripListFilter extends PageArgs {
   driverId?: string;
   vehicleId?: string;
   status?: string;
   from?: Date;
   to?: Date;
-  limit?: number;
 }
 
 export interface TripListRow {
@@ -40,13 +39,20 @@ export interface TripListRow {
   fuelCost: number;
 }
 
-export async function tripList(db: DB, f: TripListFilter = {}): Promise<TripListRow[]> {
+export async function tripList(db: DB, f: TripListFilter = {}): Promise<Paged<TripListRow>> {
   const conds = [];
   if (f.driverId) conds.push(eq(trips.driver_id, f.driverId));
   if (f.vehicleId) conds.push(eq(trips.vehicle_id, f.vehicleId));
   if (f.status) conds.push(eq(trips.status, f.status as 'completed'));
   if (f.from) conds.push(gte(trips.started_at, f.from));
   if (f.to) conds.push(lt(trips.started_at, f.to));
+  const where = conds.length ? and(...conds) : undefined;
+  const b = pageBounds(f);
+
+  const [{ total } = { total: 0 }] = await db
+    .select({ total: sql<number>`count(*)::int` })
+    .from(trips)
+    .where(where);
 
   const rows = await db
     .select({
@@ -69,11 +75,12 @@ export async function tripList(db: DB, f: TripListFilter = {}): Promise<TripList
     .leftJoin(vehicles, eq(vehicles.id, trips.vehicle_id))
     .leftJoin(drivers, eq(drivers.id, trips.driver_id))
     .leftJoin(routes, eq(routes.id, trips.route_id))
-    .where(conds.length ? and(...conds) : undefined)
+    .where(where)
     .orderBy(desc(trips.started_at))
-    .limit(f.limit ?? 200);
+    .limit(b.limit)
+    .offset(b.offset);
 
-  return rows.map((r) => {
+  const mapped = rows.map((r) => {
     const odoKm = money(r.endOdo) - money(r.startOdo);
     return {
       id: r.id,
@@ -90,6 +97,7 @@ export async function tripList(db: DB, f: TripListFilter = {}): Promise<TripList
       fuelCost: money(r.fuelCost),
     };
   });
+  return paged(mapped, total, b.page, b.pageSize);
 }
 
 export async function tripDetail(db: DB, id: string) {

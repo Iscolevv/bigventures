@@ -4,6 +4,7 @@ import * as q from '@bv/db/queries';
 import { PageHeader, Card, DataTable, StatTile, Badge, kes, dateShort, ExportLink, type Column } from '@/components/ui';
 import { BarChartCard } from '@/components/Charts';
 import { PeriodTabs } from '@/components/PeriodTabs';
+import { Pager, pageParam } from '@/components/Pager';
 import { resolvePeriod } from '@/lib/period';
 
 export const dynamic = 'force-dynamic';
@@ -17,14 +18,15 @@ export default async function CostsPage({
   const sp = await searchParams;
   const p = resolvePeriod(sp.period);
 
-  const [byCat, entries, advances] = await Promise.all([
+  const [byCat, entriesResult, advances, summary] = await Promise.all([
     q.costsByCategory(db, p),
-    q.costEntryList(db, { from: p.from, to: p.to, limit: 200 }),
+    q.costEntryList(db, { from: p.from, to: p.to, page: pageParam(sp), pageSize: 25 }),
     q.advanceLedger(db),
+    q.costSummary(db, p),
   ]);
+  const entries = entriesResult.rows;
 
-  const totalCosts = byCat.reduce((s, c) => s + c.total, 0);
-  const pending = entries.filter((e) => e.status === 'pending');
+  const totalCosts = summary.total;
   const totalAdvances = advances.reduce((s, a) => s + a.balance, 0);
   const totalLoss = advances.reduce((s, a) => s + a.lossBalance, 0);
 
@@ -61,7 +63,7 @@ export default async function CostsPage({
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile label="Running costs" value={kes(totalCosts)} />
-        <StatTile label="Pending approval" value={pending.length} tone={pending.length ? 'warn' : 'ok'} hint={kes(pending.reduce((s, e) => s + e.amount, 0))} />
+        <StatTile label="Pending approval" value={summary.pendingCount} tone={summary.pendingCount ? 'warn' : 'ok'} hint={kes(summary.pendingAmount)} />
         <StatTile label="Advances outstanding" value={kes(totalAdvances)} />
         <StatTile label="At-fault losses" value={kes(totalLoss)} tone={totalLoss ? 'crit' : 'ok'} />
       </div>
@@ -80,7 +82,8 @@ export default async function CostsPage({
       </Card>
 
       <h2 className="mb-2 mt-6 text-sm font-semibold">Cost entries</h2>
-      <DataTable columns={costCols} rows={entries} empty="No cost entries." />
+      <DataTable columns={costCols} rows={entries} empty="No cost entries in this window." />
+      <Pager {...entriesResult} searchParams={sp} basePath="/costs" />
 
       <h2 className="mb-2 mt-6 text-sm font-semibold">Driver advances</h2>
       <DataTable columns={advCols} rows={advances} />

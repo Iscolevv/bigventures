@@ -3,6 +3,7 @@ import { db, schema, sql, eq } from '@bv/db';
 import * as q from '@bv/db/queries';
 import { PageHeader, Card, DataTable, StatTile, Badge, kes, dateShort, ExportLink, type Column } from '@/components/ui';
 import { GenerateInvoice, InvoiceStatusButton } from '@/components/InvoiceActions';
+import { Pager, pageParam } from '@/components/Pager';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,10 +16,20 @@ const STATUS_TONE: Record<string, 'ok' | 'warn' | 'crit' | 'muted' | 'brand'> = 
   void: 'muted',
 };
 
-export default async function InvoicingPage() {
+export default async function InvoicingPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const user = await requirePermission('invoice:read');
+  const sp = await searchParams;
 
-  const [invoices, unbilled] = await Promise.all([q.invoiceList(db), q.unbilledTrips(db)]);
+  const [invResult, unbilled, summary] = await Promise.all([
+    q.invoiceList(db, { page: pageParam(sp), pageSize: 20 }),
+    q.unbilledTrips(db),
+    q.invoiceSummary(db),
+  ]);
+  const invoices = invResult.rows;
 
   // unbilled trips grouped by client, for the generate control
   const clientsRaw = await db
@@ -33,9 +44,9 @@ export default async function InvoicingPage() {
   }
   const clientOptions = clientsRaw.map((c) => ({ ...c, unbilled: unbilledByClient.get(c.id) ?? 0 }));
 
-  const outstanding = invoices.reduce((s, i) => s + i.outstanding, 0);
-  const overdue = invoices.filter((i) => i.overdue).reduce((s, i) => s + i.outstanding, 0);
-  const flagged = invoices.filter((i) => i.hasIssues).length;
+  const outstanding = summary.outstanding;
+  const overdue = summary.overdue;
+  const flagged = summary.flagged;
 
   const cols: Column<(typeof invoices)[number]>[] = [
     { key: 'no', header: 'Invoice', render: (r) => <span className="font-medium">{r.number}</span> },
@@ -69,7 +80,7 @@ export default async function InvoicingPage() {
 
   return (
     <>
-      <PageHeader title="Invoicing" subtitle={`${invoices.length} invoices`} actions={<ExportLink type="invoices" />} />
+      <PageHeader title="Invoicing" subtitle={`${summary.count} invoices`} actions={<ExportLink type="invoices" />} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile label="Receivables" value={kes(outstanding)} />
@@ -86,6 +97,7 @@ export default async function InvoicingPage() {
 
       <h2 className="mb-2 mt-6 text-sm font-semibold">Invoices</h2>
       <DataTable columns={cols} rows={invoices} empty="No invoices yet." />
+      <Pager {...invResult} searchParams={sp} basePath="/invoicing" />
     </>
   );
 }

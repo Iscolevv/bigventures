@@ -1,12 +1,14 @@
 /**
- * Client-side photo pipeline: downscale + compress, hash, get a presigned R2
- * PUT, upload directly. Runs before sync so the batch only carries storage
- * keys. Everything is retry-safe: a half-uploaded photo just re-runs.
+ * Client-side photo pipeline: downscale + compress, hash, upload to the backend
+ * (which stores it in Vercel Blob / R2 and returns a key). Runs before sync so
+ * the batch only carries storage keys. Retry-safe: a half-uploaded photo just
+ * re-runs.
  */
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system';
 import * as Crypto from 'expo-crypto';
-import { apiFetch } from './auth';
+import { API_BASE_URL } from './config';
+import { getToken, getDeviceId } from './auth';
 import { PHOTO } from './config';
 
 export interface PreparedFile {
@@ -35,23 +37,32 @@ export async function preparePhoto(uri: string): Promise<PreparedFile> {
   };
 }
 
+async function authHeaders(): Promise<Record<string, string>> {
+  const [token, deviceId] = await Promise.all([getToken(), getDeviceId()]);
+  return {
+    ...(token ? { authorization: `Bearer ${token}` } : {}),
+    'x-device-id': deviceId,
+  };
+}
+
+/** Upload a prepared file; returns its storage key. */
 export async function uploadFile(
   kind: 'pod' | 'receipt' | 'document' | 'check',
   file: PreparedFile,
-  filename: string,
+  _filename: string,
 ): Promise<string> {
-  const presignRes = await apiFetch('/api/uploads/presign', {
-    method: 'POST',
-    body: JSON.stringify({ kind, filename, contentType: file.contentType }),
+  const res = await FileSystem.uploadAsync(`${API_BASE_URL}/api/mobile/upload`, file.uri, {
+    httpMethod: 'POST',
+    uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+    fieldName: 'file',
+    mimeType: file.contentType,
+    parameters: { kind },
+    headers: await authHeaders(),
   });
-  if (!presignRes.ok) throw new Error(`presign failed: ${presignRes.status}`);
-  const { url, key } = (await presignRes.json()) as { url: string; key: string };
-
-  const put = await FileSystem.uploadAsync(url, file.uri, {
-    httpMethod: 'PUT',
-    uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
-    headers: { 'content-type': file.contentType },
-  });
-  if (put.status < 200 || put.status >= 300) throw new Error(`upload failed: ${put.status}`);
-  return key;
+  if (res.status < 200 || res.status >= 300) {
+    throw new Error(`upload failed: ${res.status} ${res.body?.slice(0, 120)}`);
+  }
+  const body = JSON.parse(res.body) as { key?: string };
+  if (!body.key) throw new Error('upload returned no key');
+  return body.key;
 }

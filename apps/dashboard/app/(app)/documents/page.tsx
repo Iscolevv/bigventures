@@ -1,7 +1,9 @@
-import { requirePermission } from '@/lib/session';
-import { db } from '@bv/db';
+import { requirePermission, can } from '@/lib/session';
+import { db, schema } from '@bv/db';
 import * as q from '@bv/db/queries';
 import { PageHeader, DataTable, StatTile, Badge, dateShort, type Column } from '@/components/ui';
+import { Pager, pageParam } from '@/components/Pager';
+import { UploadDocument } from '@/components/UploadDocument';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,14 +20,21 @@ export default async function DocumentsPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  await requirePermission('document:read');
+  const user = await requirePermission('document:read');
   const sp = await searchParams;
-  const all = await q.documentList(db);
-  const rows = sp.owner ? all.filter((d) => d.ownerType === sp.owner) : all;
 
-  const expired = all.filter((d) => d.status === 'expired' || (d.daysToExpiry != null && d.daysToExpiry < 0)).length;
-  const expiring = all.filter((d) => d.daysToExpiry != null && d.daysToExpiry >= 0 && d.daysToExpiry < 45).length;
-  const pending = all.filter((d) => d.status === 'pending_review').length;
+  const canUpload = can(user.role, 'document:create');
+  const [result, summary, drivers, vehicles] = await Promise.all([
+    q.documentList(db, { ownerType: sp.owner, page: pageParam(sp), pageSize: 30 }),
+    q.documentSummary(db),
+    canUpload
+      ? db.select({ id: schema.drivers.id, name: schema.drivers.full_name }).from(schema.drivers).orderBy(schema.drivers.full_name)
+      : Promise.resolve([]),
+    canUpload
+      ? db.select({ id: schema.vehicles.id, name: schema.vehicles.registration }).from(schema.vehicles).orderBy(schema.vehicles.registration)
+      : Promise.resolve([]),
+  ]);
+  const rows = result.rows;
 
   const cols: Column<(typeof rows)[number]>[] = [
     { key: 'owner', header: 'Owner', render: (r) => <span className="font-medium">{r.ownerName}</span> },
@@ -46,13 +55,14 @@ export default async function DocumentsPage({
     <>
       <PageHeader
         title="Documents"
-        subtitle={`${all.length} documents — drivers, vehicles & company`}
+        subtitle={`${summary.total} documents — drivers, vehicles & company`}
+        actions={canUpload ? <UploadDocument drivers={drivers} vehicles={vehicles} /> : undefined}
       />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Total" value={all.length} />
-        <StatTile label="Expired" value={expired} tone={expired ? 'crit' : 'ok'} />
-        <StatTile label="Expiring < 45d" value={expiring} tone={expiring ? 'warn' : 'ok'} />
-        <StatTile label="Pending review" value={pending} tone={pending ? 'warn' : 'ok'} />
+        <StatTile label="Total" value={summary.total} />
+        <StatTile label="Expired" value={summary.expired} tone={summary.expired ? 'crit' : 'ok'} />
+        <StatTile label="Expiring < 45d" value={summary.expiring} tone={summary.expiring ? 'warn' : 'ok'} />
+        <StatTile label="Pending review" value={summary.pending} tone={summary.pending ? 'warn' : 'ok'} />
       </div>
       <div className="mb-4 mt-6 flex gap-2 text-sm">
         {['', 'driver', 'vehicle', 'company'].map((o) => (
@@ -66,6 +76,7 @@ export default async function DocumentsPage({
         ))}
       </div>
       <DataTable columns={cols} rows={rows} />
+      <Pager {...result} searchParams={sp} basePath="/documents" />
     </>
   );
 }

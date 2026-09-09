@@ -4,6 +4,7 @@ import { db, schema } from '@bv/db';
 import * as q from '@bv/db/queries';
 import { PageHeader, DataTable, Badge, kes, dateTime, ExportLink, type Column } from '@/components/ui';
 import { TripFilters } from '@/components/TripFilters';
+import { Pager, pageParam } from '@/components/Pager';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,13 +30,15 @@ export default async function TripsPage({
     db.select({ id: schema.vehicles.id, registration: schema.vehicles.registration }).from(schema.vehicles).orderBy(schema.vehicles.registration),
   ]);
 
-  const rows = await q.tripList(db, {
+  const result = await q.tripList(db, {
     driverId: sp.driver,
     vehicleId: sp.vehicle,
     status: sp.status,
     from: sp.from ? new Date(sp.from) : undefined,
-    limit: 300,
+    page: pageParam(sp),
+    pageSize: 25,
   });
+  const rows = result.rows;
 
   const columns: Column<(typeof rows)[number]>[] = [
     {
@@ -69,9 +72,10 @@ export default async function TripsPage({
 
   return (
     <>
-      <PageHeader title="Trips" subtitle={`${rows.length} trips`} actions={<ExportLink type="trips" />} />
+      <PageHeader title="Trips" subtitle={`${result.total} trips`} actions={<ExportLink type="trips" />} />
       <TripFilters drivers={drivers} vehicles={vehicles} />
       <DataTable columns={columns} rows={rows} empty="No trips match these filters." />
+      <Pager {...result} searchParams={sp} basePath="/trips" />
     </>
   );
 }

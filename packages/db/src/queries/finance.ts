@@ -12,7 +12,7 @@ import {
   clients,
   routes,
 } from '../schema';
-import { money, monthsBetween, type Period } from './_util';
+import { money, monthsBetween, pageBounds, paged, type Period, type PageArgs, type Paged } from './_util';
 import { baseline, isConsumptionAnomaly } from '@bv/core/calc';
 
 // ---- Fuel ------------------------------------------------------------
@@ -145,9 +145,30 @@ export async function costsByCategory(db: DB, p: Period) {
   return rows.map((r) => ({ category: r.category, total: money(r.total), count: r.count }));
 }
 
+export async function costSummary(db: DB, p: Period) {
+  const [r] = await db
+    .select({
+      total: sql<string>`coalesce(sum(${costEntries.amount}),0)`,
+      pendingCount: sql<number>`count(*) filter (where ${costEntries.status} = 'pending')::int`,
+      pendingAmount: sql<string>`coalesce(sum(${costEntries.amount}) filter (where ${costEntries.status} = 'pending'),0)`,
+    })
+    .from(costEntries)
+    .where(
+      and(
+        gte(costEntries.incurred_at, p.from.toISOString().slice(0, 10)),
+        lt(costEntries.incurred_at, p.to.toISOString().slice(0, 10)),
+      ),
+    );
+  return {
+    total: money(r?.total),
+    pendingCount: r?.pendingCount ?? 0,
+    pendingAmount: money(r?.pendingAmount),
+  };
+}
+
 export async function costEntryList(
   db: DB,
-  f: { vehicleId?: string; driverId?: string; category?: string; from?: Date; to?: Date; limit?: number } = {},
+  f: { vehicleId?: string; driverId?: string; category?: string; from?: Date; to?: Date } & PageArgs = {},
 ) {
   const conds = [];
   if (f.vehicleId) conds.push(eq(costEntries.vehicle_id, f.vehicleId));
@@ -155,6 +176,12 @@ export async function costEntryList(
   if (f.category) conds.push(eq(costEntries.category, f.category as 'repair'));
   if (f.from) conds.push(gte(costEntries.incurred_at, f.from.toISOString().slice(0, 10)));
   if (f.to) conds.push(lt(costEntries.incurred_at, f.to.toISOString().slice(0, 10)));
+  const where = conds.length ? and(...conds) : undefined;
+  const b = pageBounds(f);
+  const [{ total } = { total: 0 }] = await db
+    .select({ total: sql<number>`count(*)::int` })
+    .from(costEntries)
+    .where(where);
 
   const rows = await db
     .select({
@@ -171,10 +198,16 @@ export async function costEntryList(
     .from(costEntries)
     .leftJoin(vehicles, eq(vehicles.id, costEntries.vehicle_id))
     .leftJoin(drivers, eq(drivers.id, costEntries.driver_id))
-    .where(conds.length ? and(...conds) : undefined)
+    .where(where)
     .orderBy(desc(costEntries.incurred_at))
-    .limit(f.limit ?? 300);
-  return rows.map((r) => ({ ...r, amount: money(r.amount) }));
+    .limit(b.limit)
+    .offset(b.offset);
+  return paged(
+    rows.map((r) => ({ ...r, amount: money(r.amount) })),
+    total,
+    b.page,
+    b.pageSize,
+  );
 }
 
 // ---- Advances -----------------------------------------------------
@@ -331,7 +364,11 @@ export async function routeAnalytics(db: DB, p: Period) {
 
 // ---- Invoicing -------------------------------------------------
 
-export async function invoiceList(db: DB) {
+export async function invoiceList(db: DB, args: PageArgs = {}) {
+  const b = pageBounds({ pageSize: 20, ...args });
+  const [{ total } = { total: 0 }] = await db
+    .select({ total: sql<number>`count(*)::int` })
+    .from(invoices);
   const rows = await db
     .select({
       id: invoices.id,
@@ -347,15 +384,40 @@ export async function invoiceList(db: DB) {
     })
     .from(invoices)
     .leftJoin(clients, eq(clients.id, invoices.client_id))
-    .orderBy(desc(invoices.issue_date));
-  return rows.map((r) => ({
-    ...r,
-    total: money(r.total),
-    amountPaid: money(r.amountPaid),
-    outstanding: money(r.total) - money(r.amountPaid),
-    overdue:
-      !!r.dueDate && r.status !== 'paid' && r.status !== 'void' && new Date(r.dueDate) < new Date(),
-  }));
+    .orderBy(desc(invoices.issue_date))
+    .limit(b.limit)
+    .offset(b.offset);
+  return paged(
+    rows.map((r) => ({
+      ...r,
+      total: money(r.total),
+      amountPaid: money(r.amountPaid),
+      outstanding: money(r.total) - money(r.amountPaid),
+      overdue:
+        !!r.dueDate && r.status !== 'paid' && r.status !== 'void' && new Date(r.dueDate) < new Date(),
+    })),
+    total,
+    b.page,
+    b.pageSize,
+  );
+}
+
+/** Small summary for the invoicing page header (all invoices, not just a page). */
+export async function invoiceSummary(db: DB) {
+  const [r] = await db
+    .select({
+      outstanding: sql<string>`coalesce(sum(${invoices.total} - ${invoices.amount_paid}),0)`,
+      overdue: sql<string>`coalesce(sum(${invoices.total} - ${invoices.amount_paid}) filter (where ${invoices.due_date} < now() and ${invoices.status} not in ('paid','void')),0)`,
+      flagged: sql<number>`count(*) filter (where ${invoices.has_unresolved_issues})::int`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(invoices);
+  return {
+    outstanding: money(r?.outstanding),
+    overdue: money(r?.overdue),
+    flagged: r?.flagged ?? 0,
+    count: r?.count ?? 0,
+  };
 }
 
 /** Delivered trips with a valid POD that aren't on any invoice line yet. */

@@ -1,18 +1,28 @@
 import { sql, eq, and, inArray, desc } from 'drizzle-orm';
 import type { DB } from '../index';
 import { alerts, documents, drivers, vehicles } from '../schema';
-import { money } from './_util';
+import { money, pageBounds, paged, type PageArgs, type Paged } from './_util';
 
-export async function openAlerts(db: DB) {
+export async function openAlerts(db: DB, args: PageArgs & { type?: string } = {}) {
+  const where = args.type
+    ? and(inArray(alerts.status, ['open', 'acknowledged']), eq(alerts.type, args.type as 'failed_check'))
+    : inArray(alerts.status, ['open', 'acknowledged']);
+  const b = pageBounds({ pageSize: 30, ...args });
+  const [{ total } = { total: 0 }] = await db
+    .select({ total: sql<number>`count(*)::int` })
+    .from(alerts)
+    .where(where);
   const rows = await db
     .select()
     .from(alerts)
-    .where(inArray(alerts.status, ['open', 'acknowledged']))
+    .where(where)
     .orderBy(
       sql`case ${alerts.severity} when 'critical' then 0 when 'warning' then 1 else 2 end`,
       desc(alerts.raised_at),
-    );
-  return rows;
+    )
+    .limit(b.limit)
+    .offset(b.offset);
+  return paged(rows, total, b.page, b.pageSize);
 }
 
 export async function alertCounts(db: DB) {
@@ -50,7 +60,18 @@ export interface DocRow {
   daysToExpiry: number | null;
 }
 
-export async function documentList(db: DB): Promise<DocRow[]> {
+export async function documentList(
+  db: DB,
+  args: PageArgs & { ownerType?: string } = {},
+): Promise<Paged<DocRow>> {
+  const where = args.ownerType
+    ? eq(documents.owner_type, args.ownerType as 'driver')
+    : undefined;
+  const b = pageBounds({ pageSize: 30, ...args });
+  const [{ total } = { total: 0 }] = await db
+    .select({ total: sql<number>`count(*)::int` })
+    .from(documents)
+    .where(where);
   const rows = await db
     .select({
       id: documents.id,
@@ -67,10 +88,13 @@ export async function documentList(db: DB): Promise<DocRow[]> {
     .from(documents)
     .leftJoin(drivers, and(eq(documents.owner_type, 'driver'), eq(drivers.id, documents.owner_id)))
     .leftJoin(vehicles, and(eq(documents.owner_type, 'vehicle'), eq(vehicles.id, documents.owner_id)))
-    .orderBy(documents.expiry_date);
+    .where(where)
+    .orderBy(sql`${documents.expiry_date} asc nulls last`)
+    .limit(b.limit)
+    .offset(b.offset);
 
   const now = Date.now();
-  return rows.map((r) => ({
+  const mapped = rows.map((r) => ({
     id: r.id,
     ownerType: r.ownerType,
     ownerName: r.driverName ?? r.vehicleReg ?? 'Company',
@@ -83,6 +107,25 @@ export async function documentList(db: DB): Promise<DocRow[]> {
       ? Math.round((new Date(r.expiryDate).getTime() - now) / 86_400_000)
       : null,
   }));
+  return paged(mapped, total, b.page, b.pageSize);
+}
+
+/** Document status counts across the whole set (for the page header tiles). */
+export async function documentSummary(db: DB) {
+  const [r] = await db
+    .select({
+      total: sql<number>`count(*)::int`,
+      expired: sql<number>`count(*) filter (where ${documents.status} = 'expired' or (${documents.expiry_date} is not null and ${documents.expiry_date} < current_date))::int`,
+      expiring: sql<number>`count(*) filter (where ${documents.expiry_date} is not null and ${documents.expiry_date} >= current_date and ${documents.expiry_date} < current_date + 45)::int`,
+      pending: sql<number>`count(*) filter (where ${documents.status} = 'pending_review')::int`,
+    })
+    .from(documents);
+  return {
+    total: r?.total ?? 0,
+    expired: r?.expired ?? 0,
+    expiring: r?.expiring ?? 0,
+    pending: r?.pending ?? 0,
+  };
 }
 
 export { money };

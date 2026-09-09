@@ -11,13 +11,14 @@ export default async function OverviewPage() {
   const user = await requireDashboardUser();
   const p = resolvePeriod('30d');
 
-  const [fleet, tripsSum, fin, alerts, recentTrips] = await Promise.all([
+  const [fleet, tripsSum, fin, alerts, recentTripsResult] = await Promise.all([
     q.fleetSummary(db),
     q.tripsSummary(db, p.from, p.to),
     q.financeSummary(db, p),
     q.alertCounts(db),
-    q.tripList(db, { limit: 8 }),
+    q.tripList(db, { pageSize: 8 }),
   ]);
+  const recentTrips = recentTripsResult.rows;
 
   const grossProfit = fin.revenue - fin.fuelCost - fin.runningCost;
 

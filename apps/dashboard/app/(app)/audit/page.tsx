@@ -2,6 +2,7 @@ import { requirePermission } from '@/lib/session';
 import { db } from '@bv/db';
 import * as q from '@bv/db/queries';
 import { PageHeader, DataTable, Badge, dateTime, type Column } from '@/components/ui';
+import { Pager, pageParam } from '@/components/Pager';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,10 +25,11 @@ export default async function AuditPage({
 }) {
   await requirePermission('audit:read');
   const sp = await searchParams;
-  const [rows, types] = await Promise.all([
-    q.auditTrail(db, { entityType: sp.entity, limit: 300 }),
+  const [result, types] = await Promise.all([
+    q.auditTrail(db, { entityType: sp.entity, page: pageParam(sp), pageSize: 40 }),
     q.auditEntityTypes(db),
   ]);
+  const rows = result.rows;
 
   const cols: Column<(typeof rows)[number]>[] = [
     { key: 'at', header: 'When', render: (r) => <span className="text-muted">{dateTime(r.at)}</span> },
@@ -40,7 +42,7 @@ export default async function AuditPage({
 
   return (
     <>
-      <PageHeader title="Audit trail" subtitle={`${rows.length} recent events`} />
+      <PageHeader title="Audit trail" subtitle={`${result.total} events`} />
       <div className="mb-4 flex flex-wrap gap-2 text-sm">
         <a href="/audit" className={`rounded-md border px-3 py-1.5 ${!sp.entity ? 'bg-brand text-white' : 'hover:bg-bg'}`}>
           All
@@ -56,6 +58,7 @@ export default async function AuditPage({
         ))}
       </div>
       <DataTable columns={cols} rows={rows} empty="No audit events yet." />
+      <Pager {...result} searchParams={sp} basePath="/audit" />
     </>
   );
 }

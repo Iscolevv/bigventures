@@ -16,6 +16,7 @@
     "@bv/core": "workspace:*",
     "@bv/db": "workspace:*",
     "@neondatabase/serverless": "^0.10.4",
+    "@vercel/blob": "^2.4.1",
     "better-auth": "^1.6.19",
     "drizzle-orm": "^0.45.2",
     "kysely": "^0.27.5",

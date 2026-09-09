@@ -73,6 +73,22 @@ async function uploadPendingFiles() {
       /* retry next run */
     }
   }
+
+  const docs = d.getAllSync<{ client_id: string; local_uri: string; mime_type: string }>(
+    "SELECT client_id, local_uri, mime_type FROM documents WHERE upload_state = 'pending' AND local_uri IS NOT NULL",
+  );
+  for (const doc of docs) {
+    try {
+      const key = await uploadFile(
+        'document',
+        { uri: doc.local_uri, sha256: '', size: 0, contentType: doc.mime_type || 'image/jpeg' },
+        `${doc.client_id}`,
+      );
+      d.runSync("UPDATE documents SET storage_key = ?, upload_state = 'done' WHERE client_id = ?", [key, doc.client_id]);
+    } catch {
+      /* retry next run */
+    }
+  }
 }
 
 function buildBatch(): SyncBatch {

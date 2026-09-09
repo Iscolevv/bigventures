@@ -23,6 +23,31 @@ export function lastDays(n: number): Period {
   return { from, to };
 }
 
+// ---- pagination ----------------------------------------------------
+
+export interface PageArgs {
+  page?: number;
+  pageSize?: number;
+}
+
+export interface Paged<T> {
+  rows: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  pages: number;
+}
+
+export function pageBounds({ page = 1, pageSize = 25 }: PageArgs) {
+  const p = Math.max(1, Math.floor(page));
+  const size = Math.min(200, Math.max(5, Math.floor(pageSize)));
+  return { limit: size, offset: (p - 1) * size, page: p, pageSize: size };
+}
+
+export function paged<T>(rows: T[], total: number, page: number, pageSize: number): Paged<T> {
+  return { rows, total, page, pageSize, pages: Math.max(1, Math.ceil(total / pageSize)) };
+}
+
 export function monthsBetween(from: Date, to: Date): number {
   return Math.max(
     1,
