@@ -7,29 +7,30 @@ import { qualityScore } from './quality';
 import { vehicleRoi, routeCostSummary } from './roi';
 
 test('incentive: below qualifying trips earns nothing', () => {
-  const r = evaluateIncentive(DEFAULT_INCENTIVE_CONFIG, { tripCount: 30, qualityScore: 1 });
+  const r = evaluateIncentive(DEFAULT_INCENTIVE_CONFIG, { tripCount: 10, qualityScore: 1 });
   assert.equal(r.qualified, false);
   assert.equal(r.netIncentive, 0);
 });
 
 test('incentive: marginal tiers stack like tax brackets', () => {
-  // 50 trips: 0-40 @ 0, 40-50 (10 trips) @ 150 = 1500
-  const r = evaluateIncentive(DEFAULT_INCENTIVE_CONFIG, { tripCount: 50, qualityScore: 1 });
+  // default: 0-16 @0, 16-24 @200, 24-34 @300, 34+ @400
+  // 30 trips: 8*200 (1600) + 6*300 (1800) = 3400
+  const r = evaluateIncentive(DEFAULT_INCENTIVE_CONFIG, { tripCount: 30, qualityScore: 1 });
   assert.equal(r.qualified, true);
-  assert.equal(r.grossIncentive, 1500);
-  assert.equal(r.netIncentive, 1500);
+  assert.equal(r.grossIncentive, 3400);
+  assert.equal(r.netIncentive, 3400);
 });
 
-test('incentive: 100 trips spans every tier', () => {
-  // 40@0 + 20@150 (3000) + 30@250 (7500) + 10@350 (3500) = 14000
-  const r = evaluateIncentive(DEFAULT_INCENTIVE_CONFIG, { tripCount: 100, qualityScore: 1 });
-  assert.equal(r.grossIncentive, 14000);
+test('incentive: a big month spans every tier', () => {
+  // 50 trips: 8*200 (1600) + 10*300 (3000) + 16*400 (6400) = 11000
+  const r = evaluateIncentive(DEFAULT_INCENTIVE_CONFIG, { tripCount: 50, qualityScore: 1 });
+  assert.equal(r.grossIncentive, 11000);
 });
 
 test('incentive: poor quality applies the multiplier, never below floor', () => {
-  const r = evaluateIncentive(DEFAULT_INCENTIVE_CONFIG, { tripCount: 100, qualityScore: 0 });
+  const r = evaluateIncentive(DEFAULT_INCENTIVE_CONFIG, { tripCount: 50, qualityScore: 0 });
   assert.equal(r.qualityMultiplier, 0.6);
-  assert.equal(r.netIncentive, 8400);
+  assert.equal(r.netIncentive, 6600);
 });
 
 test('incentive: period cap clamps net', () => {

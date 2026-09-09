@@ -135,13 +135,13 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 /** A sane starting config seeded on install; ops edits it from the dashboard. */
 export const DEFAULT_INCENTIVE_CONFIG: IncentiveRuleConfig = incentiveRuleConfigSchema.parse({
   currency: 'KES',
-  qualifyingTrips: 40,
+  qualifyingTrips: 16,
   periodCap: null,
   tiers: [
-    { minTrips: 0, maxTrips: 40, perTripBonus: 0 },
-    { minTrips: 40, maxTrips: 60, perTripBonus: 150 },
-    { minTrips: 60, maxTrips: 90, perTripBonus: 250 },
-    { minTrips: 90, maxTrips: null, perTripBonus: 350 },
+    { minTrips: 0, maxTrips: 16, perTripBonus: 0 },
+    { minTrips: 16, maxTrips: 24, perTripBonus: 200 },
+    { minTrips: 24, maxTrips: 34, perTripBonus: 300 },
+    { minTrips: 34, maxTrips: null, perTripBonus: 400 },
   ],
   quality: { enabled: true, floor: 0.6, fullCreditAt: 0.92 },
 });

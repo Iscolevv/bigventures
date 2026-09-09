@@ -57,6 +57,9 @@ async function main() {
     const id = uid();
     await db.insert(s.incentiveRules).values({ id, name: 'Standard 2026', active: true, effective_from: '2026-01-01', config: DEFAULT_INCENTIVE_CONFIG });
     rule = (await db.select().from(s.incentiveRules).where(eq(s.incentiveRules.id, id)).limit(1))[0]!;
+  } else {
+    await db.update(s.incentiveRules).set({ config: DEFAULT_INCENTIVE_CONFIG }).where(eq(s.incentiveRules.id, rule.id));
+    rule = { ...rule, config: DEFAULT_INCENTIVE_CONFIG };
   }
   await db.update(s.settings).set({ active_incentive_rule_id: rule.id }).where(eq(s.settings.key, 'default'));
 
