@@ -2,6 +2,7 @@ import { requirePermission } from '@/lib/session';
 import { db, schema, eq } from '@bv/db';
 import { PageHeader, Card } from '@/components/ui';
 import { SettingsForm } from '@/components/SettingsForm';
+import { ChangePassword } from '@/components/ChangePassword';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,7 @@ export default async function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" subtitle="Company details used across invoices, exports and alerts" />
-      <Card>
+      <Card title="Company">
         <SettingsForm
           initial={{
             companyName: row?.company_name ?? 'Big Ventures',
@@ -22,6 +23,9 @@ export default async function SettingsPage() {
             tripPrefix: row?.trip_prefix ?? 'TRP',
           }}
         />
+      </Card>
+      <Card title="Your password" className="mt-4">
+        <ChangePassword />
       </Card>
     </>
   );

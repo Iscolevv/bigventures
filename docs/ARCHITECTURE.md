@@ -48,7 +48,7 @@ shared packages is how we hold that line.
 
 | Concern | Choice | Why |
 |---|---|---|
-| Mobile | **Expo / React Native (Android-first)** | Reuses the same React/TypeScript skills and the `@bv/core` package; native camera, background location/geofencing, and a real SQLite offline store. Ships as an APK / Play Store internal track. |
+| Driver client | **Web app at `/d`** (primary) + Expo/RN app (optional) | The web driver app is mobile-first pages in the same Next.js deployment — drivers just open `venturesbig.vercel.app` on their phone, no APK. Camera via `<input capture>`, GPS via `navigator.geolocation`, trail recorded while the trip screen is open. The Expo app (`apps/mobile`, fully built) is the fallback when true *background* GPS tracking on long hauls matters — it has a foreground-service location task and an offline SQLite queue. |
 | Backend + dashboard | **Next.js 16 on Vercel** | Same stack already proven on the Moody Treats build. API routes serve the mobile app; server components render the dashboard. |
 | Database | **Neon Postgres + Drizzle ORM** | Relational model (vehicles → trips → drops → PODs, all cross-referenced). Neon branching gives cheap preview environments. |
 | Auth | **Better Auth** | Email/password for office users and drivers, one user table, `role` drives RBAC. The mobile app authenticates against the same endpoint with a bearer token. |

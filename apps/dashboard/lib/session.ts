@@ -26,10 +26,10 @@ export async function requireUser(): Promise<SessionUser> {
   return user;
 }
 
-/** The dashboard is for office roles; drivers use the mobile app. */
+/** The dashboard is for office roles; drivers get the mobile web app at /d. */
 export async function requireDashboardUser(): Promise<SessionUser> {
   const user = await requireUser();
-  if (user.role === 'driver') redirect('/mobile-only');
+  if (user.role === 'driver') redirect('/d');
   return user;
 }
 
@@ -37,6 +37,7 @@ export async function requirePermission(
   permission: Exclude<Permission, `${string}:*` | '*'>,
 ): Promise<SessionUser> {
   const user = await requireUser();
+  if (user.role === 'driver') redirect('/d'); // drivers use the /d app, not the dashboard
   if (!can(user.role, permission)) throw new ForbiddenError(permission);
   return user;
 }

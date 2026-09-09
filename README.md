@@ -54,9 +54,11 @@ pnpm typecheck
   RBAC-gated. CSV export on the money views.
 - **Backend** — idempotent mobile sync API, R2 presigned uploads, 10-scanner
   alert engine + nightly Vercel cron, append-only audit log.
-- **Mobile** — offline-first driver app: trips, vehicle check, multi-drop with
-  GPS pin, camera-only POD, fuel entry, document upload, background GPS
-  trail + geofence.
+- **Driver app** — mobile-first web app at **`/d`** (no install: drivers open
+  the site on their phone): trips, vehicle check, multi-drop with GPS pin,
+  camera-only POD, fuel entry, document upload, foreground GPS trail. An Expo
+  native app (`apps/mobile`) is also built as the offline / background-GPS
+  fallback.
 
 Phase 4 (client portal, predictive maintenance, behaviour scoring) is
 architected, not built. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) §9.
