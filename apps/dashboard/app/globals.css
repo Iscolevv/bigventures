@@ -25,12 +25,51 @@
   }
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body {
   background: var(--bg);
   color: var(--fg);
+  overflow-x: hidden; /* nothing may push the page sideways on a phone */
 }
 
 * {
   border-color: var(--border);
+}
+
+/* Media never overflows its container. */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Kill the 300 ms tap delay + double-tap zoom on controls. */
+button,
+a,
+[role='button'],
+input[type='button'],
+input[type='submit'] {
+  touch-action: manipulation;
+}
+
+/* On phones, form controls must be >= 16 px or iOS Safari zooms the page. */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Long words / addresses wrap instead of blowing out the layout. */
+.wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }

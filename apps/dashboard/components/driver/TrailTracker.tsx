@@ -50,9 +50,14 @@ export function TrailTracker({ tripId }: { tripId: string }) {
   }, [tripId, on]);
 
   return (
-    <div className="mt-3 flex items-center justify-between rounded-lg bg-brand/10 px-3 py-2 text-xs text-brand">
-      <span>{on ? `Recording route — ${count} points` : 'Route recording paused'}</span>
-      <button onClick={() => setOn((v) => !v)} className="font-semibold underline">
+    <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-brand/10 px-3 py-2 text-xs text-brand">
+      <span className="wrap-anywhere">
+        {on ? `Recording route — ${count} points` : 'Route recording paused'}
+      </span>
+      <button
+        onClick={() => setOn((v) => !v)}
+        className="-m-1 shrink-0 rounded p-2 font-semibold underline active:opacity-70"
+      >
         {on ? 'pause' : 'resume'}
       </button>
     </div>

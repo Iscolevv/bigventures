@@ -2,6 +2,7 @@
 import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { uploadDriverDoc } from '@/app/d/actions';
+import { dInput } from './styles';
 
 export function DriverDocForm({
   docType,
@@ -40,18 +41,28 @@ export function DriverDocForm({
   }
 
   return (
-    <div className="mt-2 space-y-2">
-      <input ref={fileRef} type="file" accept="image/*,application/pdf" capture="environment" className="block w-full text-xs" />
+    <div className="mt-2.5 space-y-2.5">
+      <input ref={fileRef} type="file" accept="image/*,application/pdf" capture="environment" className="block w-full text-sm" />
       {hasExpiry && (
-        <div className="flex gap-2">
-          <input type="date" className="flex-1 rounded-lg border bg-bg px-2 py-1.5 text-xs" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} aria-label="issue date" />
-          <input type="date" className="flex-1 rounded-lg border bg-bg px-2 py-1.5 text-xs" value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} aria-label="expiry date" />
+        <div className="grid grid-cols-2 gap-2">
+          <label className="text-xs text-muted">
+            Issued
+            <input type="date" className={dInput} value={issueDate} onChange={(e) => setIssueDate(e.target.value)} />
+          </label>
+          <label className="text-xs text-muted">
+            Expires
+            <input type="date" className={dInput} value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} />
+          </label>
         </div>
       )}
-      <button onClick={submit} disabled={pending} className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60">
+      <button
+        onClick={submit}
+        disabled={pending}
+        className="min-h-[44px] rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white active:opacity-90 disabled:opacity-60"
+      >
         {pending ? 'Uploading…' : replace ? 'Replace' : 'Upload'}
       </button>
-      {msg && <span className="ml-2 text-xs text-muted">{msg}</span>}
+      {msg && <span className="wrap-anywhere ml-2 text-xs text-muted">{msg}</span>}
     </div>
   );
 }

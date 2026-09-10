@@ -14,7 +14,7 @@ export function GeoButton({
   function go() {
     if (!('geolocation' in navigator)) {
       setState('err');
-      setDetail('This phone/browser has no location access');
+      setDetail('No location access on this phone');
       return;
     }
     setState('busy');
@@ -33,13 +33,15 @@ export function GeoButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={go}
-      className="rounded-lg border px-3 py-2 text-sm"
-    >
-      {state === 'busy' ? 'Getting GPS…' : state === 'ok' ? `Pinned ✓ (${detail})` : label}
-      {state === 'err' && <span className="ml-1 text-xs text-crit">— {detail}</span>}
-    </button>
+    <div>
+      <button
+        type="button"
+        onClick={go}
+        className="min-h-[48px] w-full rounded-lg border px-4 py-3 text-sm font-medium active:bg-bg"
+      >
+        {state === 'busy' ? 'Getting GPS…' : state === 'ok' ? `Pinned ✓ (${detail})` : label}
+      </button>
+      {state === 'err' && <p className="wrap-anywhere mt-1 text-xs text-crit">Couldn&apos;t get GPS — {detail}</p>}
+    </div>
   );
 }

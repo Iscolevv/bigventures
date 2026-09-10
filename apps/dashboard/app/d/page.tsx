@@ -36,9 +36,12 @@ export default async function DriverHome() {
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold">My trips</h1>
-        <Link href="/d/new" className="rounded-lg bg-brand px-3 py-2 text-sm font-medium text-white">
+        <Link
+          href="/d/new"
+          className="shrink-0 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white active:opacity-90"
+        >
           Start a trip
         </Link>
       </div>
@@ -72,12 +75,12 @@ function TripCard({
 }) {
   const s = STATUS[t.status] ?? STATUS.draft!;
   return (
-    <Link href={`/d/t/${t.id}`} className="block rounded-xl border bg-surface p-3">
-      <div className="flex items-center justify-between">
+    <Link href={`/d/t/${t.id}`} className="block rounded-xl border bg-surface p-3.5 active:bg-bg">
+      <div className="flex items-start justify-between gap-2">
         <span className="text-sm font-semibold">{t.ref}</span>
-        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${s.cls}`}>{s.label}</span>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${s.cls}`}>{s.label}</span>
       </div>
-      <p className="mt-1 text-sm text-muted">{t.address}</p>
+      <p className="wrap-anywhere mt-1 text-sm text-muted">{t.address}</p>
       <p className="mt-1 text-xs text-muted">
         {t.done}/{t.drops} drops{t.startedAt ? ` · ${new Date(t.startedAt).toLocaleDateString('en-KE', { day: '2-digit', month: 'short' })}` : ''}
       </p>

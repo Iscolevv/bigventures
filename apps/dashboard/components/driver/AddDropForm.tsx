@@ -3,6 +3,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { addDrop } from '@/app/d/actions';
 import { GeoButton } from './GeoButton';
+import { dInput, dBtnPrimary } from './styles';
 
 export function AddDropForm({ tripId }: { tripId: string }) {
   const router = useRouter();
@@ -35,18 +36,14 @@ export function AddDropForm({ tripId }: { tripId: string }) {
   return (
     <div className="mt-2 space-y-3">
       <input
-        className="w-full rounded-lg border bg-surface px-3 py-2.5 text-base"
+        className={dInput}
         value={address}
         onChange={(e) => setAddress(e.target.value)}
         placeholder="Shop / customer / area"
       />
       <GeoButton onFix={(c) => setPin({ lat: c.lat, lng: c.lng })} label={pin ? 'Location pinned ✓' : "Pin (if you're there now)"} />
-      {err && <p className="text-sm text-crit">{err}</p>}
-      <button
-        onClick={submit}
-        disabled={pending}
-        className="w-full rounded-lg bg-brand px-4 py-3 text-base font-semibold text-white disabled:opacity-60"
-      >
+      {err && <p className="wrap-anywhere text-sm text-crit">{err}</p>}
+      <button onClick={submit} disabled={pending} className={dBtnPrimary}>
         {pending ? 'Adding…' : 'Add drop'}
       </button>
     </div>

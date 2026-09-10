@@ -3,6 +3,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createTrip } from '@/app/d/actions';
 import { GeoButton } from './GeoButton';
+import { dInput, dLabel, dBtnPrimary } from './styles';
 
 export function NewTripForm({ vehicles }: { vehicles: { id: string; reg: string }[] }) {
   const router = useRouter();
@@ -12,8 +13,6 @@ export function NewTripForm({ vehicles }: { vehicles: { id: string; reg: string 
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
-
-  const field = 'mt-1 w-full rounded-lg border bg-surface px-3 py-2.5 text-base';
 
   function submit() {
     if (!vehicleId || !address.trim()) return setErr('Vehicle and loading point are required');
@@ -40,8 +39,8 @@ export function NewTripForm({ vehicles }: { vehicles: { id: string; reg: string 
   return (
     <div className="mt-4 space-y-4">
       <div>
-        <label className="text-sm font-medium">Vehicle</label>
-        <select className={field} value={vehicleId} onChange={(e) => setVehicleId(e.target.value)}>
+        <label className={dLabel}>Vehicle</label>
+        <select className={dInput} value={vehicleId} onChange={(e) => setVehicleId(e.target.value)}>
           {vehicles.map((v) => (
             <option key={v.id} value={v.id}>
               {v.reg}
@@ -50,22 +49,18 @@ export function NewTripForm({ vehicles }: { vehicles: { id: string; reg: string 
         </select>
       </div>
       <div>
-        <label className="text-sm font-medium">Loading point</label>
-        <input className={field} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="e.g. CST Yard, Industrial Area" />
+        <label className={dLabel}>Loading point</label>
+        <input className={dInput} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="e.g. CST Yard, Industrial Area" />
         <div className="mt-2">
           <GeoButton onFix={(c) => setPin({ lat: c.lat, lng: c.lng })} label="Pin where I'm loading" />
         </div>
       </div>
       <div>
-        <label className="text-sm font-medium">Cargo (optional)</label>
-        <input className={field} value={cargo} onChange={(e) => setCargo(e.target.value)} placeholder="What are you carrying?" />
+        <label className={dLabel}>Cargo (optional)</label>
+        <input className={dInput} value={cargo} onChange={(e) => setCargo(e.target.value)} placeholder="What are you carrying?" />
       </div>
-      {err && <p className="text-sm text-crit">{err}</p>}
-      <button
-        onClick={submit}
-        disabled={pending}
-        className="w-full rounded-lg bg-brand px-4 py-3 text-base font-semibold text-white disabled:opacity-60"
-      >
+      {err && <p className="wrap-anywhere text-sm text-crit">{err}</p>}
+      <button onClick={submit} disabled={pending} className={dBtnPrimary}>
         {pending ? 'Creating…' : 'Create trip'}
       </button>
     </div>

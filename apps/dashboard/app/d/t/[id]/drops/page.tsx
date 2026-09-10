@@ -20,18 +20,18 @@ export default async function DropsPage({ params }: { params: Promise<{ id: stri
 
   return (
     <>
-      <Link href={`/d/t/${id}`} className="text-sm text-muted">
+      <Link href={`/d/t/${id}`} className="-m-2 inline-block p-2 text-sm text-muted">
         ← Trip
       </Link>
-      <h1 className="mt-2 text-lg font-semibold">Drops</h1>
+      <h1 className="mt-1 text-lg font-semibold">Drops</h1>
 
       <div className="mt-3 space-y-2">
         {drops.map((d) => (
-          <div key={d.id} className="rounded-xl border bg-surface p-3 text-sm">
-            <span className="font-medium">
+          <div key={d.id} className="flex items-start justify-between gap-3 rounded-xl border bg-surface p-3.5 text-sm">
+            <span className="wrap-anywhere min-w-0 font-medium">
               {d.seq}. {d.address}
             </span>
-            <span className="ml-2 text-xs capitalize text-muted">{d.status}</span>
+            <span className="shrink-0 text-xs capitalize text-muted">{d.status}</span>
           </div>
         ))}
       </div>

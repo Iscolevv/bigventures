@@ -2,6 +2,7 @@
 import { useState, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { addFuel } from '@/app/d/actions';
+import { dInput, dLabel, dBtnPrimary } from './styles';
 
 export function FuelForm({ tripId }: { tripId: string }) {
   const router = useRouter();
@@ -14,7 +15,6 @@ export function FuelForm({ tripId }: { tripId: string }) {
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  const field = 'mt-1 w-full rounded-lg border bg-surface px-3 py-2.5 text-base';
   const recalc = (l: string, p: string) => {
     if (l && p) setTotal(String(Math.round(Number(l) * Number(p))));
   };
@@ -41,31 +41,31 @@ export function FuelForm({ tripId }: { tripId: string }) {
   return (
     <div className="mt-4 space-y-4 pb-10">
       <div>
-        <label className="text-sm font-medium">Litres</label>
-        <input className={field} inputMode="decimal" value={litres} onChange={(e) => { setLitres(e.target.value); recalc(e.target.value, unitPrice); }} />
+        <label className={dLabel}>Litres</label>
+        <input className={dInput} inputMode="decimal" value={litres} onChange={(e) => { setLitres(e.target.value); recalc(e.target.value, unitPrice); }} />
       </div>
       <div>
-        <label className="text-sm font-medium">Price per litre (optional)</label>
-        <input className={field} inputMode="decimal" value={unitPrice} onChange={(e) => { setUnitPrice(e.target.value); recalc(litres, e.target.value); }} />
+        <label className={dLabel}>Price per litre (optional)</label>
+        <input className={dInput} inputMode="decimal" value={unitPrice} onChange={(e) => { setUnitPrice(e.target.value); recalc(litres, e.target.value); }} />
       </div>
       <div>
-        <label className="text-sm font-medium">Total paid (KES)</label>
-        <input className={field} inputMode="numeric" value={total} onChange={(e) => setTotal(e.target.value)} />
+        <label className={dLabel}>Total paid (KES)</label>
+        <input className={dInput} inputMode="numeric" value={total} onChange={(e) => setTotal(e.target.value)} />
       </div>
       <div>
-        <label className="text-sm font-medium">Odometer (km)</label>
-        <input className={field} inputMode="numeric" value={odometer} onChange={(e) => setOdometer(e.target.value)} />
+        <label className={dLabel}>Odometer (km)</label>
+        <input className={dInput} inputMode="numeric" value={odometer} onChange={(e) => setOdometer(e.target.value)} />
       </div>
       <div>
-        <label className="text-sm font-medium">Station (optional)</label>
-        <input className={field} value={station} onChange={(e) => setStation(e.target.value)} />
+        <label className={dLabel}>Station (optional)</label>
+        <input className={dInput} value={station} onChange={(e) => setStation(e.target.value)} />
       </div>
       <div>
-        <label className="text-sm font-medium">Receipt photo (optional)</label>
+        <label className={dLabel}>Receipt photo (optional)</label>
         <input ref={receiptRef} type="file" accept="image/*" capture="environment" className="mt-1 block w-full text-sm" />
       </div>
-      {err && <p className="text-sm text-crit">{err}</p>}
-      <button onClick={submit} disabled={pending} className="w-full rounded-lg bg-brand px-4 py-3 text-base font-semibold text-white disabled:opacity-60">
+      {err && <p className="wrap-anywhere text-sm text-crit">{err}</p>}
+      <button onClick={submit} disabled={pending} className={dBtnPrimary}>
         {pending ? 'Saving…' : 'Save fuel entry'}
       </button>
     </div>

@@ -23,13 +23,13 @@ export default async function DriverDocs() {
         {MINE.map((def) => {
           const mine = docs.find((d) => d.type === def.type);
           return (
-            <div key={def.type} className="rounded-xl border bg-surface p-3">
-              <div className="flex items-center justify-between">
+            <div key={def.type} className="rounded-xl border bg-surface p-3.5">
+              <div className="flex items-start justify-between gap-2">
                 <p className="text-sm font-medium">
                   {def.label} {def.required && <span className="text-xs font-normal text-warn">· required</span>}
                 </p>
                 {mine && (
-                  <span className={`text-xs font-semibold ${mine.status === 'valid' ? 'text-ok' : mine.status === 'rejected' ? 'text-crit' : 'text-warn'}`}>
+                  <span className={`shrink-0 text-xs font-semibold capitalize ${mine.status === 'valid' ? 'text-ok' : mine.status === 'rejected' ? 'text-crit' : 'text-warn'}`}>
                     {mine.status.replace('_', ' ')}
                   </span>
                 )}

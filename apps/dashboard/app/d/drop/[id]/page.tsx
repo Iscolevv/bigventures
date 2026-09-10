@@ -38,23 +38,21 @@ export default async function DropPage({ params }: { params: Promise<{ id: strin
 
   return (
     <>
-      <Link href={`/d/t/${row.tripId}`} className="text-sm text-muted">
+      <Link href={`/d/t/${row.tripId}`} className="-m-2 inline-block p-2 text-sm text-muted">
         ← Trip
       </Link>
-      <h1 className="mt-2 text-lg font-semibold">
-        Stop {d.sequence}
-      </h1>
-      <p className="text-sm text-muted">{d.destination_address}</p>
+      <h1 className="mt-1 text-lg font-semibold">Stop {d.sequence}</h1>
+      <p className="wrap-anywhere text-sm text-muted">{d.destination_address}</p>
       <p className="mt-1 text-sm font-medium capitalize text-brand">{d.status}</p>
 
       {closed ? (
         <div className="mt-4 rounded-xl border bg-surface p-4 text-sm">
           <p className="font-medium capitalize">{d.status}</p>
           {d.signee_name && <p className="mt-1 text-muted">Received by {d.signee_name}</p>}
-          {d.issue_category && <p className="mt-1 text-crit">Issue: {d.issue_category}</p>}
-          <div className="mt-3 flex gap-2 overflow-x-auto">
+          {d.issue_category && <p className="mt-1 capitalize text-crit">Issue: {d.issue_category.replace('_', ' ')}</p>}
+          <div className="mt-3 grid grid-cols-3 gap-2">
             {photoUrls.map((p) => (
-              <img key={p.id} src={p.url} alt="POD" className="h-24 w-24 rounded-lg object-cover" />
+              <img key={p.id} src={p.url} alt="POD" className="aspect-square w-full rounded-lg object-cover" />
             ))}
           </div>
         </div>
