@@ -15,6 +15,9 @@ export function proxy(req: NextRequest) {
     pathname === '/login' ||
     pathname === '/suspended' ||
     pathname === '/mobile-only' ||
+    pathname === '/manifest.webmanifest' ||
+    pathname === '/icon' ||
+    pathname === '/apple-icon' ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/mobile') ||
     pathname.startsWith('/api/uploads') ||

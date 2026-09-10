@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireDriver } from '@/lib/driver-session';
 import { SignOut } from '@/components/SignOut';
+import { InstallHint } from '@/components/driver/InstallHint';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +20,7 @@ export default async function DriverLayout({ children }: { children: React.React
           <SignOut className="opacity-90" />
         </div>
       </header>
+      <InstallHint />
       <main className="flex-1 p-4">{children}</main>
       <footer className="border-t px-4 py-2 text-center text-[11px] text-muted">{me.name}</footer>
     </div>

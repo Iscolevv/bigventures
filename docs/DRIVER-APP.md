@@ -1,15 +1,26 @@
 # The driver app (web)
 
-Drivers use **https://venturesbig.vercel.app** on their phone browser — no
-install. After they sign in they land on **`/d`** (office users can't reach it;
-drivers can't reach the dashboard).
+There is **nothing to install from the Play Store / App Store**. It's a web
+app: the driver opens a link, signs in, and adds it to their home screen so it
+behaves exactly like a normal app (own icon, full screen, no browser bar).
 
-## First time on a phone
+## Installing on a phone (one time, ~1 minute)
 
-1. Open the site in Chrome (Android) or Safari (iPhone).
-2. Sign in with the driver's email + password.
-3. **Add to Home screen** (browser menu) — it then opens full-screen like an app.
-4. Allow **Location** and **Camera** when prompted (needed for pins + proof of delivery).
+1. Open **https://venturesbig.vercel.app** in the phone's browser
+   (**Chrome** on Android, **Safari** on iPhone).
+2. Sign in with the email + password the office gave that driver
+   (each driver has their own — created in the dashboard under Drivers).
+3. Add it to the home screen:
+   - **Android / Chrome** — a blue **"Install app"** banner appears at the top;
+     tap it. (Or menu **⋮ → Add to Home screen / Install app**.)
+   - **iPhone / Safari** — tap the **Share** button (□↑) at the bottom, then
+     **Add to Home Screen → Add**.
+4. Open it from the new **Big Ventures** icon on the home screen. First time,
+   tap **Allow** when it asks for **Location** and **Camera** — both are
+   required (GPS pins + route, delivery photos).
+
+That's it — it now opens full screen like any app and remembers the login.
+Updates are automatic (no re-install ever).
 
 ## The flow
 
