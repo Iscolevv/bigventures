@@ -33,8 +33,8 @@ export default async function CostsPage({
   const costCols: Column<(typeof entries)[number]>[] = [
     { key: 'date', header: 'Date', render: (r) => <span className="text-muted">{dateShort(r.incurredAt)}</span> },
     { key: 'cat', header: 'Category', render: (r) => <span className="capitalize">{r.category}</span> },
-    { key: 'desc', header: 'Description', render: (r) => r.description ?? '—' },
-    { key: 'veh', header: 'Vehicle', render: (r) => <span className="text-muted">{r.vehicle ?? '—'}</span> },
+    { key: 'desc', header: 'Description', render: (r) => r.description ?? '-' },
+    { key: 'veh', header: 'Vehicle', render: (r) => <span className="text-muted">{r.vehicle ?? '-'}</span> },
     { key: 'amt', header: 'Amount', align: 'right', render: (r) => kes(r.amount) },
     {
       key: 'status',
@@ -53,7 +53,7 @@ export default async function CostsPage({
       align: 'right',
       render: (r) => <span className={r.balance > 20000 ? 'text-warn' : ''}>{kes(r.balance)}</span>,
     },
-    { key: 'loss', header: 'Loss bal.', align: 'right', render: (r) => (r.lossBalance > 0 ? <span className="text-crit">{kes(r.lossBalance)}</span> : '—') },
+    { key: 'loss', header: 'Loss bal.', align: 'right', render: (r) => (r.lossBalance > 0 ? <span className="text-crit">{kes(r.lossBalance)}</span> : '-') },
     { key: 'last', header: 'Last activity', render: (r) => <span className="text-muted">{dateShort(r.lastActivity)}</span> },
   ];
 

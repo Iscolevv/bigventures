@@ -96,7 +96,7 @@ export function VehicleCheckForm({ tripId, template }: { tripId: string; templat
 
       {blockingFail.length > 0 && (
         <p className="wrap-anywhere text-sm text-warn">
-          {blockingFail.length} critical item(s) failed — the trip will be held for the office.
+          {blockingFail.length} critical item(s) failed - the trip will be held for the office.
         </p>
       )}
       {err && <p className="wrap-anywhere text-sm text-crit">{err}</p>}

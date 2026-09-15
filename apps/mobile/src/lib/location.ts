@@ -97,7 +97,7 @@ export async function startTrailTracking(tripClientId: string) {
     showsBackgroundLocationIndicator: true,
     pausesUpdatesAutomatically: false,
     foregroundService: {
-      notificationTitle: 'Big Ventures — trip in progress',
+      notificationTitle: 'Big Ventures - trip in progress',
       notificationBody: 'Recording your route and delivery stops',
     },
   });

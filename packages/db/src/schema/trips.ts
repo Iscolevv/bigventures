@@ -70,7 +70,7 @@ export const trips = bv.table(
     actual_distance_m: integer('actual_distance_m'), // from trail
 
     cargo_description: text('cargo_description'),
-    // Soft FK to clients — kept as text to avoid a trips↔finance import cycle;
+    // Soft FK to clients - kept as text to avoid a trips↔finance import cycle;
     // the relation is declared in relations.ts. App-enforced.
     client_id: text('client_id'),
     client_ref: text('client_ref'),
@@ -78,7 +78,7 @@ export const trips = bv.table(
 
     source: text('source').$type<EntrySource>().notNull().default('mobile'),
     device_id: text('device_id'),
-    // the app's local id — plain unique (nullable → multiple NULLs allowed),
+    // the app's local id - plain unique (nullable → multiple NULLs allowed),
     // so ON CONFLICT (client_uuid) works for idempotent sync upserts.
     client_uuid: text('client_uuid').unique(),
     created_by: text('created_by').references(() => user.id, { onDelete: 'set null' }),
@@ -146,7 +146,7 @@ export const podPhotos = bv.table(
     sha256: text('sha256'),
     file_size: integer('file_size'),
     mime_type: text('mime_type'),
-    /** always 'camera' — gallery uploads are rejected client-side */
+    /** always 'camera' - gallery uploads are rejected client-side */
     source: text('source').notNull().default('camera'),
     uploaded_at: timestamp('uploaded_at').notNull().defaultNow(),
     client_uuid: text('client_uuid').unique(),

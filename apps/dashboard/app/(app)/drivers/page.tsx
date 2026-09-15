@@ -20,7 +20,7 @@ export default async function DriversPage() {
 
   const columns: Column<(typeof rows)[number]>[] = [
     { key: 'name', header: 'Driver', render: (r) => <span className="font-medium">{r.name}</span> },
-    { key: 'vehicle', header: 'Vehicle', render: (r) => r.assignedVehicle ?? <span className="text-muted">—</span> },
+    { key: 'vehicle', header: 'Vehicle', render: (r) => r.assignedVehicle ?? <span className="text-muted">-</span> },
     { key: 'phone', header: 'Phone', render: (r) => <span className="text-muted">{r.phone}</span> },
     {
       key: 'licence',
@@ -38,7 +38,7 @@ export default async function DriversPage() {
       align: 'right',
       render: (r) =>
         r.qualityScore == null ? (
-          <span className="text-muted">—</span>
+          <span className="text-muted">-</span>
         ) : (
           <Badge tone={r.qualityScore >= 0.9 ? 'ok' : r.qualityScore >= 0.75 ? 'warn' : 'crit'}>
             {(r.qualityScore * 100).toFixed(0)}
@@ -58,7 +58,7 @@ export default async function DriversPage() {
       key: 'loss',
       header: 'Loss bal.',
       align: 'right',
-      render: (r) => (r.lossBalance > 0 ? <span className="text-crit">{kes(r.lossBalance)}</span> : <span className="text-muted">—</span>),
+      render: (r) => (r.lossBalance > 0 ? <span className="text-crit">{kes(r.lossBalance)}</span> : <span className="text-muted">-</span>),
     },
   ];
 
@@ -75,7 +75,7 @@ export default async function DriversPage() {
           </Link>
         }
       />
-      <DataTable columns={columns} rows={rows} empty="No drivers — run pnpm db:seed" />
+      <DataTable columns={columns} rows={rows} empty="No drivers - run pnpm db:seed" />
     </>
   );
 }

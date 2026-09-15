@@ -2,9 +2,9 @@
  * File storage abstraction for POD photos, fuel receipts, and compliance
  * documents. Two backends, picked by which env vars are set:
  *
- *   Vercel Blob  — set BLOB_READ_WRITE_TOKEN (Vercel injects this once you add
+ *   Vercel Blob  - set BLOB_READ_WRITE_TOKEN (Vercel injects this once you add
  *                  a Blob store in the dashboard). Zero external setup. Default.
- *   Cloudflare R2 — set R2_ENDPOINT + R2_BUCKET + R2_ACCESS_KEY_ID +
+ *   Cloudflare R2 - set R2_ENDPOINT + R2_BUCKET + R2_ACCESS_KEY_ID +
  *                  R2_SECRET_ACCESS_KEY. Cheaper at photo scale, S3-compatible.
  *
  * If neither is configured, uploads throw a clear error rather than failing

@@ -52,7 +52,7 @@ export default async function IncentivesPage({
     },
     { key: 'base', header: 'Base', align: 'right', render: (r) => kes(r.baseSalary) },
     { key: 'adv', header: 'Adv. ded.', align: 'right', render: (r) => kes(r.payroll.advanceDeduction) },
-    { key: 'loss', header: 'Loss ded.', align: 'right', render: (r) => (r.payroll.lossDeduction ? kes(r.payroll.lossDeduction) : '—') },
+    { key: 'loss', header: 'Loss ded.', align: 'right', render: (r) => (r.payroll.lossDeduction ? kes(r.payroll.lossDeduction) : '-') },
     { key: 'net', header: 'Net pay', align: 'right', render: (r) => <span className="font-semibold text-ok">{kes(r.payroll.netPay)}</span> },
   ];
 
@@ -106,13 +106,13 @@ export default async function IncentivesPage({
 
       {runs.length > 0 && (
         <>
-          <h2 className="mb-2 mt-6 text-sm font-semibold">Payroll run — {pkey}</h2>
+          <h2 className="mb-2 mt-6 text-sm font-semibold">Payroll run - {pkey}</h2>
           <DataTable columns={runCols} rows={runs} />
         </>
       )}
 
       {rule && (
-        <Card title={`Incentive rule — ${rule.name}`} className="mt-6">
+        <Card title={`Incentive rule - ${rule.name}`} className="mt-6">
           <IncentiveRuleEditor
             ruleId={rule.id}
             config={rule.config}

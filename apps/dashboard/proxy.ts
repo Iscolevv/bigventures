@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getSessionCookie } from 'better-auth/cookies';
 
 /**
- * Coarse gate only — real authz happens in server components / route handlers
+ * Coarse gate only - real authz happens in server components / route handlers
  * via lib/session. This just bounces anonymous users to /login.
  *
  * (Next 16 renamed the `middleware` convention to `proxy`.)

@@ -18,7 +18,7 @@ import { user } from './auth';
 import { drivers } from './fleet';
 import { bv, pk } from './_shared';
 
-/** Registered driver devices — for push notifications and sync attribution. */
+/** Registered driver devices - for push notifications and sync attribution. */
 export const devices = bv.table(
   'devices',
   {
@@ -35,7 +35,7 @@ export const devices = bv.table(
   (t) => [index('devices_driver_idx').on(t.driver_id)],
 );
 
-/** One row per mobile sync POST — idempotency + a record of what came in. */
+/** One row per mobile sync POST - idempotency + a record of what came in. */
 export const syncBatches = bv.table(
   'sync_batches',
   {

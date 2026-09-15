@@ -81,7 +81,7 @@ export async function runAlertScan(db: DB): Promise<number> {
       dedupeKey: `overdue_invoice:${r.id}`,
       entityType: 'invoice',
       entityId: r.id,
-      title: `${r.invoice_number} overdue ${r.days_over}d — ${Math.round(Number(r.outstanding)).toLocaleString()}`,
+      title: `${r.invoice_number} overdue ${r.days_over}d - ${Math.round(Number(r.outstanding)).toLocaleString()}`,
       detail: { outstanding: Number(r.outstanding), daysOver: r.days_over },
     });
   }

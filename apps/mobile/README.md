@@ -38,7 +38,7 @@ in EAS project secrets first.
 | `index` | email/password sign-in (same Better Auth backend as the dashboard) |
 | `(driver)/index` | trip list, pull-to-sync, link to My documents |
 | `(driver)/new-trip` | create a trip (vehicle + loading point) |
-| `(driver)/trip/[id]` | trip detail — gates start on check + ≥1 drop, close on all drops done |
+| `(driver)/trip/[id]` | trip detail - gates start on check + ≥1 drop, close on all drops done |
 | `(driver)/check/[tripId]` | pre-trip vehicle check (blocking items hold the trip for ops) |
 | `(driver)/add-drop/[tripId]` | add a drop, optional GPS pin |
 | `(driver)/drop/[id]` | deliver: camera-only POD, signee, issue category |

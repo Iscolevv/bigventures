@@ -3,7 +3,7 @@
 The dashboard (`apps/dashboard`) is a Next.js 16 app in a pnpm monorepo. It
 serves both the management UI and the mobile API.
 
-**Live:** https://venturesbig.vercel.app — deployed, DB-connected, seeded.
+**Live:** https://venturesbig.vercel.app - deployed, DB-connected, seeded.
 Admin login: `levismokaya220@gmail.com` (change the password).
 
 ## One-time setup
@@ -26,7 +26,7 @@ Add for **Production** (and Preview if you want branch deploys):
 | Key | Value | Needed for |
 |---|---|---|
 | `DATABASE_URL` | the Neon `...-pooler...neondb?sslmode=require&channel_binding=require` string | everything |
-| `BETTER_AUTH_SECRET` | a fresh 32+ char random string — `openssl rand -base64 32` | auth (required) |
+| `BETTER_AUTH_SECRET` | a fresh 32+ char random string - `openssl rand -base64 32` | auth (required) |
 | `BETTER_AUTH_URL` | `https://<your-vercel-domain>` (set after first deploy gives you the URL) | auth callbacks |
 | `R2_ENDPOINT` | `https://<accountid>.r2.cloudflarestorage.com` | POD / receipt / doc uploads |
 | `R2_BUCKET` | `big-ventures` | uploads |
@@ -34,7 +34,7 @@ Add for **Production** (and Preview if you want branch deploys):
 | `R2_SECRET_ACCESS_KEY` | from Cloudflare R2 API token | uploads |
 | `GOOGLE_MAPS_SERVER_KEY` | Maps Platform key (Directions + Geocoding) | Phase 2 route planning |
 
-R2 and Maps can be added later — the app deploys and runs without them; only
+R2 and Maps can be added later - the app deploys and runs without them; only
 uploads / route planning are inert until they're set.
 
 The database already has the `bigventures` schema migrated and seeded, so the
@@ -72,7 +72,7 @@ node --env-file=../../.env --import tsx scripts/scan-alerts.ts   # populate the 
 The nightly Vercel cron (`/api/cron/nightly`, see `vercel.json`) does the alert
 scan automatically once `CRON_SECRET` is set in Vercel env (Vercel injects the
 matching `Authorization: Bearer` header). Without `CRON_SECRET` the endpoint is
-open — fine for the pilot, lock it down before real traffic.
+open - fine for the pilot, lock it down before real traffic.
 
 ## Migrations on future schema changes
 
@@ -81,6 +81,6 @@ pnpm db:generate      # creates the next drizzle/NNNN_*.sql
 pnpm db:migrate       # applies it to the bigventures schema
 ```
 
-Never run `drizzle-kit push` against this database — it's shared with Moody
+Never run `drizzle-kit push` against this database - it's shared with Moody
 Treats. `schemaFilter: ['bigventures']` protects `public`, but migrations are
 the safe path.

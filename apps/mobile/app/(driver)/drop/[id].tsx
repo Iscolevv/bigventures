@@ -35,7 +35,7 @@ export default function DropScreen() {
       const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
     } catch {
-      /* offline / no fix — server still has the drop geofence */
+      /* offline / no fix - server still has the drop geofence */
     }
     db().runSync(
       `INSERT INTO pod_photos (client_id, drop_client_id, local_uri, captured_at, captured_lat, captured_lng, upload_state, sync_state)

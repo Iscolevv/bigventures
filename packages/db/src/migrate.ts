@@ -11,7 +11,7 @@ async function main() {
   const db = drizzle(neon(url));
 
   // This DB is shared (Moody Treats). Everything Big Ventures owns lives in the
-  // `bigventures` schema, including the migration bookkeeping table — so we
+  // `bigventures` schema, including the migration bookkeeping table - so we
   // never touch `public` or Moody Treats' own drizzle metadata.
   await db.execute(sql`CREATE SCHEMA IF NOT EXISTS "bigventures"`);
 

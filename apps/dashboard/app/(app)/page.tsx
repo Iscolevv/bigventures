@@ -26,7 +26,7 @@ export default async function OverviewPage() {
     <>
       <PageHeader
         title={`Welcome, ${user.name.split(' ')[0]}`}
-        subtitle={`Snapshot — ${p.label}`}
+        subtitle={`Snapshot - ${p.label}`}
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

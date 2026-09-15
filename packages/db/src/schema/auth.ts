@@ -1,6 +1,6 @@
 /**
  * Better Auth tables. Column names are camelCase to match Better Auth's
- * defaults — do NOT rename. App-specific columns (`role`, `status`, `phone`)
+ * defaults - do NOT rename. App-specific columns (`role`, `status`, `phone`)
  * are added to `user` and surfaced through `additionalFields` in lib/auth.
  *
  * Enum-ish text columns use `.$type<>()` for the TS type only; value

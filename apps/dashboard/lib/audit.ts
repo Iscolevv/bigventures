@@ -3,7 +3,7 @@ import { db, schema } from '@bv/db';
 import type { SessionUser } from './session';
 import type { AuditAction } from '@bv/core/enums';
 
-/** Append an audit-trail row. Never throws — auditing must not break a mutation. */
+/** Append an audit-trail row. Never throws - auditing must not break a mutation. */
 export async function writeAudit(
   actor: SessionUser,
   action: AuditAction,

@@ -40,9 +40,9 @@ export default async function FuelPage({
       key: 'l100',
       header: 'L / 100 km',
       align: 'right',
-      render: (r) => (r.litresPer100Km == null ? '—' : r.litresPer100Km.toFixed(1)),
+      render: (r) => (r.litresPer100Km == null ? '-' : r.litresPer100Km.toFixed(1)),
     },
-    { key: 'cpk', header: 'Cost / km', align: 'right', render: (r) => (r.costPerKm == null ? '—' : kes(r.costPerKm)) },
+    { key: 'cpk', header: 'Cost / km', align: 'right', render: (r) => (r.costPerKm == null ? '-' : kes(r.costPerKm)) },
     { key: 'cost', header: 'Fuel cost', align: 'right', render: (r) => kes(r.fuelCost) },
   ];
 
@@ -57,7 +57,7 @@ export default async function FuelPage({
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile label="Litres" value={totalLitres.toFixed(0)} />
         <StatTile label="Fuel spend" value={kes(totalCost)} />
-        <StatTile label="Fleet L/100km" value={fleetL100 ? fleetL100.toFixed(1) : '—'} />
+        <StatTile label="Fleet L/100km" value={fleetL100 ? fleetL100.toFixed(1) : '-'} />
         <StatTile label="Anomalies" value={anomalies.length} tone={anomalies.length ? 'warn' : 'ok'} />
       </div>
 

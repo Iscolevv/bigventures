@@ -9,7 +9,7 @@ import { user } from './auth';
 import { bv, pk, timestamps } from './_shared';
 
 /**
- * One repository for every compliance document — driver, vehicle, and company.
+ * One repository for every compliance document - driver, vehicle, and company.
  * `owner_type` + `owner_id` is a soft polymorphic link (owner_id null for
  * company docs). Expiry feeds the alerts panel via the document_expiry job.
  */

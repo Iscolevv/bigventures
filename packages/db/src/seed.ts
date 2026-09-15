@@ -190,17 +190,17 @@ async function main() {
   for (const v of vehicles) {
     const insExp = addDays(today, int(-15, 120));
     docRows.push(
-      { owner_type: 'vehicle', owner_id: v.id, doc_type: 'insurance_certificate', title: `${v.registration} — Insurance`, storage_key: `seed/ins-${v.registration}.pdf`, issue_date: ymd(addDays(insExp, -365)), expiry_date: ymd(insExp), status: insExp < today ? 'expired' : insExp < addDays(today, 30) ? 'expiring_soon' : 'valid', mime_type: 'application/pdf' },
-      { owner_type: 'vehicle', owner_id: v.id, doc_type: 'ntsa_inspection', title: `${v.registration} — NTSA Inspection`, storage_key: `seed/ntsa-${v.registration}.pdf`, expiry_date: ymd(addDays(today, int(20, 300))), status: 'valid', mime_type: 'application/pdf' },
-      { owner_type: 'vehicle', owner_id: v.id, doc_type: 'logbook', title: `${v.registration} — Logbook`, storage_key: `seed/log-${v.registration}.pdf`, status: 'valid', mime_type: 'application/pdf' },
+      { owner_type: 'vehicle', owner_id: v.id, doc_type: 'insurance_certificate', title: `${v.registration} - Insurance`, storage_key: `seed/ins-${v.registration}.pdf`, issue_date: ymd(addDays(insExp, -365)), expiry_date: ymd(insExp), status: insExp < today ? 'expired' : insExp < addDays(today, 30) ? 'expiring_soon' : 'valid', mime_type: 'application/pdf' },
+      { owner_type: 'vehicle', owner_id: v.id, doc_type: 'ntsa_inspection', title: `${v.registration} - NTSA Inspection`, storage_key: `seed/ntsa-${v.registration}.pdf`, expiry_date: ymd(addDays(today, int(20, 300))), status: 'valid', mime_type: 'application/pdf' },
+      { owner_type: 'vehicle', owner_id: v.id, doc_type: 'logbook', title: `${v.registration} - Logbook`, storage_key: `seed/log-${v.registration}.pdf`, status: 'valid', mime_type: 'application/pdf' },
     );
   }
   for (const d of drivers) {
     docRows.push(
-      { owner_type: 'driver', owner_id: d.id, doc_type: 'drivers_license', title: `${d.full_name} — Licence`, storage_key: `seed/dl-${d.id}.jpg`, expiry_date: d.license_expiry, status: d.license_expiry && d.license_expiry < ymd(today) ? 'expired' : 'valid', mime_type: 'image/jpeg' },
-      { owner_type: 'driver', owner_id: d.id, doc_type: 'good_conduct', title: `${d.full_name} — Good Conduct`, storage_key: `seed/gc-${d.id}.pdf`, expiry_date: ymd(addDays(today, int(-30, 400))), status: 'valid', mime_type: 'application/pdf' },
-      { owner_type: 'driver', owner_id: d.id, doc_type: 'nssf', title: `${d.full_name} — NSSF`, storage_key: `seed/nssf-${d.id}.pdf`, status: 'valid', mime_type: 'application/pdf' },
-      { owner_type: 'driver', owner_id: d.id, doc_type: 'shif', title: `${d.full_name} — SHIF`, storage_key: `seed/shif-${d.id}.pdf`, status: 'pending_review', mime_type: 'application/pdf' },
+      { owner_type: 'driver', owner_id: d.id, doc_type: 'drivers_license', title: `${d.full_name} - Licence`, storage_key: `seed/dl-${d.id}.jpg`, expiry_date: d.license_expiry, status: d.license_expiry && d.license_expiry < ymd(today) ? 'expired' : 'valid', mime_type: 'image/jpeg' },
+      { owner_type: 'driver', owner_id: d.id, doc_type: 'good_conduct', title: `${d.full_name} - Good Conduct`, storage_key: `seed/gc-${d.id}.pdf`, expiry_date: ymd(addDays(today, int(-30, 400))), status: 'valid', mime_type: 'application/pdf' },
+      { owner_type: 'driver', owner_id: d.id, doc_type: 'nssf', title: `${d.full_name} - NSSF`, storage_key: `seed/nssf-${d.id}.pdf`, status: 'valid', mime_type: 'application/pdf' },
+      { owner_type: 'driver', owner_id: d.id, doc_type: 'shif', title: `${d.full_name} - SHIF`, storage_key: `seed/shif-${d.id}.pdf`, status: 'pending_review', mime_type: 'application/pdf' },
     );
   }
   await bulk(s.documents, docRows);
@@ -250,7 +250,7 @@ async function main() {
 
         const nDrops = isTruck ? 1 : isVan ? int(3, 5) : int(2, 3);
         const dropAddrs: { addr: string; client: string }[] = isTruck
-          ? [{ addr: route.name.includes('Mombasa') ? 'Mombasa — Changamwe depot' : 'Kitui — MEDS warehouse', client: 'MEDS Kitui' }]
+          ? [{ addr: route.name.includes('Mombasa') ? 'Mombasa - Changamwe depot' : 'Kitui - MEDS warehouse', client: 'MEDS Kitui' }]
           : Array.from({ length: nDrops }, (_, i) =>
               isVan ? { addr: cbd[i]!, client: cbdClient[i]! } : { addr: local[i]!, client: localClient[i]! });
 
@@ -508,7 +508,7 @@ async function main() {
         subtotal += lt;
         lineRows.push({
           invoice_id: invId, trip_id: e.tripId,
-          description: perTrip ? 'Long-haul consignment' : `Delivery — ${qty} drop(s)`,
+          description: perTrip ? 'Long-haul consignment' : `Delivery - ${qty} drop(s)`,
           quantity: m2(qty), unit_amount: m2(unit), line_total: m2(lt),
         });
       }

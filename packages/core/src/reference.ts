@@ -1,6 +1,6 @@
 /**
  * Reference / configuration data that ships with the app. Not in the database
- * because changing it is a code review, not a data edit — but centralised here
+ * because changing it is a code review, not a data edit - but centralised here
  * so the mobile checklist, the dashboard, and the alert engine never drift.
  */
 

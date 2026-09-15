@@ -75,7 +75,7 @@ export const syncPodPhotoSchema = z.object({
   captured: latLng.optional(),
   sha256: z.string().length(64).optional(),
   fileSize: z.number().int().positive().optional(),
-  /** camera capture only — the app rejects gallery picks before it gets here */
+  /** camera capture only - the app rejects gallery picks before it gets here */
   source: z.literal('camera').default('camera'),
 });
 

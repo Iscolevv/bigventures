@@ -3,10 +3,10 @@
  * here, never the network. A background sync loop (sync.ts) reconciles with the
  * server and rewrites `server_id` / `sync_state` in place.
  *
- * `sync_state`: 'dirty'  — created/edited locally, needs pushing
- *               'syncing' — included in an in-flight batch
- *               'synced'  — server has it, server_id known
- *               'conflict'— server rejected or diverged; show in a review screen
+ * `sync_state`: 'dirty'  - created/edited locally, needs pushing
+ *               'syncing' - included in an in-flight batch
+ *               'synced'  - server has it, server_id known
+ *               'conflict'- server rejected or diverged; show in a review screen
  */
 import * as SQLite from 'expo-sqlite';
 

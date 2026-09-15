@@ -113,7 +113,7 @@ export default function VehicleCheck() {
             {st.result === 'fail' && (
               <View>
                 <Pressable style={styles.photoBtn} onPress={() => shootFor(c.key)}>
-                  <Text style={styles.photoBtnText}>{st.photoUri ? 'Photo captured ✓ — retake' : 'Take a photo of the fault'}</Text>
+                  <Text style={styles.photoBtnText}>{st.photoUri ? 'Photo captured ✓ - retake' : 'Take a photo of the fault'}</Text>
                 </Pressable>
                 <TextInput
                   style={styles.input}
@@ -129,7 +129,7 @@ export default function VehicleCheck() {
 
       {blockingFailed.length > 0 && (
         <Text style={styles.warn}>
-          {blockingFailed.length} safety-critical item(s) failed — the trip will be held for operations.
+          {blockingFailed.length} safety-critical item(s) failed - the trip will be held for operations.
         </Text>
       )}
 

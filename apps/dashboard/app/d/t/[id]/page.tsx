@@ -70,7 +70,7 @@ export default async function DriverTrip({ params }: { params: Promise<{ id: str
         )}
       </div>
       <div className="mt-2 space-y-2">
-        {drops.length === 0 && <p className="text-sm text-muted">No drops yet — add at least one.</p>}
+        {drops.length === 0 && <p className="text-sm text-muted">No drops yet - add at least one.</p>}
         {drops.map((d) => (
           <Link
             key={d.id}

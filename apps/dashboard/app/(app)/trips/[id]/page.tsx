@@ -32,10 +32,10 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
     { key: 'seq', header: '#', render: (d) => d.sequence },
     { key: 'addr', header: 'Destination', render: (d) => <span className="font-medium">{d.address}</span> },
     { key: 'status', header: 'Status', render: (d) => <Badge tone={DROP_TONE[d.status] ?? 'muted'}>{d.status}</Badge> },
-    { key: 'signee', header: 'Received by', render: (d) => <span className="text-muted">{d.signee ?? '—'}</span> },
-    { key: 'pod', header: 'POD', align: 'center', render: (d) => (d.photos > 0 ? `${d.photos}📷` : d.status === 'delivered' ? <span className="text-crit">missing</span> : '—') },
+    { key: 'signee', header: 'Received by', render: (d) => <span className="text-muted">{d.signee ?? '-'}</span> },
+    { key: 'pod', header: 'POD', align: 'center', render: (d) => (d.photos > 0 ? `${d.photos}📷` : d.status === 'delivered' ? <span className="text-crit">missing</span> : '-') },
     { key: 'arr', header: 'Arrived', render: (d) => <span className="text-muted">{dateTime(d.arrivedAt)}</span> },
-    { key: 'geo', header: 'Geofence', align: 'center', render: (d) => (d.geofenceSkipped ? <Badge tone="warn">skipped</Badge> : d.geofenceEnteredAt ? '✓' : '—') },
+    { key: 'geo', header: 'Geofence', align: 'center', render: (d) => (d.geofenceSkipped ? <Badge tone="warn">skipped</Badge> : d.geofenceEnteredAt ? '✓' : '-') },
     { key: 'issue', header: 'Issue', render: (d) => (d.issueCategory ? <Badge tone="crit">{d.issueCategory}</Badge> : '') },
   ];
 
@@ -60,8 +60,8 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Planned distance" value={trip.plannedDistanceKm ? `${trip.plannedDistanceKm.toFixed(0)} km` : '—'} />
-        <StatTile label="Odometer distance" value={trip.odometerKm > 0 ? `${trip.odometerKm.toFixed(0)} km` : '—'} />
+        <StatTile label="Planned distance" value={trip.plannedDistanceKm ? `${trip.plannedDistanceKm.toFixed(0)} km` : '-'} />
+        <StatTile label="Odometer distance" value={trip.odometerKm > 0 ? `${trip.odometerKm.toFixed(0)} km` : '-'} />
         <StatTile label="Fuel" value={kes(fuelTotal)} />
         <StatTile label="Other costs" value={kes(costTotal)} />
       </div>
@@ -111,13 +111,13 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
             <ul className="space-y-1.5 text-sm">
               {fuel.map((f) => (
                 <li key={f.id} className="flex justify-between">
-                  <span>{f.litres} L — {f.station ?? 'fuel'}</span>
+                  <span>{f.litres} L - {f.station ?? 'fuel'}</span>
                   <span className="tabular-nums">{kes(f.totalCost)}</span>
                 </li>
               ))}
               {costs.map((c) => (
                 <li key={c.id} className="flex justify-between">
-                  <span className="capitalize">{c.category} — {c.description ?? ''}</span>
+                  <span className="capitalize">{c.category} - {c.description ?? ''}</span>
                   <span className="tabular-nums">{kes(c.amount)}</span>
                 </li>
               ))}

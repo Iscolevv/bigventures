@@ -6,15 +6,15 @@ Two are already done. Two more get you 100 %.
 |---|---|---|---|---|
 | 1 | **Neon Postgres** | ✅ done (shared with Moody Treats, `bigventures` schema) | all data | on the existing plan |
 | 2 | **Better Auth** | ✅ done (`BETTER_AUTH_SECRET` set on Vercel) | sign-in, RBAC | free |
-| 3 | **Vercel Blob** | ✅ done — verified end-to-end (upload → URL → retrievable) | document / POD / receipt uploads | free tier: 1 GB storage, 10 GB bandwidth/mo |
+| 3 | **Vercel Blob** | ✅ done - verified end-to-end (upload → URL → retrievable) | document / POD / receipt uploads | free tier: 1 GB storage, 10 GB bandwidth/mo |
 | 4 | **Google Maps Platform** | ✅ done (`GOOGLE_MAPS_SERVER_KEY` set) | planned route on trip sync, address → coordinates | ~$0 at this volume ($200/mo free credit) |
-| — | **CRON_SECRET** | ⬜ optional, 30 sec | locks the nightly job endpoint | free |
+| - | **CRON_SECRET** | ⬜ optional, 30 sec | locks the nightly job endpoint | free |
 
 Check any time (signed in as admin): **`/api/health`**.
 
 ---
 
-## 3. Vercel Blob (do this first — unblocks all file uploads)
+## 3. Vercel Blob (do this first - unblocks all file uploads)
 
 1. Vercel → your **bigventures** project → **Storage** tab → **Create Database** → **Blob** → name it `bigventures-files` → Create.
 2. Vercel connects it to the project automatically and injects `BLOB_READ_WRITE_TOKEN` into every environment.
@@ -22,11 +22,11 @@ Check any time (signed in as admin): **`/api/health`**.
 
 That's it. `/documents` → "Upload document" now works, and the driver app's POD photos / fuel receipts / document uploads land in Blob.
 
-> Prefer Cloudflare R2 (cheaper at photo scale, no egress fees)? Set `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` instead — the storage layer auto-detects and uses R2 when those are present. Blob is the faster start.
+> Prefer Cloudflare R2 (cheaper at photo scale, no egress fees)? Set `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` instead - the storage layer auto-detects and uses R2 when those are present. Blob is the faster start.
 
-## 4. Google Maps Platform (optional — planned routes + geocoding)
+## 4. Google Maps Platform (optional - planned routes + geocoding)
 
-Wired and ready — the code no-ops until the key is set, then:
+Wired and ready - the code no-ops until the key is set, then:
 - every trip synced from the app gets a **planned route** (encoded polyline +
   distance + duration) from Directions, shown dashed on the trip map next to
   the actual GPS trail;
@@ -45,9 +45,9 @@ trail); this just adds the planned line and address resolution.
 4. **Credentials → Create credentials → API key**. Restrict it to those APIs.
 5. Add to Vercel env vars:
    - `GOOGLE_MAPS_SERVER_KEY` = the key
-   - `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_KEY` = same key (or a separate Android-restricted one) — used by the mobile app.
+   - `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_KEY` = same key (or a separate Android-restricted one) - used by the mobile app.
 
-## CRON_SECRET (optional — 10 seconds)
+## CRON_SECRET (optional - 10 seconds)
 
 The nightly job (`/api/cron/nightly`: refresh doc statuses, balances, run the alert scan) is currently open. To lock it:
 

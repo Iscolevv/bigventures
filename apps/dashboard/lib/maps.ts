@@ -1,5 +1,5 @@
 /**
- * Google Maps Platform — Directions + Geocoding, server side.
+ * Google Maps Platform - Directions + Geocoding, server side.
  *
  * Every function no-ops (returns null) when `GOOGLE_MAPS_SERVER_KEY` is unset,
  * so the app runs fine without Maps; you just don't get the planned route line
@@ -17,11 +17,11 @@ export interface GeocodeResult extends LatLng {
   formattedAddress: string;
 }
 
-/** Last Google API status seen — used to surface real errors to the UI. */
+/** Last Google API status seen - used to surface real errors to the UI. */
 export let lastMapsError: string | null = null;
 
 function note(api: string, status: string, message?: string) {
-  lastMapsError = `${api}: ${status}${message ? ` — ${message}` : ''}`;
+  lastMapsError = `${api}: ${status}${message ? ` - ${message}` : ''}`;
   if (status !== 'OK' && status !== 'ZERO_RESULTS') console.error('[maps]', lastMapsError);
 }
 

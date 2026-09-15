@@ -77,7 +77,7 @@ export default function FuelEntry() {
       <TextInput style={styles.input} value={station} onChangeText={setStation} placeholder="e.g. Shell Industrial Area" />
 
       <Pressable style={styles.photoBtn} onPress={shootReceipt}>
-        <Text style={styles.photoBtnText}>{receiptUri ? 'Receipt captured ✓ — retake' : 'Photograph the receipt'}</Text>
+        <Text style={styles.photoBtnText}>{receiptUri ? 'Receipt captured ✓ - retake' : 'Photograph the receipt'}</Text>
       </Pressable>
       {receiptUri && <Image source={{ uri: receiptUri }} style={styles.thumb} />}
 

@@ -67,7 +67,7 @@ export default async function AlertsPage({
           </a>
         ))}
       </div>
-      <DataTable columns={cols} rows={rows} empty="No open alerts — all clear." />
+      <DataTable columns={cols} rows={rows} empty="No open alerts - all clear." />
       <Pager {...result} searchParams={sp} basePath="/alerts" />
     </>
   );

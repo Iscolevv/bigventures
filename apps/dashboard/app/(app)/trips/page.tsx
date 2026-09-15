@@ -53,7 +53,7 @@ export default async function TripsPage({
     { key: 'when', header: 'Started', render: (r) => <span className="text-muted">{dateTime(r.startedAt)}</span> },
     { key: 'vehicle', header: 'Vehicle', render: (r) => r.vehicle },
     { key: 'driver', header: 'Driver', render: (r) => r.driver },
-    { key: 'route', header: 'Route', render: (r) => <span className="text-muted">{r.route ?? '—'}</span> },
+    { key: 'route', header: 'Route', render: (r) => <span className="text-muted">{r.route ?? '-'}</span> },
     { key: 'dist', header: 'Distance', align: 'right', render: (r) => `${r.distanceKm.toFixed(0)} km` },
     {
       key: 'drops',
@@ -66,7 +66,7 @@ export default async function TripsPage({
         </span>
       ),
     },
-    { key: 'fuel', header: 'Fuel', align: 'right', render: (r) => (r.fuelCost ? kes(r.fuelCost) : '—') },
+    { key: 'fuel', header: 'Fuel', align: 'right', render: (r) => (r.fuelCost ? kes(r.fuelCost) : '-') },
     { key: 'status', header: 'Status', render: (r) => <Badge tone={STATUS_TONE[r.status] ?? 'muted'}>{r.status.replace('_', ' ')}</Badge> },
   ];
 

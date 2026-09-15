@@ -118,8 +118,8 @@ export async function fuelAnomalies(db: DB, p: Period): Promise<FuelAnomaly[]> {
       out.push({
         tripId: pt.tripId,
         ref: pt.ref,
-        vehicle: pt.vehicle ?? '—',
-        driver: pt.driver ?? '—',
+        vehicle: pt.vehicle ?? '-',
+        driver: pt.driver ?? '-',
         filledAt: pt.filledAt,
         litresPer100Km: Math.round(pt.l100 * 10) / 10,
         reason: v.reason,

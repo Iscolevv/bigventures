@@ -2,7 +2,7 @@
  * Driver incentive engine.
  *
  * The rule config is stored as JSON on `incentive_rules.config` and is editable
- * by ops/management from the dashboard — no code change to retune tiers. This
+ * by ops/management from the dashboard - no code change to retune tiers. This
  * module is the single evaluator both the dashboard preview and the payroll run
  * use, so "what the dashboard showed" always equals "what got paid".
  */
@@ -23,7 +23,7 @@ export const incentiveTierSchema = z.object({
 export type IncentiveTier = z.infer<typeof incentiveTierSchema>;
 
 export const incentiveRuleConfigSchema = z.object({
-  /** currency minor units? no — Big Ventures works in whole KES. */
+  /** currency minor units? no - Big Ventures works in whole KES. */
   currency: z.literal('KES').default('KES'),
   /**
    * Marginal tiers. Trip N is paid at the rate of whichever tier its running

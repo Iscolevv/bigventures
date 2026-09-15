@@ -3,9 +3,9 @@
  *
  * Two layers, both enforced server-side:
  *
- *  1. Capability check  — `can(role, 'trip:approve')`. Coarse "is this role
+ *  1. Capability check  - `can(role, 'trip:approve')`. Coarse "is this role
  *     allowed to perform this action at all".
- *  2. Row scope         — `rowScope(role)`. Whether the actor is limited to
+ *  2. Row scope         - `rowScope(role)`. Whether the actor is limited to
  *     rows tied to their own driver record. The query layer in `@bv/db`
  *     turns `'own'` into a `WHERE driver_id = $me` clause.
  *
@@ -56,14 +56,14 @@ export type Permission = `${Resource}:${Action}` | `${Resource}:*` | '*';
  * What each role can do. `'<resource>:*'` grants every action on that
  * resource; `'*'` grants everything (admin only).
  *
- * Keep this list boring and explicit — it is the security surface.
+ * Keep this list boring and explicit - it is the security surface.
  */
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   driver: [
     // A driver operates only on their own trips and their own uploads.
     'trip:create',
     'trip:read',
-    'trip:update', // only while draft/in_progress and only own — enforced by rowScope + status guard
+    'trip:update', // only while draft/in_progress and only own - enforced by rowScope + status guard
     'drop:read',
     'drop:update',
     'pod:create',

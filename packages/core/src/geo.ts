@@ -2,7 +2,7 @@
  * Geospatial helpers shared by the mobile app (live geofencing) and the
  * backend (re-validating what the device reported, deviation analytics).
  *
- * Everything is plain trig on WGS-84 lat/lng — no PostGIS dependency. Good to
+ * Everything is plain trig on WGS-84 lat/lng - no PostGIS dependency. Good to
  * a few metres at delivery-run distances, which is all we need for geofences.
  */
 

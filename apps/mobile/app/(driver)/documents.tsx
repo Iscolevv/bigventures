@@ -46,7 +46,7 @@ export default function Documents() {
               </Text>
               {mine && (
                 <Text style={styles.state}>
-                  {mine.sync_state === 'synced' ? 'submitted' : mine.sync_state === 'conflict' ? 'rejected — retake' : 'pending sync'}
+                  {mine.sync_state === 'synced' ? 'submitted' : mine.sync_state === 'conflict' ? 'rejected - retake' : 'pending sync'}
                 </Text>
               )}
             </View>

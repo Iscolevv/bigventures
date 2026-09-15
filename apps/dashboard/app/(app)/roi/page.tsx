@@ -44,7 +44,7 @@ export default async function RoiPage({
       ),
     },
     { key: 'margin', header: 'Margin', align: 'right', render: (r) => pct(r.marginPct, 0) },
-    { key: 'cpk', header: 'Cost/km', align: 'right', render: (r) => (r.costPerKm ? kes(r.costPerKm) : '—') },
+    { key: 'cpk', header: 'Cost/km', align: 'right', render: (r) => (r.costPerKm ? kes(r.costPerKm) : '-') },
   ];
 
   const routeCols: Column<(typeof routes)[number]>[] = [

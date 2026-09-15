@@ -2,7 +2,7 @@
  * The sync loop. Builds a SyncBatch from every 'dirty' row, uploads any pending
  * photos first, POSTs the batch, then reconciles server IDs back into SQLite.
  *
- * Safe to call anytime — idempotent on both ends (batchId + per-entity
+ * Safe to call anytime - idempotent on both ends (batchId + per-entity
  * client_uuid). Call it on app foreground, on connectivity regained, after any
  * local mutation, and on a timer while a trip is active.
  */

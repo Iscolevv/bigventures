@@ -72,8 +72,8 @@ export function TripMap({
         ))}
       </svg>
       <div className="flex gap-4 border-t px-4 py-2 text-xs text-muted">
-        <span>— actual trail</span>
-        <span>-- planned route</span>
+        <span>solid line: actual trail</span>
+        <span>dashed line: planned route</span>
         <span>● drop</span>
       </div>
     </div>

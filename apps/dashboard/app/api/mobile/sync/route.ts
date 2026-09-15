@@ -342,7 +342,7 @@ export async function POST(req: Request) {
       try {
         await enrichTripRoute(serverId);
       } catch {
-        /* best effort — a trip without a planned route still works */
+        /* best effort - a trip without a planned route still works */
       }
     }
   }

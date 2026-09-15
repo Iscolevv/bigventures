@@ -47,6 +47,6 @@ async function main() {
     }
     await db.update(schema.user).set({ emailVerified: true, role: 'driver', status: 'active' }).where(eq(schema.user.id, u.id));
   }
-  console.log(`\n${rows.length} driver logins ready — password: ${PASSWORD}`);
+  console.log(`\n${rows.length} driver logins ready - password: ${PASSWORD}`);
 }
 main().then(() => process.exit(0));

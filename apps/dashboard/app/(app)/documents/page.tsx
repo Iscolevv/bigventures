@@ -46,7 +46,7 @@ export default async function DocumentsPage({
       key: 'days',
       header: 'Days left',
       align: 'right',
-      render: (r) => (r.daysToExpiry == null ? '—' : <span className={r.daysToExpiry < 45 ? 'text-crit' : ''}>{r.daysToExpiry}</span>),
+      render: (r) => (r.daysToExpiry == null ? '-' : <span className={r.daysToExpiry < 45 ? 'text-crit' : ''}>{r.daysToExpiry}</span>),
     },
     { key: 'status', header: 'Status', render: (r) => <Badge tone={tone(r.status, r.daysToExpiry)}>{r.status.replace('_', ' ')}</Badge> },
   ];
@@ -55,7 +55,7 @@ export default async function DocumentsPage({
     <>
       <PageHeader
         title="Documents"
-        subtitle={`${summary.total} documents — drivers, vehicles & company`}
+        subtitle={`${summary.total} documents - drivers, vehicles & company`}
         actions={canUpload ? <UploadDocument drivers={drivers} vehicles={vehicles} /> : undefined}
       />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

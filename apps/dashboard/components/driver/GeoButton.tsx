@@ -41,7 +41,7 @@ export function GeoButton({
       >
         {state === 'busy' ? 'Getting GPS…' : state === 'ok' ? `Pinned ✓ (${detail})` : label}
       </button>
-      {state === 'err' && <p className="wrap-anywhere mt-1 text-xs text-crit">Couldn&apos;t get GPS — {detail}</p>}
+      {state === 'err' && <p className="wrap-anywhere mt-1 text-xs text-crit">Couldn&apos;t get GPS - {detail}</p>}
     </div>
   );
 }

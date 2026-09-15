@@ -46,8 +46,8 @@ export async function GET(req: Request) {
       dStatus = lastMapsError;
     }
     out.mapsTest = {
-      geocode: g ? `OK (${g.formattedAddress})` : `FAILED — ${gStatus}`,
-      directions: dOk ? 'OK' : `FAILED — ${dStatus ?? 'geocode failed first'}`,
+      geocode: g ? `OK (${g.formattedAddress})` : `FAILED - ${gStatus}`,
+      directions: dOk ? 'OK' : `FAILED - ${dStatus ?? 'geocode failed first'}`,
     };
   }
 

@@ -4,6 +4,6 @@ import { db } from '@bv/db';
 import { runAlertScan } from '../lib/alert-engine';
 
 runAlertScan(db).then((n) => {
-  console.log(`alert scan complete — ${n} new alert(s) raised`);
+  console.log(`alert scan complete - ${n} new alert(s) raised`);
   process.exit(0);
 });

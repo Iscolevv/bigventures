@@ -19,7 +19,7 @@ export function IncentiveRuleEditor({
     setMsg(null);
     start(async () => {
       const res = await saveIncentiveRule(ruleId, text);
-      setMsg(res.error ? `✗ ${res.error}` : '✓ Saved — previews below updated');
+      setMsg(res.error ? `✗ ${res.error}` : '✓ Saved - previews below updated');
     });
   }
 

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Big Ventures — Fleet Intelligence',
+  title: 'Big Ventures - Fleet Intelligence',
   description: 'Trip, fuel, cost and delivery intelligence for Big Ventures.',
   applicationName: 'Big Ventures',
   appleWebApp: {

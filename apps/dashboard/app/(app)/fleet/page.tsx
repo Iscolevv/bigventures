@@ -60,7 +60,7 @@ export default async function FleetPage() {
                     {v.status.replace('_', ' ')}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-muted">{v.driver ?? '—'}</td>
+                <td className="px-4 py-3 text-muted">{v.driver ?? '-'}</td>
                 <td className="px-4 py-3 text-right tabular-nums">
                   {Number(v.odometer).toLocaleString()}
                 </td>
@@ -70,7 +70,7 @@ export default async function FleetPage() {
             {vehicles.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-muted">
-                  No vehicles yet — run <code>pnpm db:seed</code> or add one.
+                  No vehicles yet - run <code>pnpm db:seed</code> or add one.
                 </td>
               </tr>
             )}

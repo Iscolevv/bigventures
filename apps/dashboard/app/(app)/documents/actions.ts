@@ -12,7 +12,7 @@ const OK_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic',
 export async function uploadDocumentAction(formData: FormData) {
   const user = await requirePermission('document:create');
   if (!storageConfigured()) {
-    return { error: 'File storage is not set up yet — add a Vercel Blob store (see docs/SETUP.md).' };
+    return { error: 'File storage is not set up yet - add a Vercel Blob store (see docs/SETUP.md).' };
   }
 
   const file = formData.get('file');
@@ -46,7 +46,7 @@ export async function uploadDocumentAction(formData: FormData) {
       owner_type: ownerType as 'driver',
       owner_id: ownerId,
       doc_type: docType as 'drivers_license',
-      title: `${ownerName ?? 'Unknown'} — ${def.label}`,
+      title: `${ownerName ?? 'Unknown'} - ${def.label}`,
       storage_key: stored.url.startsWith('http') ? stored.url : stored.key,
       mime_type: file.type,
       file_size: file.size,

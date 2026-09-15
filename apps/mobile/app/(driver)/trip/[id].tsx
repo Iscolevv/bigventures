@@ -56,7 +56,7 @@ export default function TripDetail() {
           </Link>
         )}
       </View>
-      {drops.length === 0 && <Text style={styles.meta}>No drops yet — add at least one.</Text>}
+      {drops.length === 0 && <Text style={styles.meta}>No drops yet - add at least one.</Text>}
       {drops.map((d) => (
         <Pressable key={String(d.client_id)} style={styles.drop} onPress={() => router.push(`/(driver)/drop/${d.client_id}`)}>
           <Text style={styles.dropAddr}>

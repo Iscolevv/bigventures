@@ -11,7 +11,7 @@ import { mapsEnabled, geocode, directions, lastMapsError } from '@/lib/maps';
 export async function recomputeRoute(tripId: string) {
   await requirePermission('trip:update');
   if (!mapsEnabled()) {
-    return { error: 'Google Maps key not set — add GOOGLE_MAPS_SERVER_KEY (see docs/SETUP.md).' };
+    return { error: 'Google Maps key not set - add GOOGLE_MAPS_SERVER_KEY (see docs/SETUP.md).' };
   }
 
   const [trip] = await db
@@ -58,7 +58,7 @@ export async function recomputeRoute(tripId: string) {
 
   const route = await directions(origin, points[points.length - 1]!, points.slice(0, -1));
   if (!route) {
-    return { error: lastMapsError ? `Directions failed — ${lastMapsError}` : 'Directions API returned no route' };
+    return { error: lastMapsError ? `Directions failed - ${lastMapsError}` : 'Directions API returned no route' };
   }
 
   await db

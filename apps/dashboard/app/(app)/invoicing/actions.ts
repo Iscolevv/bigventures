@@ -57,7 +57,7 @@ export async function generateInvoiceForClient(clientId: string) {
     return {
       invoice_id: invId,
       trip_id: t.id,
-      description: perTrip ? `Consignment ${t.ref}` : `${t.ref} — ${qty} drop(s)`,
+      description: perTrip ? `Consignment ${t.ref}` : `${t.ref} - ${qty} drop(s)`,
       quantity: String(qty),
       unit_amount: String(unit),
       line_total: String(lineTotal),

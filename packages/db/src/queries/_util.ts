@@ -1,4 +1,4 @@
-/** Drizzle returns numeric(x,y) as string — coerce at the boundary. */
+/** Drizzle returns numeric(x,y) as string - coerce at the boundary. */
 export const money = (v: string | number | null | undefined): number =>
   v == null ? 0 : typeof v === 'number' ? v : Number(v);
 

@@ -50,12 +50,12 @@ export default async function InvoicingPage({
 
   const cols: Column<(typeof invoices)[number]>[] = [
     { key: 'no', header: 'Invoice', render: (r) => <span className="font-medium">{r.number}</span> },
-    { key: 'client', header: 'Client', render: (r) => r.client ?? '—' },
+    { key: 'client', header: 'Client', render: (r) => r.client ?? '-' },
     { key: 'issue', header: 'Issued', render: (r) => <span className="text-muted">{dateShort(r.issueDate)}</span> },
     { key: 'due', header: 'Due', render: (r) => <span className={r.overdue ? 'text-crit' : 'text-muted'}>{dateShort(r.dueDate)}</span> },
     { key: 'lines', header: 'Lines', align: 'right', render: (r) => r.lines },
     { key: 'total', header: 'Total', align: 'right', render: (r) => kes(r.total) },
-    { key: 'out', header: 'Outstanding', align: 'right', render: (r) => (r.outstanding > 0 ? kes(r.outstanding) : '—') },
+    { key: 'out', header: 'Outstanding', align: 'right', render: (r) => (r.outstanding > 0 ? kes(r.outstanding) : '-') },
     {
       key: 'status',
       header: 'Status',

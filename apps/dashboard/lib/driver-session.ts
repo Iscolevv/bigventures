@@ -28,7 +28,7 @@ export async function requireDriver(): Promise<DriverCtx> {
   return { userId: user.id, driverId: driver.id, name: driver.name };
 }
 
-/** For server actions — throws instead of redirecting. */
+/** For server actions - throws instead of redirecting. */
 export async function getDriver(): Promise<DriverCtx> {
   const user = await getSessionUser();
   if (!user || user.role !== 'driver') throw new Error('not a driver');

@@ -357,7 +357,7 @@ export async function uploadDriverDoc(form: FormData) {
     owner_type: 'driver',
     owner_id: me.driverId,
     doc_type: docType as 'drivers_license',
-    title: `${me.name} — ${def.label}`,
+    title: `${me.name} - ${def.label}`,
     storage_key: stored.url.startsWith('http') ? stored.url : stored.key,
     mime_type: file.type,
     file_size: file.size,

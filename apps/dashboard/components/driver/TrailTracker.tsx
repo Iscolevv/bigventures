@@ -4,7 +4,7 @@ import { pingTrail } from '@/app/d/actions';
 
 /**
  * Records the trip's GPS trail while this screen is open. Web geolocation only
- * runs in the foreground — keep the phone unlocked with the app open on long
+ * runs in the foreground - keep the phone unlocked with the app open on long
  * legs, or the office reconstructs the route from drop arrivals. (The native
  * app does true background tracking; this is the web trade-off.)
  */
@@ -52,7 +52,7 @@ export function TrailTracker({ tripId }: { tripId: string }) {
   return (
     <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-brand/10 px-3 py-2 text-xs text-brand">
       <span className="wrap-anywhere">
-        {on ? `Recording route — ${count} points` : 'Route recording paused'}
+        {on ? `Recording route - ${count} points` : 'Route recording paused'}
       </span>
       <button
         onClick={() => setOn((v) => !v)}

@@ -162,14 +162,14 @@ export const kes = (n: number) =>
 export const kes2 = (n: number) =>
   new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format(n || 0);
 
-export const pct = (n: number | null, dp = 0) => (n == null ? '—' : `${n.toFixed(dp)}%`);
+export const pct = (n: number | null, dp = 0) => (n == null ? '-' : `${n.toFixed(dp)}%`);
 
 export const dateShort = (d: Date | string | null) =>
-  d == null ? '—' : new Date(d).toLocaleDateString('en-KE', { day: '2-digit', month: 'short' });
+  d == null ? '-' : new Date(d).toLocaleDateString('en-KE', { day: '2-digit', month: 'short' });
 
 export const dateTime = (d: Date | string | null) =>
   d == null
-    ? '—'
+    ? '-'
     : new Date(d).toLocaleString('en-KE', {
         day: '2-digit',
         month: 'short',

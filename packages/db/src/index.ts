@@ -33,7 +33,7 @@ export {
 } from 'drizzle-orm';
 
 /**
- * Lazy singleton — importing this module in a build step (no DATABASE_URL)
+ * Lazy singleton - importing this module in a build step (no DATABASE_URL)
  * must not throw. Mirrors the supplyportal pattern.
  */
 let _db: ReturnType<typeof makeDb> | null = null;

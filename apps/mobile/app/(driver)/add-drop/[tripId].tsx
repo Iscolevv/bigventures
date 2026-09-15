@@ -60,7 +60,7 @@ export default function AddDrop() {
           {pinned ? `Pinned ✓ (${pinned.lat.toFixed(4)}, ${pinned.lng.toFixed(4)})` : busy ? 'Getting GPS…' : 'Pin my current location'}
         </Text>
       </Pressable>
-      <Text style={styles.hint}>Pin the drop when you&apos;re parked at it, or leave it — the office can set coordinates later.</Text>
+      <Text style={styles.hint}>Pin the drop when you&apos;re parked at it, or leave it - the office can set coordinates later.</Text>
 
       <Pressable style={styles.submit} onPress={save}>
         <Text style={styles.submitText}>Add drop</Text>

@@ -34,10 +34,10 @@ export default async function AuditPage({
   const cols: Column<(typeof rows)[number]>[] = [
     { key: 'at', header: 'When', render: (r) => <span className="text-muted">{dateTime(r.at)}</span> },
     { key: 'actor', header: 'Actor', render: (r) => <span className="font-medium">{r.actor ?? 'system'}</span> },
-    { key: 'role', header: 'Role', render: (r) => <span className="capitalize text-muted">{r.actorRole ?? '—'}</span> },
+    { key: 'role', header: 'Role', render: (r) => <span className="capitalize text-muted">{r.actorRole ?? '-'}</span> },
     { key: 'action', header: 'Action', render: (r) => <Badge tone={ACTION_TONE[r.action] ?? 'muted'}>{r.action}</Badge> },
     { key: 'entity', header: 'Entity', render: (r) => <span className="text-muted">{r.entityType}:{r.entityId.slice(0, 8)}</span> },
-    { key: 'src', header: 'Source', render: (r) => <span className="text-muted">{r.source ?? '—'}</span> },
+    { key: 'src', header: 'Source', render: (r) => <span className="text-muted">{r.source ?? '-'}</span> },
   ];
 
   return (
