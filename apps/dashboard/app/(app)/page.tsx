@@ -30,17 +30,17 @@ export default async function OverviewPage() {
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Trips (30d)" value={tripsSum.total} hint={`${tripsSum.flagged} flagged · ${tripsSum.inProgress} live`} tone={tripsSum.flagged > 0 ? 'warn' : 'default'} />
-        <StatTile label="Revenue (30d)" value={kes(fin.revenue)} />
-        <StatTile label="Gross profit (30d)" value={kes(grossProfit)} hint={`fuel ${kes(fin.fuelCost)} · running ${kes(fin.runningCost)}`} tone={grossProfit >= 0 ? 'ok' : 'crit'} />
-        <StatTile label="Open alerts" value={alerts.total} hint={`${alerts.critical} critical · ${alerts.warning} warning`} tone={alerts.critical > 0 ? 'crit' : alerts.total > 0 ? 'warn' : 'ok'} />
+        <StatTile href="/trips" label="Trips (30d)" value={tripsSum.total} hint={`${tripsSum.flagged} flagged · ${tripsSum.inProgress} live`} tone={tripsSum.flagged > 0 ? 'warn' : 'default'} />
+        <StatTile href="/roi" label="Revenue (30d)" value={kes(fin.revenue)} />
+        <StatTile href="/roi" label="Gross profit (30d)" value={kes(grossProfit)} hint={`fuel ${kes(fin.fuelCost)} · running ${kes(fin.runningCost)}`} tone={grossProfit >= 0 ? 'ok' : 'crit'} />
+        <StatTile href="/alerts" label="Open alerts" value={alerts.total} hint={`${alerts.critical} critical · ${alerts.warning} warning`} tone={alerts.critical > 0 ? 'crit' : alerts.total > 0 ? 'warn' : 'ok'} />
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Vehicles" value={`${fleet.vehiclesActive}/${fleet.vehicles}`} hint={`${fleet.vehiclesInRepair} in repair`} />
-        <StatTile label="Drivers" value={fleet.driversActive} />
-        <StatTile label="Receivables" value={kes(fin.receivablesOutstanding)} hint={`${kes(fin.receivablesOverdue)} overdue`} tone={fin.receivablesOverdue > 0 ? 'warn' : 'default'} />
-        <StatTile label="Completed (30d)" value={tripsSum.completed} />
+        <StatTile href="/fleet" label="Vehicles" value={`${fleet.vehiclesActive}/${fleet.vehicles}`} hint={`${fleet.vehiclesInRepair} in repair`} />
+        <StatTile href="/drivers" label="Drivers" value={fleet.driversActive} />
+        <StatTile href="/invoicing" label="Receivables" value={kes(fin.receivablesOutstanding)} hint={`${kes(fin.receivablesOverdue)} overdue`} tone={fin.receivablesOverdue > 0 ? 'warn' : 'default'} />
+        <StatTile href="/trips?status=completed" label="Completed (30d)" value={tripsSum.completed} />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">

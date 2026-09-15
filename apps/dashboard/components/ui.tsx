@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import Link from 'next/link';
 
 export function PageHeader({
   title,
@@ -42,11 +43,14 @@ export function StatTile({
   value,
   hint,
   tone = 'default',
+  href,
 }: {
   label: string;
   value: string | number;
   hint?: string;
   tone?: 'default' | 'ok' | 'warn' | 'crit';
+  /** where the breakdown for this number lives — makes the whole tile a link */
+  href?: string;
 }) {
   const toneClass =
     tone === 'ok'
@@ -56,13 +60,27 @@ export function StatTile({
         : tone === 'crit'
           ? 'text-crit'
           : 'text-fg';
-  return (
-    <div className="rounded-xl border bg-surface p-4">
-      <div className="text-xs font-medium uppercase tracking-wide text-muted">{label}</div>
+  const body = (
+    <>
+      <div className="flex items-center justify-between gap-1">
+        <div className="text-xs font-medium uppercase tracking-wide text-muted">{label}</div>
+        {href && <span className="text-muted">→</span>}
+      </div>
       <div className={`mt-2 text-2xl font-semibold tabular-nums ${toneClass}`}>{value}</div>
       {hint && <div className="mt-1 text-xs text-muted">{hint}</div>}
-    </div>
+    </>
   );
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="block rounded-xl border bg-surface p-4 transition-colors hover:border-brand/40 hover:bg-bg active:bg-bg"
+      >
+        {body}
+      </Link>
+    );
+  }
+  return <div className="rounded-xl border bg-surface p-4">{body}</div>;
 }
 
 export function EmptyState({ title, hint }: { title: string; hint?: string }) {
