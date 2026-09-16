@@ -25,16 +25,16 @@ export function TripActions({
     <div className="mt-6 space-y-3">
       {err && <p className="wrap-anywhere text-sm text-crit">{err}</p>}
 
-      {(status === 'draft' || status === 'pre_check') && (
-        <Link href={`/d/t/${tripId}/check`} className={dBtnPrimary}>
-          {hasCheck ? 'Redo vehicle check' : 'Vehicle check'}
+      {(status === 'draft' || status === 'pre_check') && !hasCheck && (
+        <Link href="/d/check" className={dBtnPrimary}>
+          Do today&apos;s vehicle check
         </Link>
       )}
 
-      {status === 'pre_check' && (
+      {(status === 'draft' || status === 'pre_check') && hasCheck && (
         <button
           className={dBtnPrimary}
-          disabled={pending || dropCount === 0 || !hasCheck}
+          disabled={pending || dropCount === 0}
           onClick={() =>
             start(async () => {
               const r = await startTrip(tripId);
@@ -42,7 +42,7 @@ export function TripActions({
             })
           }
         >
-          {dropCount === 0 ? 'Add a drop first' : !hasCheck ? 'Do the check first' : 'Start driving'}
+          {dropCount === 0 ? 'Add a drop first' : 'Start driving'}
         </button>
       )}
 

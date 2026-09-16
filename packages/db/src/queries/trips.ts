@@ -234,6 +234,31 @@ export async function tripDetail(db: DB, id: string) {
   };
 }
 
+/**
+ * The fleet does one vehicle check per driver per day, not one per trip - so
+ * every trip that driver starts today can rely on the same check. Returns the
+ * most recent check performed today (local server day), or null if none yet.
+ */
+export async function todaysVehicleCheck(db: DB, driverId: string, vehicleId: string) {
+  const [row] = await db
+    .select({
+      id: vehicleChecks.id,
+      overallResult: vehicleChecks.overall_result,
+      performedAt: vehicleChecks.performed_at,
+    })
+    .from(vehicleChecks)
+    .where(
+      and(
+        eq(vehicleChecks.driver_id, driverId),
+        eq(vehicleChecks.vehicle_id, vehicleId),
+        sql`${vehicleChecks.performed_at} >= date_trunc('day', now())`,
+      ),
+    )
+    .orderBy(desc(vehicleChecks.performed_at))
+    .limit(1);
+  return row ?? null;
+}
+
 export async function tripsSummary(db: DB, from: Date, to: Date) {
   const [r] = await db
     .select({

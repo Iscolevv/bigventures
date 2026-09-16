@@ -3,10 +3,10 @@ import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'node:crypto';
 import { getDriver } from '@/lib/driver-session';
 import { db, schema, eq, and, sql } from '@bv/db';
+import { todaysVehicleCheck } from '@bv/db/queries';
 import { DRIVER_MUTABLE_TRIP_STATUSES } from '@bv/core/rbac';
 import { BLOCKING_CHECK_KEYS, DOCUMENT_TYPE_BY_KEY } from '@bv/core/reference';
 import { buildKey, uploadObject, storageConfigured } from '@/lib/storage';
-import { mapsEnabled, geocode } from '@/lib/maps';
 
 const OK_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf']);
 
@@ -58,16 +58,6 @@ export async function createTrip(form: FormData) {
     .limit(1);
   if (!assigned[0]) return { error: 'That vehicle is not assigned to you' };
 
-  let loadLat = lat;
-  let loadLng = lng;
-  if ((loadLat == null || loadLng == null) && mapsEnabled()) {
-    const g = await geocode(loadingAddress);
-    if (g) {
-      loadLat = g.lat;
-      loadLng = g.lng;
-    }
-  }
-
   const id = randomUUID();
   await db.insert(schema.trips).values({
     id,
@@ -76,8 +66,8 @@ export async function createTrip(form: FormData) {
     driver_id: me.driverId,
     status: 'draft',
     loading_point_address: loadingAddress,
-    loading_lat: loadLat,
-    loading_lng: loadLng,
+    loading_lat: lat,
+    loading_lng: lng,
     cargo_description: cargo || null,
     source: 'dashboard',
     created_by: me.userId,
@@ -189,30 +179,26 @@ export async function addDrop(form: FormData) {
     .from(schema.drops)
     .where(eq(schema.drops.trip_id, tripId));
 
-  let dLat = lat;
-  let dLng = lng;
-  if ((dLat == null || dLng == null) && mapsEnabled()) {
-    const g = await geocode(address);
-    if (g) {
-      dLat = g.lat;
-      dLng = g.lng;
-    }
-  }
   await db.insert(schema.drops).values({
     trip_id: tripId,
     sequence: n + 1,
     destination_address: address,
-    dest_lat: dLat,
-    dest_lng: dLng,
+    dest_lat: lat,
+    dest_lng: lng,
     status: 'pending',
   });
   revalidatePath(`/d/t/${tripId}`);
   return { ok: true };
 }
 
+/**
+ * One check per driver per day, not one per trip - see todaysVehicleCheck().
+ * Not tied to any particular trip, so it can be done first thing in the
+ * morning before any trip even exists.
+ */
 export async function submitVehicleCheck(form: FormData) {
   const me = await getDriver();
-  const tripId = String(form.get('tripId') ?? '');
+  const vehicleId = String(form.get('vehicleId') ?? '');
   const odometer = form.get('odometer') ? Number(form.get('odometer')) : null;
   const items = JSON.parse(String(form.get('items') ?? '[]')) as {
     key: string;
@@ -220,7 +206,19 @@ export async function submitVehicleCheck(form: FormData) {
     value?: string;
     notes?: string;
   }[];
-  const trip = await ownTrip(me.driverId, tripId);
+
+  const assigned = await db
+    .select({ id: schema.vehicleAssignments.id })
+    .from(schema.vehicleAssignments)
+    .where(
+      and(
+        eq(schema.vehicleAssignments.driver_id, me.driverId),
+        eq(schema.vehicleAssignments.vehicle_id, vehicleId),
+        sql`${schema.vehicleAssignments.end_date} is null`,
+      ),
+    )
+    .limit(1);
+  if (!assigned[0]) return { error: 'That vehicle is not assigned to you' };
 
   const blockingFail = items.some((i) => BLOCKING_CHECK_KEYS.has(i.key) && i.result === 'fail');
   const anyFail = items.some((i) => i.result === 'fail');
@@ -229,8 +227,7 @@ export async function submitVehicleCheck(form: FormData) {
   const checkId = randomUUID();
   await db.insert(schema.vehicleChecks).values({
     id: checkId,
-    trip_id: tripId,
-    vehicle_id: trip.vehicle_id,
+    vehicle_id: vehicleId,
     driver_id: me.driverId,
     performed_at: new Date(),
     overall_result: overall,
@@ -250,15 +247,7 @@ export async function submitVehicleCheck(form: FormData) {
       )
       .onConflictDoNothing();
   }
-  await db
-    .update(schema.trips)
-    .set({
-      status: 'pre_check',
-      start_odometer_km: odometer != null ? String(odometer) : trip.start_odometer_km,
-      updated_at: new Date(),
-    })
-    .where(eq(schema.trips.id, tripId));
-  revalidatePath(`/d/t/${tripId}`);
+  revalidatePath('/d');
   return { ok: true as const, overall, error: undefined as string | undefined };
 }
 
@@ -269,12 +258,12 @@ export async function startTrip(tripId: string) {
     .select({ n: sql<number>`count(*)::int` })
     .from(schema.drops)
     .where(eq(schema.drops.trip_id, tripId));
-  const checkCount = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(schema.vehicleChecks)
-    .where(eq(schema.vehicleChecks.trip_id, tripId));
   if ((dropCount[0]?.n ?? 0) === 0) return { error: 'Add at least one drop first' };
-  if ((checkCount[0]?.n ?? 0) === 0) return { error: 'Complete the vehicle check first' };
+  const check = await todaysVehicleCheck(db, me.driverId, trip.vehicle_id);
+  if (!check) return { error: "Do today's vehicle check first" };
+  if (check.overallResult === 'fail') {
+    return { error: "Today's check has a critical fail - contact the office before driving" };
+  }
   if (!DRIVER_MUTABLE_TRIP_STATUSES.includes(trip.status as 'draft')) {
     return { error: `Trip is ${trip.status}` };
   }

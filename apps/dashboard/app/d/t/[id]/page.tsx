@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireDriver } from '@/lib/driver-session';
 import { db, schema, eq, sql } from '@bv/db';
+import { todaysVehicleCheck } from '@bv/db/queries';
 import { TripActions } from '@/components/driver/TripActions';
 import { TrailTracker } from '@/components/driver/TrailTracker';
 
@@ -41,10 +42,8 @@ export default async function DriverTrip({ params }: { params: Promise<{ id: str
     .where(eq(schema.drops.trip_id, id))
     .orderBy(schema.drops.sequence);
 
-  const [{ n: checks } = { n: 0 }] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(schema.vehicleChecks)
-    .where(eq(schema.vehicleChecks.trip_id, id));
+  const todayCheck = await todaysVehicleCheck(db, me.driverId, trip.vehicle_id);
+  const hasCheck = !!todayCheck && todayCheck.overallResult !== 'fail';
 
   const allClosed = drops.length > 0 && drops.every((d) => !['pending', 'arrived'].includes(d.status));
 
@@ -93,7 +92,7 @@ export default async function DriverTrip({ params }: { params: Promise<{ id: str
       <TripActions
         tripId={id}
         status={trip.status}
-        hasCheck={checks > 0}
+        hasCheck={hasCheck}
         dropCount={drops.length}
         allClosed={allClosed}
       />

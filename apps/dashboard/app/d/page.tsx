@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireDriver } from '@/lib/driver-session';
-import { db, schema, eq, desc, sql } from '@bv/db';
+import { db, schema, eq, and, desc, sql } from '@bv/db';
+import { todaysVehicleCheck } from '@bv/db/queries';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,15 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 
 export default async function DriverHome() {
   const me = await requireDriver();
+
+  const [myVehicle] = await db
+    .select({ id: schema.vehicles.id, reg: schema.vehicles.registration })
+    .from(schema.vehicleAssignments)
+    .innerJoin(schema.vehicles, eq(schema.vehicles.id, schema.vehicleAssignments.vehicle_id))
+    .where(and(eq(schema.vehicleAssignments.driver_id, me.driverId), sql`${schema.vehicleAssignments.end_date} is null`))
+    .orderBy(schema.vehicles.registration)
+    .limit(1);
+  const todayCheck = myVehicle ? await todaysVehicleCheck(db, me.driverId, myVehicle.id) : null;
 
   const trips = await db
     .select({
@@ -36,6 +46,23 @@ export default async function DriverHome() {
 
   return (
     <>
+      {myVehicle && !todayCheck && (
+        <Link
+          href="/d/check"
+          className="mb-4 block rounded-xl border border-warn bg-warn/10 px-4 py-3 text-sm font-semibold text-warn active:opacity-80"
+        >
+          Do today&apos;s vehicle check for {myVehicle.reg} →
+        </Link>
+      )}
+      {myVehicle && todayCheck?.overallResult === 'fail' && (
+        <div className="mb-4 rounded-xl border border-crit bg-crit/10 px-4 py-3 text-sm font-semibold text-crit">
+          Today&apos;s check flagged a critical fault - contact the office before driving {myVehicle.reg}.
+        </div>
+      )}
+      {myVehicle && todayCheck && todayCheck.overallResult !== 'fail' && (
+        <p className="mb-4 text-xs text-muted">✓ {myVehicle.reg} checked today{todayCheck.overallResult === 'flagged' ? ' (minor issue noted)' : ''}</p>
+      )}
+
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-lg font-semibold">My trips</h1>
         <Link

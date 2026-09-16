@@ -12,8 +12,15 @@ interface Item {
 }
 type Result = 'pass' | 'fail' | 'na';
 
-export function VehicleCheckForm({ tripId, template }: { tripId: string; template: Item[] }) {
+export function VehicleCheckForm({
+  vehicles,
+  template,
+}: {
+  vehicles: { id: string; reg: string }[];
+  template: Item[];
+}) {
   const router = useRouter();
+  const [vehicleId, setVehicleId] = useState(vehicles[0]?.id ?? '');
   const [state, setState] = useState<Record<string, { result: Result | null; value?: string; notes?: string }>>(
     () => Object.fromEntries(template.map((i) => [i.key, { result: null }])),
   );
@@ -28,6 +35,7 @@ export function VehicleCheckForm({ tripId, template }: { tripId: string; templat
   const blockingFail = template.filter((i) => i.blocking && state[i.key]?.result === 'fail');
 
   function submit() {
+    if (!vehicleId) return setErr('Pick your vehicle');
     if (unanswered) return setErr('Answer every item');
     const items = template.map((i) => ({
       key: i.key,
@@ -36,19 +44,33 @@ export function VehicleCheckForm({ tripId, template }: { tripId: string; templat
       notes: state[i.key]!.notes,
     }));
     const fd = new FormData();
-    fd.set('tripId', tripId);
+    fd.set('vehicleId', vehicleId);
     if (odometer) fd.set('odometer', odometer);
     fd.set('items', JSON.stringify(items));
     setErr(null);
     start(async () => {
       const r = await submitVehicleCheck(fd);
       if (r.error) setErr(r.error);
-      else router.replace(`/d/t/${tripId}`);
+      else router.replace('/d');
     });
+  }
+
+  if (vehicles.length === 0) {
+    return <p className="mt-4 rounded-lg border bg-surface p-4 text-sm text-muted">No vehicle is assigned to you. Ask the office.</p>;
   }
 
   return (
     <div className="mt-4 space-y-4 pb-12">
+      {vehicles.length > 1 && (
+        <div>
+          <label className={dLabel}>Vehicle</label>
+          <select className={dInput} value={vehicleId} onChange={(e) => setVehicleId(e.target.value)}>
+            {vehicles.map((v) => (
+              <option key={v.id} value={v.id}>{v.reg}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div>
         <label className={dLabel}>Odometer (km)</label>
         <input className={dInput} inputMode="numeric" value={odometer} onChange={(e) => setOdometer(e.target.value)} />
@@ -96,12 +118,12 @@ export function VehicleCheckForm({ tripId, template }: { tripId: string; templat
 
       {blockingFail.length > 0 && (
         <p className="wrap-anywhere text-sm text-warn">
-          {blockingFail.length} critical item(s) failed - the trip will be held for the office.
+          {blockingFail.length} critical item(s) failed - you won&apos;t be able to start a trip until the office clears it.
         </p>
       )}
       {err && <p className="wrap-anywhere text-sm text-crit">{err}</p>}
       <button onClick={submit} disabled={pending} className={dBtnPrimary}>
-        {pending ? 'Submitting…' : 'Submit check'}
+        {pending ? 'Submitting…' : 'Submit today’s check'}
       </button>
     </div>
   );

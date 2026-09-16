@@ -1,10 +1,9 @@
 import { decodePolyline, boundingBox, type LatLng } from '@bv/core/geo';
 
 /**
- * Keyless SVG mini-map: planned route (from the encoded polyline), the actual
- * GPS trail, and loading + drop markers, all fitted to a bounding box. No tile
- * server, so it renders offline / before a Maps key is configured. Swap for a
- * Google Maps embed once `GOOGLE_MAPS_SERVER_KEY` is set if you want basemaps.
+ * Keyless SVG mini-map: the actual GPS trail plus loading + drop markers,
+ * fitted to a bounding box. No tile server or Maps API needed - `planned` is
+ * only ever populated if a future phase adds route planning back in.
  */
 export function TripMap({
   planned,

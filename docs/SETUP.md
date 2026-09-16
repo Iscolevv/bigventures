@@ -7,7 +7,7 @@ Two are already done. Two more get you 100 %.
 | 1 | **Neon Postgres** | ✅ done (shared with Moody Treats, `bigventures` schema) | all data | on the existing plan |
 | 2 | **Better Auth** | ✅ done (`BETTER_AUTH_SECRET` set on Vercel) | sign-in, RBAC | free |
 | 3 | **Vercel Blob** | ✅ done - verified end-to-end (upload → URL → retrievable) | document / POD / receipt uploads | free tier: 1 GB storage, 10 GB bandwidth/mo |
-| 4 | **Google Maps Platform** | ✅ done (`GOOGLE_MAPS_SERVER_KEY` set) | planned route on trip sync, address → coordinates | ~$0 at this volume ($200/mo free credit) |
+| 4 | **Google Maps Platform** | ⏸ paused for phase 1 (integration removed from the app) | would power planned route + geocoding, later | n/a |
 | - | **CRON_SECRET** | ⬜ optional, 30 sec | locks the nightly job endpoint | free |
 
 Check any time (signed in as admin): **`/api/health`**.
@@ -24,28 +24,19 @@ That's it. `/documents` → "Upload document" now works, and the driver app's PO
 
 > Prefer Cloudflare R2 (cheaper at photo scale, no egress fees)? Set `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` instead - the storage layer auto-detects and uses R2 when those are present. Blob is the faster start.
 
-## 4. Google Maps Platform (optional - planned routes + geocoding)
+## 4. Google Maps Platform (paused - not part of phase 1)
 
-Wired and ready - the code no-ops until the key is set, then:
-- every trip synced from the app gets a **planned route** (encoded polyline +
-  distance + duration) from Directions, shown dashed on the trip map next to
-  the actual GPS trail;
-- drops/loading points that came in **address-only** (driver didn't drop a pin)
-  get **geocoded** to coordinates;
-- trip detail gets a **"Compute planned route"** button to (re)run it for
-  existing trips.
+Phase 1 is deliberately basics-first: get drivers and Kevin off manual data
+entry before adding anything that costs money or needs Google Cloud billing.
+The Directions/Geocoding integration (planned route, address → coordinates,
+the "Compute planned route" button) has been removed from the app for now -
+the trip map still works fine without it, drawing the actual GPS trail and
+drop markers.
 
-The dashboard's trip map already works without Maps (it draws the actual GPS
-trail); this just adds the planned line and address resolution.
-
-1. https://console.cloud.google.com → create a project (e.g. `big-ventures`).
-2. Enable billing (required; you stay inside the $200/mo free credit at this fleet size).
-3. **APIs & Services → Enable APIs** → enable **Directions API** and **Geocoding API**.
-   (For the mobile map basemap later: also **Maps SDK for Android**.)
-4. **Credentials → Create credentials → API key**. Restrict it to those APIs.
-5. Add to Vercel env vars:
-   - `GOOGLE_MAPS_SERVER_KEY` = the key
-   - `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_KEY` = same key (or a separate Android-restricted one) - used by the mobile app.
+To bring it back in a later phase: enable billing on a Google Cloud project,
+turn on the Directions and Geocoding APIs, create a restricted API key, and
+re-wire `lib/maps.ts` (see git history for the removed version) behind a
+`GOOGLE_MAPS_SERVER_KEY` env var.
 
 ## CRON_SECRET (optional - 10 seconds)
 

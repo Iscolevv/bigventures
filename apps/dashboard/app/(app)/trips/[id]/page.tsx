@@ -1,11 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { requirePermission, can } from '@/lib/session';
+import { requirePermission } from '@/lib/session';
 import { db } from '@bv/db';
 import * as q from '@bv/db/queries';
 import { PageHeader, Card, Badge, StatTile, kes, dateTime, type Column, DataTable } from '@/components/ui';
 import { TripMap } from '@/components/TripMap';
-import { RouteButton } from '@/components/RouteButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +18,7 @@ const DROP_TONE: Record<string, 'ok' | 'warn' | 'crit' | 'muted'> = {
 };
 
 export default async function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requirePermission('trip:read');
+  await requirePermission('trip:read');
   const { id } = await params;
   const detail = await q.tripDetail(db, id);
   if (!detail) notFound();
@@ -66,10 +65,7 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
         <StatTile label="Other costs" value={kes(costTotal)} />
       </div>
 
-      <div className="mb-2 mt-6 flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Route</h2>
-        {can(user.role, 'trip:update') && <RouteButton tripId={trip.id} />}
-      </div>
+      <h2 className="mb-2 mt-6 text-sm font-semibold">Route</h2>
       <div>
         <TripMap
           planned={trip.plannedPolyline}
