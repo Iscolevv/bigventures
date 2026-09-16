@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { logCompletedTrip } from '@/app/d/actions';
 import { dInput, dLabel, dBtnPrimary, dChip } from './styles';
@@ -18,17 +18,23 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
   const [loadingAddress, setLoadingAddress] = useState('');
   const [stopsText, setStopsText] = useState('');
   const [failed, setFailed] = useState<Set<number>>(new Set());
+  const [photos, setPhotos] = useState<Record<number, File>>({});
+  const [previews, setPreviews] = useState<Record<number, string>>({});
   const [loadTonnes, setLoadTonnes] = useState('');
   const [loadBales, setLoadBales] = useState('');
   const [fuelLitres, setFuelLitres] = useState('');
   const [fuelCost, setFuelCost] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  const fileRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
   const stops = useMemo(
     () => stopsText.split('\n').map((s) => s.trim()).filter(Boolean),
     [stopsText],
   );
+
+  // object URLs are per-File - revoke on unmount so we don't leak memory
+  useEffect(() => () => Object.values(previews).forEach((u) => URL.revokeObjectURL(u)), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleFailed(i: number) {
     setFailed((prev) => {
@@ -39,15 +45,32 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
     });
   }
 
+  function onPhoto(i: number, file: File | undefined) {
+    if (!file) return;
+    setPreviews((p) => {
+      if (p[i]) URL.revokeObjectURL(p[i]!);
+      return { ...p, [i]: URL.createObjectURL(file) };
+    });
+    setPhotos((p) => ({ ...p, [i]: file }));
+    setErr(null);
+  }
+
   function submit() {
     if (!vehicleId) return setErr('Pick your vehicle');
     if (stops.length === 0) return setErr('Add at least one stop, one per line');
+    const missingPhoto = stops.map((_, i) => i).filter((i) => !failed.has(i) && !photos[i]);
+    if (missingPhoto.length > 0) {
+      return setErr(`Add a delivery photo for stop${missingPhoto.length > 1 ? 's' : ''} ${missingPhoto.map((i) => i + 1).join(', ')} - or mark it failed if it didn't go through`);
+    }
     const fd = new FormData();
     fd.set('vehicleId', vehicleId);
     fd.set('date', date);
     fd.set('loadingAddress', loadingAddress.trim());
     fd.set('stops', stops.join('\n'));
     fd.set('failedIndexes', [...failed].join(','));
+    stops.forEach((_, i) => {
+      if (photos[i]) fd.set(`photo_${i}`, photos[i]!);
+    });
     if (loadTonnes.trim()) fd.set('loadTonnes', loadTonnes.trim());
     if (loadBales.trim()) fd.set('loadBales', loadBales.trim());
     if (fuelLitres.trim()) fd.set('fuelLitres', fuelLitres.trim());
@@ -95,20 +118,47 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
           placeholder={'Quick mart tom mboya\nQuick mart OTC\nQuick mart mfangano'}
         />
         {stops.length > 0 && (
-          <div className="mt-2 space-y-1.5">
-            <p className="text-xs text-muted">Tap a stop that didn&apos;t go through - everything else counts as delivered.</p>
+          <div className="mt-2 space-y-2">
+            <p className="text-xs text-muted">Every delivered stop needs a proof-of-delivery photo. Mark a stop failed if it didn&apos;t go through instead.</p>
             {stops.map((s, i) => (
-              <button
-                type="button"
-                key={i}
-                onClick={() => toggleFailed(i)}
-                className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm active:opacity-80 ${
-                  failed.has(i) ? 'border-crit bg-crit/10 text-crit' : 'border-border bg-surface'
-                }`}
-              >
-                <span className="wrap-anywhere">{i + 1}. {s}</span>
-                <span className="shrink-0 pl-2 text-xs font-semibold">{failed.has(i) ? 'Failed ✗' : 'Delivered ✓'}</span>
-              </button>
+              <div key={i} className="rounded-lg border border-border bg-surface p-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="wrap-anywhere text-sm">{i + 1}. {s}</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleFailed(i)}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold active:opacity-80 ${
+                      failed.has(i) ? 'bg-crit text-white' : 'bg-ok/15 text-ok'
+                    }`}
+                  >
+                    {failed.has(i) ? 'Failed ✗' : 'Delivered ✓'}
+                  </button>
+                </div>
+                {!failed.has(i) && (
+                  <div className="mt-2 flex items-center gap-2">
+                    {previews[i] ? (
+                      <img src={previews[i]} alt="POD" className="h-12 w-12 rounded-md object-cover" />
+                    ) : (
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-md border-2 border-dashed border-brand text-brand">📷</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => fileRefs.current[i]?.click()}
+                      className={dChip}
+                    >
+                      {previews[i] ? 'Retake photo' : 'Add photo'}
+                    </button>
+                    <input
+                      ref={(el) => { fileRefs.current[i] = el; }}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={(e) => onPhoto(i, e.target.files?.[0])}
+                    />
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}

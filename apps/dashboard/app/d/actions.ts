@@ -102,6 +102,24 @@ export async function logCompletedTrip(form: FormData) {
   if (!vehicleId) return { error: 'Pick your vehicle' };
   if (stops.length === 0) return { error: 'Add at least one stop' };
 
+  const photoFiles = new Map<number, File>();
+  stops.forEach((_, i) => {
+    const f = form.get(`photo_${i}`);
+    if (f instanceof File && f.size > 0) photoFiles.set(i, f);
+  });
+  if (storageConfigured()) {
+    const missing = stops
+      .map((_, i) => i)
+      .filter((i) => !failedSet.has(i) && !photoFiles.has(i));
+    if (missing.length > 0) {
+      return { error: `Missing a delivery photo for stop ${missing.map((i) => i + 1).join(', ')}` };
+    }
+    for (const [, f] of photoFiles) {
+      if (f.size > 10 * 1024 * 1024) return { error: 'A photo is too large (max 10MB)' };
+      if (!f.type.startsWith('image/')) return { error: 'Photos must be images' };
+    }
+  }
+
   const assigned = await db
     .select({ id: schema.vehicleAssignments.id })
     .from(schema.vehicleAssignments)
@@ -134,16 +152,37 @@ export async function logCompletedTrip(form: FormData) {
     created_by: me.userId,
   });
 
-  await db.insert(schema.drops).values(
-    stops.map((address, i) => ({
-      trip_id: id,
-      sequence: i + 1,
-      destination_address: address,
-      status: failedSet.has(i) ? ('failed' as const) : ('delivered' as const),
-      completed_at: when,
-      geofence_skipped: true,
-    })),
-  );
+  const insertedDrops = await db
+    .insert(schema.drops)
+    .values(
+      stops.map((address, i) => ({
+        trip_id: id,
+        sequence: i + 1,
+        destination_address: address,
+        status: failedSet.has(i) ? ('failed' as const) : ('delivered' as const),
+        completed_at: when,
+        geofence_skipped: true,
+      })),
+    )
+    .returning({ id: schema.drops.id, sequence: schema.drops.sequence });
+
+  if (photoFiles.size > 0 && storageConfigured()) {
+    const dropIdBySequence = new Map(insertedDrops.map((d) => [d.sequence - 1, d.id]));
+    for (const [i, file] of photoFiles) {
+      const dropId = dropIdBySequence.get(i);
+      if (!dropId) continue;
+      const key = buildKey('pod', me.driverId, file.name || 'pod.jpg');
+      const stored = await uploadObject(key, file.type, await file.arrayBuffer());
+      await db.insert(schema.podPhotos).values({
+        drop_id: dropId,
+        storage_key: stored.url.startsWith('http') ? stored.url : stored.key,
+        captured_at: when,
+        mime_type: file.type,
+        file_size: file.size,
+        source: 'camera',
+      });
+    }
+  }
 
   if (fuelLitres && !Number.isNaN(fuelLitres)) {
     await db.insert(schema.fuelEntries).values({
