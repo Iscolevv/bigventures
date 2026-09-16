@@ -72,7 +72,10 @@ export const fuelEntries = bv.table(
     litres: numeric('litres', { precision: 10, scale: 2 }).notNull(),
     unit_price: numeric('unit_price', { precision: 10, scale: 2 }),
     total_cost: numeric('total_cost', { precision: 14, scale: 2 }).notNull(),
-    odometer_km: numeric('odometer_km', { precision: 12, scale: 1 }).notNull(),
+    // Nullable: a quick-logged retrospective run may report litres without an
+    // odometer reading. Every MIN/MAX/AVG in the efficiency queries already
+    // ignores NULLs, so a missing reading is excluded rather than treated as 0.
+    odometer_km: numeric('odometer_km', { precision: 12, scale: 1 }),
     station: text('station'),
     receipt_photo_key: text('receipt_photo_key'),
     filled_at: timestamp('filled_at').notNull(),

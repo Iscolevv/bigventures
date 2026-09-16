@@ -40,11 +40,18 @@ export default async function DriverHome() {
         <h1 className="text-lg font-semibold">My trips</h1>
         <Link
           href="/d/new"
-          className="shrink-0 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white active:opacity-90"
+          className="shrink-0 rounded-lg border border-brand px-3.5 py-2.5 text-sm font-semibold text-brand active:bg-brand/10"
         >
           Start a trip
         </Link>
       </div>
+      <Link
+        href="/d/log"
+        className="mt-3 block rounded-xl bg-brand px-4 py-3.5 text-center text-base font-semibold text-white active:opacity-90"
+      >
+        Log a finished run
+      </Link>
+      <p className="mt-2 text-center text-xs text-muted">Already done for the day? List your stops here - same as texting the group, just one place.</p>
 
       <h2 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted">Active</h2>
       {active.length === 0 && <p className="mt-2 text-sm text-muted">Nothing running. Tap “Start a trip”.</p>}

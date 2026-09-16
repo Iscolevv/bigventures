@@ -86,6 +86,94 @@ export async function createTrip(form: FormData) {
   return { ok: true, id };
 }
 
+/**
+ * One-shot replacement for the "type it all into the WhatsApp group" habit:
+ * a driver reporting a run that's already finished logs the whole thing -
+ * stops, load, fuel - in a single submit instead of building it live drop by
+ * drop. Skips the vehicle-check/geofence gating that the live flow enforces,
+ * since there's no "live" to gate; office can still flag it from /trips.
+ */
+export async function logCompletedTrip(form: FormData) {
+  const me = await getDriver();
+  const vehicleId = String(form.get('vehicleId') ?? '');
+  const dateStr = String(form.get('date') ?? '').trim();
+  const loadingAddress = String(form.get('loadingAddress') ?? '').trim();
+  const stopsRaw = String(form.get('stops') ?? '');
+  const failedSet = new Set(String(form.get('failedIndexes') ?? '').split(',').filter(Boolean).map(Number));
+  const loadTonnes = form.get('loadTonnes') ? Number(form.get('loadTonnes')) : null;
+  const loadBales = form.get('loadBales') ? Number(form.get('loadBales')) : null;
+  const fuelLitres = form.get('fuelLitres') ? Number(form.get('fuelLitres')) : null;
+  const fuelCost = form.get('fuelCost') ? Number(form.get('fuelCost')) : null;
+
+  const stops = stopsRaw
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!vehicleId) return { error: 'Pick your vehicle' };
+  if (stops.length === 0) return { error: 'Add at least one stop' };
+
+  const assigned = await db
+    .select({ id: schema.vehicleAssignments.id })
+    .from(schema.vehicleAssignments)
+    .where(
+      and(
+        eq(schema.vehicleAssignments.driver_id, me.driverId),
+        eq(schema.vehicleAssignments.vehicle_id, vehicleId),
+        sql`${schema.vehicleAssignments.end_date} is null`,
+      ),
+    )
+    .limit(1);
+  if (!assigned[0]) return { error: 'That vehicle is not assigned to you' };
+
+  const when = dateStr ? new Date(`${dateStr}T12:00:00`) : new Date();
+  if (Number.isNaN(when.getTime())) return { error: 'That date looks wrong' };
+
+  const id = randomUUID();
+  await db.insert(schema.trips).values({
+    id,
+    reference_code: await nextTripRef(),
+    vehicle_id: vehicleId,
+    driver_id: me.driverId,
+    status: 'completed',
+    loading_point_address: loadingAddress || 'Not recorded',
+    load_tonnes: loadTonnes != null && !Number.isNaN(loadTonnes) ? String(loadTonnes) : null,
+    load_bales: loadBales != null && !Number.isNaN(loadBales) ? Math.round(loadBales) : null,
+    started_at: when,
+    ended_at: when,
+    source: 'dashboard',
+    created_by: me.userId,
+  });
+
+  await db.insert(schema.drops).values(
+    stops.map((address, i) => ({
+      trip_id: id,
+      sequence: i + 1,
+      destination_address: address,
+      status: failedSet.has(i) ? ('failed' as const) : ('delivered' as const),
+      completed_at: when,
+      geofence_skipped: true,
+    })),
+  );
+
+  if (fuelLitres && !Number.isNaN(fuelLitres)) {
+    await db.insert(schema.fuelEntries).values({
+      vehicle_id: vehicleId,
+      driver_id: me.driverId,
+      trip_id: id,
+      litres: String(fuelLitres),
+      total_cost: fuelCost != null && !Number.isNaN(fuelCost) ? String(fuelCost) : '0',
+      odometer_km: null,
+      filled_at: when,
+      source: 'dashboard',
+      created_by: me.userId,
+      notes: fuelCost == null ? 'Cost not reported - fill in from receipt' : null,
+    });
+  }
+
+  revalidatePath('/d');
+  return { ok: true, id };
+}
+
 export async function addDrop(form: FormData) {
   const me = await getDriver();
   const tripId = String(form.get('tripId') ?? '');

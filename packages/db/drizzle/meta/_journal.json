@@ -8,6 +8,13 @@
       "when": 1788936091044,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789577551923,
+      "tag": "0001_pale_terrax",
+      "breakpoints": true
     }
   ]
 }

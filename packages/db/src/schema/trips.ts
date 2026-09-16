@@ -70,6 +70,10 @@ export const trips = bv.table(
     actual_distance_m: integer('actual_distance_m'), // from trail
 
     cargo_description: text('cargo_description'),
+    // Load size as reported by the driver - the two units the fleet actually
+    // uses (weight for bulk/liquid loads, a bale/bag count for feed runs).
+    load_tonnes: numeric('load_tonnes', { precision: 8, scale: 2 }),
+    load_bales: integer('load_bales'),
     // Soft FK to clients - kept as text to avoid a trips↔finance import cycle;
     // the relation is declared in relations.ts. App-enforced.
     client_id: text('client_id'),
