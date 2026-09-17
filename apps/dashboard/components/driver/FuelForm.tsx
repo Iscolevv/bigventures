@@ -3,6 +3,7 @@ import { useState, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { addFuel } from '@/app/d/actions';
 import { dInput, dLabel, dBtnPrimary } from './styles';
+import { compressImage } from './imageCompress';
 
 export function FuelForm({ tripId }: { tripId: string }) {
   const router = useRouter();
@@ -21,17 +22,17 @@ export function FuelForm({ tripId }: { tripId: string }) {
 
   function submit() {
     if (!litres || !total || !odometer) return setErr('Litres, total and odometer are required');
-    const fd = new FormData();
-    fd.set('tripId', tripId);
-    fd.set('litres', litres);
-    fd.set('total', total);
-    if (unitPrice) fd.set('unitPrice', unitPrice);
-    fd.set('odometer', odometer);
-    if (station) fd.set('station', station);
-    const f = receiptRef.current?.files?.[0];
-    if (f) fd.set('receipt', f);
     setErr(null);
     start(async () => {
+      const fd = new FormData();
+      fd.set('tripId', tripId);
+      fd.set('litres', litres);
+      fd.set('total', total);
+      if (unitPrice) fd.set('unitPrice', unitPrice);
+      fd.set('odometer', odometer);
+      if (station) fd.set('station', station);
+      const f = receiptRef.current?.files?.[0];
+      if (f) fd.set('receipt', await compressImage(f));
       const r = await addFuel(fd);
       if (r.error) setErr(r.error);
       else router.replace(`/d/t/${tripId}`);

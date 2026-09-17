@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { logCompletedTrip } from '@/app/d/actions';
 import { dInput, dLabel, dBtnPrimary, dChip } from './styles';
+import { compressImage } from './imageCompress';
 
 /** Today's date as YYYY-MM-DD in the browser's local time, for the date input default. */
 function today() {
@@ -20,6 +21,7 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
   const [failed, setFailed] = useState<Set<number>>(new Set());
   const [photos, setPhotos] = useState<Record<number, File>>({});
   const [previews, setPreviews] = useState<Record<number, string>>({});
+  const [compressing, setCompressing] = useState<Set<number>>(new Set());
   const [loadTonnes, setLoadTonnes] = useState('');
   const [loadBales, setLoadBales] = useState('');
   const [fuelLitres, setFuelLitres] = useState('');
@@ -45,19 +47,27 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
     });
   }
 
-  function onPhoto(i: number, file: File | undefined) {
+  async function onPhoto(i: number, file: File | undefined) {
     if (!file) return;
+    setCompressing((c) => new Set(c).add(i));
+    const small = await compressImage(file);
+    setCompressing((c) => {
+      const next = new Set(c);
+      next.delete(i);
+      return next;
+    });
     setPreviews((p) => {
       if (p[i]) URL.revokeObjectURL(p[i]!);
-      return { ...p, [i]: URL.createObjectURL(file) };
+      return { ...p, [i]: URL.createObjectURL(small) };
     });
-    setPhotos((p) => ({ ...p, [i]: file }));
+    setPhotos((p) => ({ ...p, [i]: small }));
     setErr(null);
   }
 
   function submit() {
     if (!vehicleId) return setErr('Pick your vehicle');
     if (stops.length === 0) return setErr('Add at least one stop, one per line');
+    if (compressing.size > 0) return setErr('Still processing a photo - give it a second');
     const missingPhoto = stops.map((_, i) => i).filter((i) => !failed.has(i) && !photos[i]);
     if (missingPhoto.length > 0) {
       return setErr(`Add a delivery photo for stop${missingPhoto.length > 1 ? 's' : ''} ${missingPhoto.map((i) => i + 1).join(', ')} - or mark it failed if it didn't go through`);
@@ -144,9 +154,10 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
                     <button
                       type="button"
                       onClick={() => fileRefs.current[i]?.click()}
+                      disabled={compressing.has(i)}
                       className={dChip}
                     >
-                      {previews[i] ? 'Retake photo' : 'Add photo'}
+                      {compressing.has(i) ? 'Compressing…' : previews[i] ? 'Retake photo' : 'Add photo'}
                     </button>
                     <input
                       ref={(el) => { fileRefs.current[i] = el; }}

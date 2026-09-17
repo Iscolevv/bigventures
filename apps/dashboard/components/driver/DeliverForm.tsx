@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { DELIVERY_ISSUE_CATEGORIES } from '@bv/core/enums';
 import { uploadPod, completeDrop, arriveDrop } from '@/app/d/actions';
 import { dInput, dLabel, dBtnOk, dBtnWarn, dBtnCrit, dChip } from './styles';
+import { compressImage } from './imageCompress';
 
 export function DeliverForm({
   dropId,
@@ -34,10 +35,11 @@ export function DeliverForm({
   }, [dropId, hasArrived]);
 
   async function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const original = e.target.files?.[0];
+    if (!original) return;
     setBusy(true);
     setErr(null);
+    const file = await compressImage(original);
     const fd = new FormData();
     fd.set('dropId', dropId);
     fd.set('file', file);

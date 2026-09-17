@@ -3,6 +3,7 @@ import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { uploadDriverDoc } from '@/app/d/actions';
 import { dInput } from './styles';
+import { compressImage } from './imageCompress';
 
 export function DriverDocForm({
   docType,
@@ -23,13 +24,14 @@ export function DriverDocForm({
   function submit() {
     const f = fileRef.current?.files?.[0];
     if (!f) return setMsg('Choose or take a photo');
-    const fd = new FormData();
-    fd.set('docType', docType);
-    fd.set('file', f);
-    if (issueDate) fd.set('issueDate', issueDate);
-    if (expiryDate) fd.set('expiryDate', expiryDate);
     setMsg(null);
     start(async () => {
+      const fd = new FormData();
+      fd.set('docType', docType);
+      // documents need to stay legible (small print, dates) - less aggressive than a POD photo
+      fd.set('file', await compressImage(f, { maxDim: 2000, quality: 0.82 }));
+      if (issueDate) fd.set('issueDate', issueDate);
+      if (expiryDate) fd.set('expiryDate', expiryDate);
       const r = await uploadDriverDoc(fd);
       if (r.error) setMsg(`✗ ${r.error}`);
       else {
