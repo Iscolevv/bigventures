@@ -41,9 +41,6 @@ export default async function DriverHome() {
     .orderBy(desc(schema.trips.created_at))
     .limit(40);
 
-  const active = trips.filter((t) => t.status !== 'completed' && t.status !== 'cancelled');
-  const past = trips.filter((t) => t.status === 'completed' || t.status === 'cancelled');
-
   return (
     <>
       {myVehicle && !todayCheck && (
@@ -63,41 +60,21 @@ export default async function DriverHome() {
         <p className="mb-4 text-xs text-muted">✓ {myVehicle.reg} checked today{todayCheck.overallResult === 'flagged' ? ' (minor issue noted)' : ''}</p>
       )}
 
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold">My trips</h1>
-        <Link
-          href="/d/new"
-          className="shrink-0 rounded-lg border border-brand px-3.5 py-2.5 text-sm font-semibold text-brand active:bg-brand/10"
-        >
-          Start a trip
-        </Link>
-      </div>
+      <h1 className="text-lg font-semibold">My trips</h1>
       <Link
         href="/d/log"
         className="mt-3 block rounded-xl bg-brand px-4 py-3.5 text-center text-base font-semibold text-white active:opacity-90"
       >
-        Log a finished run
+        Log a trip
       </Link>
-      <p className="mt-2 text-center text-xs text-muted">Already done for the day? List your stops here - same as texting the group, just one place.</p>
+      <p className="mt-2 text-center text-xs text-muted">List today&apos;s stops - same as you&apos;d text the group, just one place.</p>
 
-      <h2 className="mt-5 text-xs font-semibold uppercase tracking-wide text-muted">Active</h2>
-      {active.length === 0 && <p className="mt-2 text-sm text-muted">Nothing running. Tap “Start a trip”.</p>}
-      <div className="mt-2 space-y-2">
-        {active.map((t) => (
+      <div className="mt-6 space-y-2">
+        {trips.length === 0 && <p className="text-sm text-muted">No trips yet. Tap “Log a trip” once you&apos;re done for the day.</p>}
+        {trips.map((t) => (
           <TripCard key={t.id} t={t} />
         ))}
       </div>
-
-      {past.length > 0 && (
-        <>
-          <h2 className="mt-6 text-xs font-semibold uppercase tracking-wide text-muted">Recent</h2>
-          <div className="mt-2 space-y-2">
-            {past.slice(0, 10).map((t) => (
-              <TripCard key={t.id} t={t} />
-            ))}
-          </div>
-        </>
-      )}
     </>
   );
 }

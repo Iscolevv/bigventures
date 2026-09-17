@@ -15,8 +15,8 @@ export default async function QuickLogPage() {
 
   return (
     <>
-      <h1 className="text-lg font-semibold">Log a finished run</h1>
-      <p className="mt-1 text-sm text-muted">Already done for the day? List your stops here instead of the WhatsApp group - same information, one place.</p>
+      <h1 className="text-lg font-semibold">Log a trip</h1>
+      <p className="mt-1 text-sm text-muted">List today&apos;s stops, same as you&apos;d text the group.</p>
       <QuickLogForm vehicles={vehicles} />
     </>
   );
