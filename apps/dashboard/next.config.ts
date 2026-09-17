@@ -14,6 +14,14 @@ const config: NextConfig = {
     'pg',
     'kysely',
   ],
+  experimental: {
+    serverActions: {
+      // Default is 1MB. The driver quick-log flow submits every stop's proof-
+      // of-delivery photo in one Server Action call, so a couple of camera
+      // photos alone can clear 1MB and the action was silently failing.
+      bodySizeLimit: '25mb',
+    },
+  },
 };
 
 export default config;
