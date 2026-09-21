@@ -18,6 +18,7 @@ import {
   Settings,
   Menu,
   X,
+  ClipboardCheck,
 } from 'lucide-react';
 import type { AppRole } from '@/lib/auth';
 import { can } from '@bv/core/rbac';
@@ -28,6 +29,7 @@ const NAV: Array<{ href: string; label: string; icon: typeof Truck; perm: Parame
   { href: '/fleet', label: 'Fleet', icon: Truck, perm: 'vehicle:read' },
   { href: '/drivers', label: 'Drivers', icon: Users, perm: 'driver:read' },
   { href: '/trips', label: 'Trips', icon: Route, perm: 'trip:read' },
+  { href: '/pos', label: 'PO search', icon: ClipboardCheck, perm: 'trip:read' },
   { href: '/fuel', label: 'Fuel & consumption', icon: Fuel, perm: 'fuel:read' },
   { href: '/costs', label: 'Costs & advances', icon: Wallet, perm: 'cost:read' },
   { href: '/roi', label: 'ROI & routes', icon: BarChart3, perm: 'report:read' },

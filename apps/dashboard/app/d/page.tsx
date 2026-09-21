@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { requireDriver } from '@/lib/driver-session';
 import { db, schema, eq, and, desc, sql } from '@bv/db';
-import { todaysVehicleCheck } from '@bv/db/queries';
+import { todaysVehicleCheck, driverPodBacklog } from '@bv/db/queries';
+import { PO_UPLOAD_WINDOW_HOURS } from '@bv/core/reference';
+import { PodBacklog } from '@/components/driver/PodBacklog';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +27,8 @@ export default async function DriverHome() {
     .orderBy(schema.vehicles.registration)
     .limit(1);
   const todayCheck = myVehicle ? await todaysVehicleCheck(db, me.driverId, myVehicle.id) : null;
+
+  const podBacklog = await driverPodBacklog(db, me.driverId, PO_UPLOAD_WINDOW_HOURS);
 
   const trips = await db
     .select({
@@ -58,6 +62,15 @@ export default async function DriverHome() {
       )}
       {myVehicle && todayCheck && todayCheck.overallResult !== 'fail' && (
         <p className="mb-4 text-xs text-muted">✓ {myVehicle.reg} checked today{todayCheck.overallResult === 'flagged' ? ' (minor issue noted)' : ''}</p>
+      )}
+
+      {podBacklog.length > 0 && (
+        <div className="mb-4">
+          <p className="mb-2 text-sm font-semibold">
+            {podBacklog.length} PO{podBacklog.length === 1 ? "" : "s"} waiting for a photo ({PO_UPLOAD_WINDOW_HOURS}h limit)
+          </p>
+          <PodBacklog items={podBacklog} />
+        </div>
       )}
 
       <h1 className="text-lg font-semibold">My trips</h1>

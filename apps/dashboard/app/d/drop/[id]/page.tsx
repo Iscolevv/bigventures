@@ -4,6 +4,7 @@ import { requireDriver } from '@/lib/driver-session';
 import { db, schema, eq, sql } from '@bv/db';
 import { objectUrl } from '@/lib/storage';
 import { DeliverForm } from '@/components/driver/DeliverForm';
+import { PodUpload } from '@/components/driver/PodUpload';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +44,7 @@ export default async function DropPage({ params }: { params: Promise<{ id: strin
       </Link>
       <h1 className="mt-1 text-lg font-semibold">Stop {d.sequence}</h1>
       <p className="wrap-anywhere text-sm text-muted">{d.destination_address}</p>
+      {d.po_number && <p className="mt-1 text-sm font-semibold">PO {d.po_number}</p>}
       <p className="mt-1 text-sm font-medium capitalize text-brand">{d.status}</p>
 
       {closed ? (
@@ -50,6 +52,13 @@ export default async function DropPage({ params }: { params: Promise<{ id: strin
           <p className="font-medium capitalize">{d.status}</p>
           {d.signee_name && <p className="mt-1 text-muted">Received by {d.signee_name}</p>}
           {d.issue_category && <p className="mt-1 capitalize text-crit">Issue: {d.issue_category.replace('_', ' ')}</p>}
+          {photoUrls.length === 0 && (d.status === 'delivered' || d.status === 'partial') && (
+            <>
+              <p className="mt-3 font-medium text-warn">PO photo still needed</p>
+              <PodUpload dropId={id} />
+            </>
+          )}
+          {photoUrls.length > 0 && <p className="mt-3 text-xs text-muted">PO uploaded. Only the office can remove it.</p>}
           <div className="mt-3 grid grid-cols-3 gap-2">
             {photoUrls.map((p) => (
               <img key={p.id} src={p.url} alt="POD" className="aspect-square w-full rounded-lg object-cover" />

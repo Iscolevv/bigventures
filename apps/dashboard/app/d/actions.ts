@@ -3,7 +3,8 @@ import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'node:crypto';
 import { getDriver } from '@/lib/driver-session';
 import { db, schema, eq, and, sql } from '@bv/db';
-import { todaysVehicleCheck } from '@bv/db/queries';
+import { todaysVehicleCheck, driverPodBacklog, poOwner } from '@bv/db/queries';
+import { PO_UPLOAD_WINDOW_HOURS } from '@bv/core/reference';
 import { DRIVER_MUTABLE_TRIP_STATUSES } from '@bv/core/rbac';
 import { BLOCKING_CHECK_KEYS, DOCUMENT_TYPE_BY_KEY } from '@bv/core/reference';
 import { buildKey, uploadObject, storageConfigured } from '@/lib/storage';
@@ -24,6 +25,13 @@ async function ownDrop(driverId: string, dropId: string) {
     .limit(1);
   if (!d || d.tripDriver !== driverId) throw new Error('not your drop');
   return d;
+}
+
+/** Blocks the next day's work while any delivered drop is past the PO upload window. */
+async function overduePodBlock(driverId: string): Promise<string | null> {
+  const overdue = (await driverPodBacklog(db, driverId, PO_UPLOAD_WINDOW_HOURS)).filter((b) => b.overdue);
+  if (overdue.length === 0) return null;
+  return `Upload the PO photo for ${overdue.length} earlier stop${overdue.length === 1 ? '' : 's'} first (over ${PO_UPLOAD_WINDOW_HOURS}h old)`;
 }
 
 async function nextTripRef() {
@@ -102,18 +110,31 @@ export async function logCompletedTrip(form: FormData) {
   if (!vehicleId) return { error: 'Pick your vehicle' };
   if (stops.length === 0) return { error: 'Add at least one stop' };
 
+  const blocked = await overduePodBlock(me.driverId);
+  if (blocked) return { error: blocked };
+
+  // one PO per drop: every delivered stop needs its own PO number
+  const poNumbers = stops.map((_, i) => String(form.get(`po_${i}`) ?? '').trim());
+  const needPo = stops.map((_, i) => i).filter((i) => !failedSet.has(i) && !poNumbers[i]);
+  if (needPo.length > 0) {
+    return { error: `Add the PO number for stop${needPo.length > 1 ? 's' : ''} ${needPo.map((i) => i + 1).join(', ')}` };
+  }
+  const seenPo = new Map<string, number>();
+  for (let i = 0; i < stops.length; i++) {
+    const key = poNumbers[i]!.toLowerCase();
+    if (!key) continue;
+    if (seenPo.has(key)) return { error: `PO ${poNumbers[i]} is on stops ${seenPo.get(key)! + 1} and ${i + 1} - each stop has its own PO` };
+    seenPo.set(key, i);
+    const owner = await poOwner(db, poNumbers[i]!);
+    if (owner) return { error: `PO ${poNumbers[i]} is already logged on ${owner.tripRef} by ${owner.driver}` };
+  }
+
   const photoFiles = new Map<number, File>();
   stops.forEach((_, i) => {
     const f = form.get(`photo_${i}`);
     if (f instanceof File && f.size > 0) photoFiles.set(i, f);
   });
   if (storageConfigured()) {
-    const missing = stops
-      .map((_, i) => i)
-      .filter((i) => !failedSet.has(i) && !photoFiles.has(i));
-    if (missing.length > 0) {
-      return { error: `Missing a delivery photo for stop ${missing.map((i) => i + 1).join(', ')}` };
-    }
     for (const [, f] of photoFiles) {
       if (f.size > 10 * 1024 * 1024) return { error: 'A photo is too large (max 10MB)' };
       if (!f.type.startsWith('image/')) return { error: 'Photos must be images' };
@@ -159,6 +180,7 @@ export async function logCompletedTrip(form: FormData) {
         trip_id: id,
         sequence: i + 1,
         destination_address: address,
+        po_number: poNumbers[i] || null,
         status: failedSet.has(i) ? ('failed' as const) : ('delivered' as const),
         completed_at: when,
         geofence_skipped: true,
@@ -237,6 +259,8 @@ export async function addDrop(form: FormData) {
  */
 export async function submitVehicleCheck(form: FormData) {
   const me = await getDriver();
+  const blocked = await overduePodBlock(me.driverId);
+  if (blocked) return { error: blocked };
   const vehicleId = String(form.get('vehicleId') ?? '');
   const odometer = form.get('odometer') ? Number(form.get('odometer')) : null;
   const items = JSON.parse(String(form.get('items') ?? '[]')) as {

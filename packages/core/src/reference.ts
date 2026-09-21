@@ -85,6 +85,9 @@ export const DOCUMENT_TYPE_BY_KEY: Record<DocumentType, DocumentTypeDef> = Objec
 
 // --- Alert thresholds ------------------------------------------------
 
+/** Hours a driver has to upload the PO photo for a delivered drop. Past this, they are blocked from starting the next day's work until it is in. */
+export const PO_UPLOAD_WINDOW_HOURS = 24;
+
 export const ALERT_THRESHOLDS = {
   /** advance older than this many days with no repayment → overdue_advance */
   advanceOverdueDays: 45,
@@ -95,7 +98,7 @@ export const ALERT_THRESHOLDS = {
   /** service due within this many km of current odometer → maintenance_due */
   serviceDueKm: 1500,
   /** delivered drop still missing a POD photo after this many hours */
-  missingPodHours: 12,
+  missingPodHours: PO_UPLOAD_WINDOW_HOURS,
   /** consecutive off-route trail points before raising route_deviation */
   deviationPointStreak: 4,
 } as const;

@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { requirePermission } from '@/lib/session';
+import { requirePermission, can } from '@/lib/session';
+import { objectUrl } from '@/lib/storage';
+import { RemovePodButton } from '@/components/RemovePodButton';
 import { db } from '@bv/db';
 import * as q from '@bv/db/queries';
 import { PageHeader, Card, Badge, StatTile, kes, dateTime, type Column, DataTable } from '@/components/ui';
@@ -18,17 +20,20 @@ const DROP_TONE: Record<string, 'ok' | 'warn' | 'crit' | 'muted'> = {
 };
 
 export default async function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requirePermission('trip:read');
+  const user = await requirePermission('trip:read');
+  const canRemovePod = can(user.role, 'pod:delete');
   const { id } = await params;
   const detail = await q.tripDetail(db, id);
   if (!detail) notFound();
 
-  const { trip, drops, checks, trail, deviations, fuel, costs } = detail;
+  const { trip, drops, podPhotos, checks, trail, deviations, fuel, costs } = detail;
+  const podUrls = await Promise.all(podPhotos.map(async (p) => ({ ...p, url: (await objectUrl(p.key)) ?? p.key })));
   const fuelTotal = fuel.reduce((s, f) => s + f.totalCost, 0);
   const costTotal = costs.reduce((s, c) => s + c.amount, 0);
 
   const dropCols: Column<(typeof drops)[number]>[] = [
     { key: 'seq', header: '#', render: (d) => d.sequence },
+    { key: 'po', header: 'PO', render: (d) => (d.poNumber ? <span className="font-semibold">{d.poNumber}</span> : <span className="text-muted">-</span>) },
     { key: 'addr', header: 'Destination', render: (d) => <span className="font-medium">{d.address}</span> },
     { key: 'status', header: 'Status', render: (d) => <Badge tone={DROP_TONE[d.status] ?? 'muted'}>{d.status}</Badge> },
     { key: 'signee', header: 'Received by', render: (d) => <span className="text-muted">{d.signee ?? '-'}</span> },
@@ -79,6 +84,29 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
 
       <h2 className="mb-2 mt-6 text-sm font-semibold">Drops</h2>
       <DataTable columns={dropCols} rows={drops} />
+
+      {podUrls.length > 0 && (
+        <>
+          <h2 className="mb-2 mt-6 text-sm font-semibold">PO photos</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {podUrls.map((ph) => {
+              const drop = drops.find((d) => d.id === ph.dropId);
+              return (
+                <div key={ph.id} className="rounded-lg border bg-surface p-2">
+                  <a href={ph.url} target="_blank" rel="noreferrer">
+                    <img src={ph.url} alt="PO" className="aspect-square w-full rounded-md object-cover" />
+                  </a>
+                  <div className="mt-1.5 flex items-center justify-between gap-2 text-xs">
+                    <span className="font-medium">{drop?.poNumber ? `PO ${drop.poNumber}` : `Stop ${drop?.sequence ?? ''}`}</span>
+                    {canRemovePod && <RemovePodButton photoId={ph.id} />}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {!canRemovePod && <p className="mt-2 text-xs text-muted">Once uploaded, a PO photo can only be removed by a supervisor.</p>}
+        </>
+      )}
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card title="Vehicle check">

@@ -1,7 +1,10 @@
 import { requireDriver } from '@/lib/driver-session';
 import { db, schema, eq, and, sql } from '@bv/db';
 import { VEHICLE_CHECK_TEMPLATE } from '@bv/core/reference';
+import { driverPodBacklog } from '@bv/db/queries';
+import { PO_UPLOAD_WINDOW_HOURS } from '@bv/core/reference';
 import { VehicleCheckForm } from '@/components/driver/VehicleCheckForm';
+import { PodBlock } from '@/components/driver/PodBlock';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +16,16 @@ export default async function DailyCheckPage() {
     .innerJoin(schema.vehicles, eq(schema.vehicles.id, schema.vehicleAssignments.vehicle_id))
     .where(and(eq(schema.vehicleAssignments.driver_id, me.driverId), sql`${schema.vehicleAssignments.end_date} is null`))
     .orderBy(schema.vehicles.registration);
+
+  const overdue = (await driverPodBacklog(db, me.driverId, PO_UPLOAD_WINDOW_HOURS)).filter((b) => b.overdue);
+  if (overdue.length > 0) {
+    return (
+      <>
+        <h1 className="text-lg font-semibold">Today&apos;s vehicle check</h1>
+        <PodBlock items={overdue} hours={PO_UPLOAD_WINDOW_HOURS} />
+      </>
+    );
+  }
 
   return (
     <>

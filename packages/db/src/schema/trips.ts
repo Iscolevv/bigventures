@@ -107,6 +107,8 @@ export const drops = bv.table(
       .references(() => trips.id, { onDelete: 'cascade' }),
     sequence: integer('sequence').notNull(),
     destination_address: text('destination_address').notNull(),
+    /** The client's purchase order / delivery note number for THIS drop. One PO per drop. */
+    po_number: text('po_number'),
     dest_lat: doublePrecision('dest_lat'),
     dest_lng: doublePrecision('dest_lng'),
     geofence_radius_m: integer('geofence_radius_m').notNull().default(120),
@@ -129,6 +131,7 @@ export const drops = bv.table(
   (t) => [
     index('drops_trip_idx').on(t.trip_id),
     index('drops_status_idx').on(t.status),
+    index('drops_po_number_idx').on(t.po_number),
     uniqueIndex('drops_trip_sequence_key').on(t.trip_id, t.sequence),
   ],
 );

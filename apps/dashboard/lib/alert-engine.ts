@@ -151,9 +151,10 @@ export async function runAlertScan(db: DB): Promise<number> {
     select d.id, d.destination_address, t.reference_code, t.id as trip_id
     from bigventures.drops d
     join bigventures.trips t on t.id = d.trip_id
-    where d.status = 'delivered'
-      and d.completed_at < now() - interval '${sql.raw(String(ALERT_THRESHOLDS.missingPodHours))} hours'
-      and d.completed_at > now() - interval '4 days'
+    where d.status in ('delivered','partial')
+      and d.po_number is not null
+      and d.created_at < now() - interval '${sql.raw(String(ALERT_THRESHOLDS.missingPodHours))} hours'
+      and d.created_at > now() - interval '7 days'
       and not exists (select 1 from bigventures.pod_photos pp where pp.drop_id = d.id)
   `);
   for (const r of pod.rows as { id: string; destination_address: string; reference_code: string; trip_id: string }[]) {

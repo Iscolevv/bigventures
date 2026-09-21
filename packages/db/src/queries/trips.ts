@@ -138,6 +138,7 @@ export async function tripDetail(db: DB, id: string) {
       id: drops.id,
       sequence: drops.sequence,
       address: drops.destination_address,
+      poNumber: drops.po_number,
       lat: drops.dest_lat,
       lng: drops.dest_lng,
       status: drops.status,
@@ -153,6 +154,20 @@ export async function tripDetail(db: DB, id: string) {
     .from(drops)
     .where(eq(drops.trip_id, id))
     .orderBy(drops.sequence);
+
+  const podRows = dropRows.length
+    ? await db
+        .select({
+          id: podPhotos.id,
+          dropId: podPhotos.drop_id,
+          key: podPhotos.storage_key,
+          uploadedAt: podPhotos.uploaded_at,
+        })
+        .from(podPhotos)
+        .innerJoin(drops, eq(drops.id, podPhotos.drop_id))
+        .where(eq(drops.trip_id, id))
+        .orderBy(podPhotos.uploaded_at)
+    : [];
 
   const checks = await db
     .select({
@@ -218,6 +233,7 @@ export async function tripDetail(db: DB, id: string) {
       odometerKm: money(trip.endOdo) - money(trip.startOdo),
     },
     drops: dropRows,
+    podPhotos: podRows,
     checks: checks.map((c) => ({
       ...c,
       odometer: c.odometer == null ? null : money(c.odometer),

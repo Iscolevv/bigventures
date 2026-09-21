@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { logCompletedTrip } from '@/app/d/actions';
 import { dInput, dLabel, dBtnPrimary, dChip } from './styles';
 import { compressImage } from './imageCompress';
+import { PO_UPLOAD_WINDOW_HOURS } from '@bv/core/reference';
 
 /** Today's date as YYYY-MM-DD in the browser's local time, for the date input default. */
 function today() {
@@ -19,6 +20,7 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
   const [loadingAddress, setLoadingAddress] = useState('');
   const [stopsText, setStopsText] = useState('');
   const [failed, setFailed] = useState<Set<number>>(new Set());
+  const [pos, setPos] = useState<Record<number, string>>({});
   const [photos, setPhotos] = useState<Record<number, File>>({});
   const [previews, setPreviews] = useState<Record<number, string>>({});
   const [compressing, setCompressing] = useState<Set<number>>(new Set());
@@ -68,9 +70,9 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
     if (!vehicleId) return setErr('Pick your vehicle');
     if (stops.length === 0) return setErr('Add at least one stop, one per line');
     if (compressing.size > 0) return setErr('Still processing a photo - give it a second');
-    const missingPhoto = stops.map((_, i) => i).filter((i) => !failed.has(i) && !photos[i]);
-    if (missingPhoto.length > 0) {
-      return setErr(`Add a delivery photo for stop${missingPhoto.length > 1 ? 's' : ''} ${missingPhoto.map((i) => i + 1).join(', ')} - or mark it failed if it didn't go through`);
+    const missingPo = stops.map((_, i) => i).filter((i) => !failed.has(i) && !pos[i]?.trim());
+    if (missingPo.length > 0) {
+      return setErr(`Add the PO number for stop${missingPo.length > 1 ? 's' : ''} ${missingPo.map((i) => i + 1).join(', ')} - or mark it failed if it didn't go through`);
     }
     const fd = new FormData();
     fd.set('vehicleId', vehicleId);
@@ -79,6 +81,7 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
     fd.set('stops', stops.join('\n'));
     fd.set('failedIndexes', [...failed].join(','));
     stops.forEach((_, i) => {
+      if (pos[i]?.trim()) fd.set(`po_${i}`, pos[i]!.trim());
       if (photos[i]) fd.set(`photo_${i}`, photos[i]!);
     });
     if (loadTonnes.trim()) fd.set('loadTonnes', loadTonnes.trim());
@@ -129,7 +132,7 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
         />
         {stops.length > 0 && (
           <div className="mt-2 space-y-2">
-            <p className="text-xs text-muted">Every delivered stop needs a proof-of-delivery photo. Mark a stop failed if it didn&apos;t go through instead.</p>
+            <p className="text-xs text-muted">Every delivered stop has its own PO. Type its number now and photograph it now, or within {PO_UPLOAD_WINDOW_HOURS} hours - you can&apos;t start the next day until it&apos;s uploaded. Mark a stop failed if it didn&apos;t go through.</p>
             {stops.map((s, i) => (
               <div key={i} className="rounded-lg border border-border bg-surface p-2.5">
                 <div className="flex items-start justify-between gap-2">
@@ -145,6 +148,15 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
                   </button>
                 </div>
                 {!failed.has(i) && (
+                  <input
+                    className={`${dInput} mt-2`}
+                    value={pos[i] ?? ''}
+                    onChange={(e) => setPos((p) => ({ ...p, [i]: e.target.value }))}
+                    placeholder="PO number for this stop"
+                    autoCapitalize="characters"
+                  />
+                )}
+                {!failed.has(i) && (
                   <div className="mt-2 flex items-center gap-2">
                     {previews[i] ? (
                       <img src={previews[i]} alt="POD" className="h-12 w-12 rounded-md object-cover" />
@@ -157,7 +169,7 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
                       disabled={compressing.has(i)}
                       className={dChip}
                     >
-                      {compressing.has(i) ? 'Compressing…' : previews[i] ? 'Retake photo' : 'Add photo'}
+                      {compressing.has(i) ? 'Compressing…' : previews[i] ? 'Retake PO photo' : 'Add PO photo (or later)'}
                     </button>
                     <input
                       ref={(el) => { fileRefs.current[i] = el; }}
