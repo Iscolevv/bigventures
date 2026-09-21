@@ -19,14 +19,7 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 export default async function DriverHome() {
   const me = await requireDriver();
 
-  const [myVehicle] = await db
-    .select({ id: schema.vehicles.id, reg: schema.vehicles.registration })
-    .from(schema.vehicleAssignments)
-    .innerJoin(schema.vehicles, eq(schema.vehicles.id, schema.vehicleAssignments.vehicle_id))
-    .where(and(eq(schema.vehicleAssignments.driver_id, me.driverId), sql`${schema.vehicleAssignments.end_date} is null`))
-    .orderBy(schema.vehicles.registration)
-    .limit(1);
-  const todayCheck = myVehicle ? await todaysVehicleCheck(db, me.driverId, myVehicle.id) : null;
+  const todayCheck = await todaysVehicleCheck(db, me.driverId);
 
   const podBacklog = await driverPodBacklog(db, me.driverId, PO_UPLOAD_WINDOW_HOURS);
 
@@ -47,21 +40,21 @@ export default async function DriverHome() {
 
   return (
     <>
-      {myVehicle && !todayCheck && (
+      {!todayCheck && (
         <Link
           href="/d/check"
           className="mb-4 block rounded-xl border border-warn bg-warn/10 px-4 py-3 text-sm font-semibold text-warn active:opacity-80"
         >
-          Do today&apos;s vehicle check for {myVehicle.reg} →
+          Do today&apos;s vehicle check →
         </Link>
       )}
-      {myVehicle && todayCheck?.overallResult === 'fail' && (
+      {todayCheck?.overallResult === 'fail' && (
         <div className="mb-4 rounded-xl border border-crit bg-crit/10 px-4 py-3 text-sm font-semibold text-crit">
-          Today&apos;s check flagged a critical fault - contact the office before driving {myVehicle.reg}.
+          Today&apos;s check flagged a critical fault - contact the office before driving {todayCheck.registration}.
         </div>
       )}
-      {myVehicle && todayCheck && todayCheck.overallResult !== 'fail' && (
-        <p className="mb-4 text-xs text-muted">✓ {myVehicle.reg} checked today{todayCheck.overallResult === 'flagged' ? ' (minor issue noted)' : ''}</p>
+      {todayCheck && todayCheck.overallResult !== 'fail' && (
+        <p className="mb-4 text-xs text-muted">✓ {todayCheck.registration} checked today{todayCheck.overallResult === 'flagged' ? ' (minor issue noted)' : ''}</p>
       )}
 
       {podBacklog.length > 0 && (

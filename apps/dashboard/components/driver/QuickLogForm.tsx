@@ -13,7 +13,15 @@ function today() {
   return new Date(d.getTime() - tz).toISOString().slice(0, 10);
 }
 
-export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string }[] }) {
+export function QuickLogForm({
+  vehicles,
+  recentStops = [],
+  lastTripStops = [],
+}: {
+  vehicles: { id: string; reg: string }[];
+  recentStops?: string[];
+  lastTripStops?: string[];
+}) {
   const router = useRouter();
   const [vehicleId, setVehicleId] = useState(vehicles[0]?.id ?? '');
   const [date, setDate] = useState(today());
@@ -39,6 +47,14 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
 
   // object URLs are per-File - revoke on unmount so we don't leak memory
   useEffect(() => () => Object.values(previews).forEach((u) => URL.revokeObjectURL(u)), []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function addStop(name: string) {
+    setStopsText((t) => {
+      const lines = t.split('\n').map((x) => x.trim()).filter(Boolean);
+      if (lines.includes(name)) return t;
+      return [...lines, name].join('\n');
+    });
+  }
 
   function toggleFailed(i: number) {
     setFailed((prev) => {
@@ -124,6 +140,20 @@ export function QuickLogForm({ vehicles }: { vehicles: { id: string; reg: string
 
       <div>
         <label className={dLabel}>Stops - one per line, same as you'd text the group</label>
+        {(lastTripStops.length > 0 || recentStops.length > 0) && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {lastTripStops.length > 0 && stops.length === 0 && (
+              <button type="button" className={`${dChip} border-brand text-brand`} onClick={() => setStopsText(lastTripStops.join('\n'))}>
+                Repeat my last trip ({lastTripStops.length} stops)
+              </button>
+            )}
+            {recentStops.map((r) => (
+              <button type="button" key={r} className={dChip} onClick={() => addStop(r)}>
+                + {r}
+              </button>
+            ))}
+          </div>
+        )}
         <textarea
           className={`${dInput} min-h-[140px]`}
           value={stopsText}

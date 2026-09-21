@@ -18,7 +18,7 @@ export const drivers = bv.table(
       .unique()
       .references(() => user.id, { onDelete: 'restrict' }),
     full_name: text('full_name').notNull(),
-    phone: text('phone').notNull(),
+    phone: text('phone'),
     national_id: text('national_id'),
     license_number: text('license_number'),
     license_expiry: date('license_expiry'),

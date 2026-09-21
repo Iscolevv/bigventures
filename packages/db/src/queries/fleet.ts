@@ -14,7 +14,7 @@ export interface DriverRow {
   id: string;
   userId: string;
   name: string;
-  phone: string;
+  phone: string | null;
   email: string | null;
   status: string;
   licenseNumber: string | null;

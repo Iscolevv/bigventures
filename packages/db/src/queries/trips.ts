@@ -255,18 +255,20 @@ export async function tripDetail(db: DB, id: string) {
  * every trip that driver starts today can rely on the same check. Returns the
  * most recent check performed today (local server day), or null if none yet.
  */
-export async function todaysVehicleCheck(db: DB, driverId: string, vehicleId: string) {
+export async function todaysVehicleCheck(db: DB, driverId: string, vehicleId?: string) {
   const [row] = await db
     .select({
       id: vehicleChecks.id,
       overallResult: vehicleChecks.overall_result,
       performedAt: vehicleChecks.performed_at,
+      registration: vehicles.registration,
     })
     .from(vehicleChecks)
+    .innerJoin(vehicles, eq(vehicles.id, vehicleChecks.vehicle_id))
     .where(
       and(
         eq(vehicleChecks.driver_id, driverId),
-        eq(vehicleChecks.vehicle_id, vehicleId),
+        vehicleId ? eq(vehicleChecks.vehicle_id, vehicleId) : undefined,
         sql`${vehicleChecks.performed_at} >= date_trunc('day', now())`,
       ),
     )

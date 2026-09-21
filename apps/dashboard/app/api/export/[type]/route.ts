@@ -1,5 +1,6 @@
 import { requirePermission } from '@/lib/session';
 import { db, sql } from '@bv/db';
+import { dailyRows } from '@bv/db/queries';
 import { toCsv } from '@/lib/csv';
 
 export const dynamic = 'force-dynamic';
@@ -49,9 +50,41 @@ const QUERIES: Record<string, string> = {
     order by pr.period_key desc, d.full_name`,
 };
 
-export async function GET(_req: Request, { params }: { params: Promise<{ type: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ type: string }> }) {
   await requirePermission('report:export');
   const { type } = await params;
+
+  if (type === 'daily') {
+    // The office's daily sheet: one row per stop, columns in the order Kevin keeps them in Excel.
+    const url = new URL(req.url);
+    const iso = /^\d{4}-\d{2}-\d{2}$/;
+    const from = iso.test(url.searchParams.get('from') ?? '') ? url.searchParams.get('from')! : new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+    const to = iso.test(url.searchParams.get('to') ?? '') ? url.searchParams.get('to')! : from;
+    const data = await dailyRows(db, from, to);
+    const csv = toCsv(
+      data.map((r) => ({
+        Date: r.date,
+        Vehicle: r.vehicle,
+        Driver: r.driver,
+        Trip: r.trip,
+        'Stop #': r.stopNo,
+        'PO number': r.po ?? '',
+        Stop: r.stop,
+        Status: r.status,
+        Tonnes: r.tonnes ?? '',
+        Bales: r.bales ?? '',
+        'Fuel (L)': r.fuelLitres ?? '',
+        'Fuel cost': r.fuelCost ?? '',
+        'PO photo': r.poPhotos > 0 ? 'yes' : r.status === 'delivered' || r.status === 'partial' ? 'PENDING' : '',
+      })),
+    );
+    return new Response('﻿' + csv, {
+      headers: {
+        'content-type': 'text/csv; charset=utf-8',
+        'content-disposition': `attachment; filename="bigventures-daily-${from}${to !== from ? `-to-${to}` : ''}.csv"`,
+      },
+    });
+  }
   const query = QUERIES[type];
   if (!query) return new Response('unknown export type', { status: 404 });
 

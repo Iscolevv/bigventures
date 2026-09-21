@@ -19,6 +19,9 @@ import {
   Menu,
   X,
   ClipboardCheck,
+  Sheet,
+  Building2,
+  UserCog,
 } from 'lucide-react';
 import type { AppRole } from '@/lib/auth';
 import { can } from '@bv/core/rbac';
@@ -28,6 +31,7 @@ const NAV: Array<{ href: string; label: string; icon: typeof Truck; perm: Parame
   { href: '/', label: 'Overview', icon: LayoutDashboard, perm: 'report:read' },
   { href: '/fleet', label: 'Fleet', icon: Truck, perm: 'vehicle:read' },
   { href: '/drivers', label: 'Drivers', icon: Users, perm: 'driver:read' },
+  { href: '/daily', label: 'Daily sheet', icon: Sheet, perm: 'trip:read' },
   { href: '/trips', label: 'Trips', icon: Route, perm: 'trip:read' },
   { href: '/pos', label: 'PO search', icon: ClipboardCheck, perm: 'trip:read' },
   { href: '/fuel', label: 'Fuel & consumption', icon: Fuel, perm: 'fuel:read' },
@@ -35,8 +39,10 @@ const NAV: Array<{ href: string; label: string; icon: typeof Truck; perm: Parame
   { href: '/roi', label: 'ROI & routes', icon: BarChart3, perm: 'report:read' },
   { href: '/incentives', label: 'Incentives', icon: Coins, perm: 'payroll:read' },
   { href: '/invoicing', label: 'Invoicing', icon: Receipt, perm: 'invoice:read' },
+  { href: '/clients', label: 'Clients', icon: Building2, perm: 'client:read' },
   { href: '/documents', label: 'Documents', icon: FileText, perm: 'document:read' },
   { href: '/alerts', label: 'Alerts', icon: TriangleAlert, perm: 'alert:read' },
+  { href: '/team', label: 'Team & logins', icon: UserCog, perm: 'user:read' },
   { href: '/audit', label: 'Audit trail', icon: ScrollText, perm: 'audit:read' },
   { href: '/settings', label: 'Settings', icon: Settings, perm: 'settings:read' },
 ];

@@ -7,6 +7,7 @@ export * from './_util';
 export * from './fleet';
 export * from './trips';
 export * from './pods';
+export * from './daily';
 export * from './finance';
 export * from './alerts';
 export * from './incentives';

@@ -22,6 +22,13 @@
       "when": 1789973298176,
       "tag": "0002_yielding_gamora",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789975836636,
+      "tag": "0003_dry_micromax",
+      "breakpoints": true
     }
   ]
 }

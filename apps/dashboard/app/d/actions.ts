@@ -7,6 +7,7 @@ import { todaysVehicleCheck, driverPodBacklog, poOwner } from '@bv/db/queries';
 import { PO_UPLOAD_WINDOW_HOURS } from '@bv/core/reference';
 import { DRIVER_MUTABLE_TRIP_STATUSES } from '@bv/core/rbac';
 import { BLOCKING_CHECK_KEYS, DOCUMENT_TYPE_BY_KEY } from '@bv/core/reference';
+import { vehicleIsUsable } from '@/lib/vehicles';
 import { buildKey, uploadObject, storageConfigured } from '@/lib/storage';
 
 const OK_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf']);
@@ -53,18 +54,7 @@ export async function createTrip(form: FormData) {
   if (!vehicleId || !loadingAddress) return { error: 'Vehicle and loading point are required' };
 
   // must be assigned to this vehicle
-  const assigned = await db
-    .select({ id: schema.vehicleAssignments.id })
-    .from(schema.vehicleAssignments)
-    .where(
-      and(
-        eq(schema.vehicleAssignments.driver_id, me.driverId),
-        eq(schema.vehicleAssignments.vehicle_id, vehicleId),
-        sql`${schema.vehicleAssignments.end_date} is null`,
-      ),
-    )
-    .limit(1);
-  if (!assigned[0]) return { error: 'That vehicle is not assigned to you' };
+  if (!(await vehicleIsUsable(vehicleId))) return { error: 'That vehicle is not available' };
 
   const id = randomUUID();
   await db.insert(schema.trips).values({
@@ -141,18 +131,7 @@ export async function logCompletedTrip(form: FormData) {
     }
   }
 
-  const assigned = await db
-    .select({ id: schema.vehicleAssignments.id })
-    .from(schema.vehicleAssignments)
-    .where(
-      and(
-        eq(schema.vehicleAssignments.driver_id, me.driverId),
-        eq(schema.vehicleAssignments.vehicle_id, vehicleId),
-        sql`${schema.vehicleAssignments.end_date} is null`,
-      ),
-    )
-    .limit(1);
-  if (!assigned[0]) return { error: 'That vehicle is not assigned to you' };
+  if (!(await vehicleIsUsable(vehicleId))) return { error: 'That vehicle is not available' };
 
   const when = dateStr ? new Date(`${dateStr}T12:00:00`) : new Date();
   if (Number.isNaN(when.getTime())) return { error: 'That date looks wrong' };
@@ -270,18 +249,7 @@ export async function submitVehicleCheck(form: FormData) {
     notes?: string;
   }[];
 
-  const assigned = await db
-    .select({ id: schema.vehicleAssignments.id })
-    .from(schema.vehicleAssignments)
-    .where(
-      and(
-        eq(schema.vehicleAssignments.driver_id, me.driverId),
-        eq(schema.vehicleAssignments.vehicle_id, vehicleId),
-        sql`${schema.vehicleAssignments.end_date} is null`,
-      ),
-    )
-    .limit(1);
-  if (!assigned[0]) return { error: 'That vehicle is not assigned to you' };
+  if (!(await vehicleIsUsable(vehicleId))) return { error: 'That vehicle is not available' };
 
   const blockingFail = items.some((i) => BLOCKING_CHECK_KEYS.has(i.key) && i.result === 'fail');
   const anyFail = items.some((i) => i.result === 'fail');

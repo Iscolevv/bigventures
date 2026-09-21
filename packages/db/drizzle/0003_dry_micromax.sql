@@ -1,0 +1,1 @@
+ALTER TABLE "bigventures"."drivers" ALTER COLUMN "phone" DROP NOT NULL;
