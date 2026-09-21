@@ -5,7 +5,7 @@ import { PAYMENT_METHODS } from '@bv/core/enums';
 import { PageHeader, Card, DataTable, StatTile, Badge, kes, dateShort, ExportLink, type Column } from '@/components/ui';
 import { GenerateInvoice, InvoiceStatusButton } from '@/components/InvoiceActions';
 import { Pager, pageParam } from '@/components/Pager';
-import { createManualInvoice, recordPayment } from './actions';
+import { createManualInvoice, recordPayment, assignInvoiceVehicle } from './actions';
 
 export const dynamic = 'force-dynamic';
 const input = 'mt-1 w-full rounded-md border bg-surface px-3 py-2 text-sm';
@@ -44,6 +44,7 @@ export default async function InvoicingPage({
     const c = clientsRaw.find((x) => x.name === t.client);
     if (c) unbilledByClient.set(c.id, (unbilledByClient.get(c.id) ?? 0) + 1);
   }
+  const vehicleList = await db.select({ id: schema.vehicles.id, reg: schema.vehicles.registration }).from(schema.vehicles).orderBy(schema.vehicles.registration);
   const clientOptions = clientsRaw.map((c) => ({ ...c, unbilled: unbilledByClient.get(c.id) ?? 0 }));
   const noClientTrips = unbilled.filter((t) => !t.client).length;
 
@@ -75,6 +76,22 @@ export default async function InvoicingPage({
             render: (r: (typeof invoices)[number]) => (
               <div className="flex flex-col items-end gap-1">
                 <InvoiceStatusButton id={r.id} status={r.status} />
+                <details className="text-left">
+                  <summary className="cursor-pointer rounded-md border px-2 py-1 text-xs hover:bg-bg">Vehicle</summary>
+                  <form action={assignInvoiceVehicle} className="mt-2 grid w-56 gap-2 rounded-lg border bg-surface p-3">
+                    <input type="hidden" name="invoiceId" value={r.id} />
+                    <label className="text-xs font-medium">
+                      Which truck earned this?
+                      <select name="vehicleId" defaultValue="" className={input}>
+                        <option value="">Not one truck</option>
+                        {vehicleList.map((v) => (
+                          <option key={v.id} value={v.id}>{v.reg}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <button className="rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-white">Save</button>
+                  </form>
+                </details>
                 {canPay && r.outstanding > 0 && r.status !== 'draft' && r.status !== 'void' && (
                   <details className="text-left">
                     <summary className="cursor-pointer rounded-md border px-2 py-1 text-xs hover:bg-bg">Record payment</summary>
@@ -140,6 +157,15 @@ export default async function InvoicingPage({
                   <option value="" disabled>Select client…</option>
                   {clientsRaw.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium sm:col-span-2">
+                Which truck (optional)
+                <select name="vehicleId" defaultValue="" className={input}>
+                  <option value="">Not one truck</option>
+                  {vehicleList.map((v) => (
+                    <option key={v.id} value={v.id}>{v.reg}</option>
                   ))}
                 </select>
               </label>

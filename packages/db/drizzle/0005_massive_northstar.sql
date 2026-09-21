@@ -1,0 +1,2 @@
+ALTER TABLE "bigventures"."invoice_lines" ADD COLUMN "vehicle_id" text;--> statement-breakpoint
+ALTER TABLE "bigventures"."invoice_lines" ADD CONSTRAINT "invoice_lines_vehicle_id_vehicles_id_fk" FOREIGN KEY ("vehicle_id") REFERENCES "bigventures"."vehicles"("id") ON DELETE set null ON UPDATE no action;

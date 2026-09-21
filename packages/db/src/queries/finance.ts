@@ -284,8 +284,11 @@ export async function vehicleRoiTable(db: DB, p: Period): Promise<VehicleRoiRow[
       v.monthly_finance_cost as monthly_finance,
       coalesce((
         select sum(il.line_total::numeric) from bigventures.invoice_lines il
-        join bigventures.trips t2 on t2.id = il.trip_id
-        where t2.vehicle_id = v.id and t2.started_at >= ${from} and t2.started_at < ${to}
+        join bigventures.invoices inv on inv.id = il.invoice_id
+        left join bigventures.trips t2 on t2.id = il.trip_id
+        where (t2.vehicle_id = v.id or il.vehicle_id = v.id)
+          and inv.status not in ('draft','void')
+          and inv.issue_date >= ${fromD} and inv.issue_date < ${toD}
       ), 0) as revenue,
       coalesce((
         select sum(fe.total_cost::numeric) from bigventures.fuel_entries fe

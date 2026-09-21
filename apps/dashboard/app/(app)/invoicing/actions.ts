@@ -101,6 +101,7 @@ export async function createManualInvoice(form: FormData) {
   const description = String(form.get('description') ?? '').trim();
   const qty = Number(form.get('quantity') ?? 1);
   const unit = Number(form.get('unit'));
+  const vehicleId = String(form.get('vehicleId') ?? '') || null;
   const back = (m: string): never => redirect(`/invoicing?error=${encodeURIComponent(m)}`);
 
   if (!clientId) back('Pick a client');
@@ -129,6 +130,7 @@ export async function createManualInvoice(form: FormData) {
   });
   await db.insert(schema.invoiceLines).values({
     invoice_id: invId,
+    vehicle_id: vehicleId,
     description,
     quantity: String(qty),
     unit_amount: String(unit),
@@ -137,6 +139,21 @@ export async function createManualInvoice(form: FormData) {
   await writeAudit(user, 'create', 'invoice', invId, null, { manual: true, total: subtotal + tax });
   revalidatePath('/invoicing');
   redirect('/invoicing?msg=' + encodeURIComponent('Invoice created and issued'));
+}
+
+/** Say which truck earned a one-off invoice (lines that came from trips already know their truck). */
+export async function assignInvoiceVehicle(form: FormData) {
+  const user = await requirePermission('invoice:update');
+  const invoiceId = String(form.get('invoiceId') ?? '');
+  const vehicleId = String(form.get('vehicleId') ?? '') || null;
+  await db
+    .update(schema.invoiceLines)
+    .set({ vehicle_id: vehicleId })
+    .where(and(eq(schema.invoiceLines.invoice_id, invoiceId), sql`${schema.invoiceLines.trip_id} is null`));
+  await writeAudit(user, 'update', 'invoice', invoiceId, null, { vehicleId });
+  revalidatePath('/invoicing');
+  revalidatePath('/roi');
+  redirect('/invoicing?msg=' + encodeURIComponent('Vehicle saved'));
 }
 
 /** Record money received against an invoice; the invoice becomes part paid / paid automatically. */

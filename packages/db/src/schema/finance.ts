@@ -259,6 +259,8 @@ export const invoiceLines = bv.table(
       .references(() => invoices.id, { onDelete: 'cascade' }),
     trip_id: text('trip_id').references(() => trips.id, { onDelete: 'set null' }),
     drop_id: text('drop_id').references(() => drops.id, { onDelete: 'set null' }),
+    /** for one-off invoice lines that aren't from a trip: which truck earned it */
+    vehicle_id: text('vehicle_id').references(() => vehicles.id, { onDelete: 'set null' }),
     description: text('description').notNull(),
     quantity: numeric('quantity', { precision: 10, scale: 2 }).notNull().default('1'),
     unit_amount: numeric('unit_amount', { precision: 14, scale: 2 }).notNull(),
