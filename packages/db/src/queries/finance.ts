@@ -17,6 +17,12 @@ import { baseline, isConsumptionAnomaly } from '@bv/core/calc';
 
 // ---- Fuel ------------------------------------------------------------
 
+/** Exclusive end for a date-typed column: 'to = now' must still include today's date. */
+function endExclusive(to: Date): string {
+  const midnight = to.getUTCHours() === 0 && to.getUTCMinutes() === 0 && to.getUTCSeconds() === 0 && to.getUTCMilliseconds() === 0;
+  return (midnight ? to : new Date(to.getTime() + 86_400_000)).toISOString().slice(0, 10);
+}
+
 export interface FuelVehicleRow {
   vehicleId: string;
   registration: string;
@@ -140,7 +146,7 @@ export async function costsByCategory(db: DB, p: Period) {
       count: sql<number>`count(*)::int`,
     })
     .from(costEntries)
-    .where(and(gte(costEntries.incurred_at, p.from.toISOString().slice(0, 10)), lt(costEntries.incurred_at, p.to.toISOString().slice(0, 10))))
+    .where(and(gte(costEntries.incurred_at, p.from.toISOString().slice(0, 10)), lt(costEntries.incurred_at, endExclusive(p.to))))
     .groupBy(costEntries.category)
     .orderBy(sql`sum(${costEntries.amount}) desc`);
   return rows.map((r) => ({ category: r.category, total: money(r.total), count: r.count }));
@@ -157,7 +163,7 @@ export async function costSummary(db: DB, p: Period) {
     .where(
       and(
         gte(costEntries.incurred_at, p.from.toISOString().slice(0, 10)),
-        lt(costEntries.incurred_at, p.to.toISOString().slice(0, 10)),
+        lt(costEntries.incurred_at, endExclusive(p.to)),
       ),
     );
   return {
@@ -176,7 +182,7 @@ export async function costEntryList(
   if (f.driverId) conds.push(eq(costEntries.driver_id, f.driverId));
   if (f.category) conds.push(eq(costEntries.category, f.category as 'repair'));
   if (f.from) conds.push(gte(costEntries.incurred_at, f.from.toISOString().slice(0, 10)));
-  if (f.to) conds.push(lt(costEntries.incurred_at, f.to.toISOString().slice(0, 10)));
+  if (f.to) conds.push(lt(costEntries.incurred_at, endExclusive(f.to)));
   const where = conds.length ? and(...conds) : undefined;
   const b = pageBounds(f);
   const [{ total } = { total: 0 }] = await db
@@ -268,7 +274,7 @@ export async function vehicleRoiTable(db: DB, p: Period): Promise<VehicleRoiRow[
   const from = p.from.toISOString();
   const to = p.to.toISOString();
   const fromD = p.from.toISOString().slice(0, 10);
-  const toD = p.to.toISOString().slice(0, 10);
+  const toD = endExclusive(p.to);
 
   const result = await db.execute(sql`
     select
@@ -471,7 +477,7 @@ export async function financeSummary(db: DB, p: Period) {
     .where(
       and(
         gte(costEntries.incurred_at, p.from.toISOString().slice(0, 10)),
-        lt(costEntries.incurred_at, p.to.toISOString().slice(0, 10)),
+        lt(costEntries.incurred_at, endExclusive(p.to)),
       ),
     );
   const [ar] = await db
