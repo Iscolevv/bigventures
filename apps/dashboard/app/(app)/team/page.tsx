@@ -41,8 +41,12 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
               </span>
             </summary>
             {canEdit && (
-              <form action={updateOfficeUser} className="grid gap-3 border-t p-4 sm:grid-cols-[1fr_9rem_1fr_auto] sm:items-end">
+              <form action={updateOfficeUser} className="grid gap-3 border-t p-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_9rem_1fr_auto] lg:items-end">
                 <input type="hidden" name="id" value={u.id} />
+                <label className="text-sm font-medium">
+                  Email (approval emails go here)
+                  <input name="email" type="email" required defaultValue={u.email} className={input} />
+                </label>
                 <label className="text-sm font-medium">
                   Role
                   <select name="role" defaultValue={u.role} className={input}>

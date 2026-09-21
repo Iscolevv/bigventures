@@ -35,7 +35,7 @@ export function QuickLogForm({
   const [loadTonnes, setLoadTonnes] = useState('');
   const [loadBales, setLoadBales] = useState('');
   const [fuelLitres, setFuelLitres] = useState('');
-  const [fuelCost, setFuelCost] = useState('');
+  const [signees, setSignees] = useState<Record<number, string>>({});
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const fileRefs = useRef<Record<number, HTMLInputElement | null>>({});
@@ -98,12 +98,12 @@ export function QuickLogForm({
     fd.set('failedIndexes', [...failed].join(','));
     stops.forEach((_, i) => {
       if (pos[i]?.trim()) fd.set(`po_${i}`, pos[i]!.trim());
+      if (signees[i]?.trim()) fd.set(`signee_${i}`, signees[i]!.trim());
       if (photos[i]) fd.set(`photo_${i}`, photos[i]!);
     });
     if (loadTonnes.trim()) fd.set('loadTonnes', loadTonnes.trim());
     if (loadBales.trim()) fd.set('loadBales', loadBales.trim());
     if (fuelLitres.trim()) fd.set('fuelLitres', fuelLitres.trim());
-    if (fuelCost.trim()) fd.set('fuelCost', fuelCost.trim());
     setErr(null);
     start(async () => {
       const r = await logCompletedTrip(fd);
@@ -187,6 +187,14 @@ export function QuickLogForm({
                   />
                 )}
                 {!failed.has(i) && (
+                  <input
+                    className={`${dInput} mt-2`}
+                    value={signees[i] ?? ''}
+                    onChange={(e) => setSignees((p) => ({ ...p, [i]: e.target.value }))}
+                    placeholder="Received by (name of who signed)"
+                  />
+                )}
+                {!failed.has(i) && (
                   <div className="mt-2 flex items-center gap-2">
                     {previews[i] ? (
                       <img src={previews[i]} alt="POD" className="h-12 w-12 rounded-md object-cover" />
@@ -227,10 +235,7 @@ export function QuickLogForm({
 
       <div>
         <label className={dLabel}>Fuel (optional)</label>
-        <div className="mt-1 grid grid-cols-2 gap-3">
-          <input className={dInput} inputMode="decimal" value={fuelLitres} onChange={(e) => setFuelLitres(e.target.value)} placeholder="Litres, e.g. 10" />
-          <input className={dInput} inputMode="decimal" value={fuelCost} onChange={(e) => setFuelCost(e.target.value)} placeholder="Cost, if you know it" />
-        </div>
+        <input className={dInput} inputMode="decimal" value={fuelLitres} onChange={(e) => setFuelLitres(e.target.value)} placeholder="Litres, e.g. 10 (the office adds the price)" />
         <div className="mt-2 flex flex-wrap gap-2">
           {[10, 15, 20, 50].map((l) => (
             <button type="button" key={l} className={dChip} onClick={() => setFuelLitres(String(l))}>{l}L</button>

@@ -20,6 +20,7 @@ export default async function OverviewPage() {
   ]);
   const recentTrips = recentTripsResult.rows;
 
+  const pendingApprovals = await q.pendingApprovalCount(db);
   const grossProfit = fin.revenue - fin.fuelCost - fin.runningCost;
 
   return (
@@ -28,6 +29,12 @@ export default async function OverviewPage() {
         title={`Welcome, ${user.name.split(' ')[0]}`}
         subtitle={`Snapshot - ${p.label}`}
       />
+
+      {pendingApprovals > 0 && (
+        <Link href="/approvals" className="mb-4 block rounded-xl border border-warn bg-warn/10 px-4 py-3 text-sm font-semibold text-warn">
+          {pendingApprovals} trip{pendingApprovals === 1 ? '' : 's'} waiting for your approval before {pendingApprovals === 1 ? 'it counts' : 'they count'} in these numbers →
+        </Link>
+      )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile href="/trips" label="Trips (30d)" value={tripsSum.total} hint={`${tripsSum.flagged} flagged · ${tripsSum.inProgress} live`} tone={tripsSum.flagged > 0 ? 'warn' : 'default'} />

@@ -46,6 +46,7 @@ export async function fuelByVehicle(db: DB, p: Period): Promise<FuelVehicleRow[]
         eq(fuelEntries.vehicle_id, vehicles.id),
         gte(fuelEntries.filled_at, p.from),
         lt(fuelEntries.filled_at, p.to),
+        sql`(bigventures.fuel_entries.trip_id is null or exists (select 1 from bigventures.trips tt where tt.id = bigventures.fuel_entries.trip_id and tt.status <> 'submitted'))`,
       ),
     )
     .groupBy(vehicles.id, vehicles.registration)
@@ -463,7 +464,7 @@ export async function financeSummary(db: DB, p: Period) {
   const [fuel] = await db
     .select({ total: sql<string>`coalesce(sum(${fuelEntries.total_cost}),0)` })
     .from(fuelEntries)
-    .where(and(gte(fuelEntries.filled_at, p.from), lt(fuelEntries.filled_at, p.to)));
+    .where(and(gte(fuelEntries.filled_at, p.from), lt(fuelEntries.filled_at, p.to), sql`(bigventures.fuel_entries.trip_id is null or exists (select 1 from bigventures.trips tt where tt.id = bigventures.fuel_entries.trip_id and tt.status <> 'submitted'))`));
   const [cost] = await db
     .select({ total: sql<string>`coalesce(sum(${costEntries.amount}),0)` })
     .from(costEntries)

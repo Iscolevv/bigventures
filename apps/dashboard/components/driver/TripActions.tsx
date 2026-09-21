@@ -78,7 +78,8 @@ export function TripActions({
         </>
       )}
 
-      {status === 'completed' && <p className="text-center text-sm text-ok">Trip completed ✓</p>}
+      {status === 'submitted' && <p className="text-center text-sm text-warn">Sent to the office. It counts once they approve it.</p>}
+      {status === 'completed' && <p className="text-center text-sm text-ok">Approved ✓</p>}
     </div>
   );
 }

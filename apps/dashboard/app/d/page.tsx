@@ -9,9 +9,10 @@ export const dynamic = 'force-dynamic';
 
 const STATUS: Record<string, { label: string; cls: string }> = {
   draft: { label: 'Draft', cls: 'bg-muted/15 text-muted' },
+  submitted: { label: 'Sent to office', cls: 'bg-warn/15 text-warn' },
   pre_check: { label: 'Ready to start', cls: 'bg-brand/15 text-brand' },
   in_progress: { label: 'On the road', cls: 'bg-warn/15 text-warn' },
-  completed: { label: 'Done', cls: 'bg-ok/15 text-ok' },
+  completed: { label: 'Approved', cls: 'bg-ok/15 text-ok' },
   cancelled: { label: 'Cancelled', cls: 'bg-muted/15 text-muted' },
   flagged: { label: 'Needs review', cls: 'bg-crit/15 text-crit' },
 };

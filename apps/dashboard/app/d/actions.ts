@@ -1,5 +1,7 @@
 'use server';
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
+import { notifyTripSubmitted } from '@/lib/notify';
 import { randomUUID } from 'node:crypto';
 import { getDriver } from '@/lib/driver-session';
 import { db, schema, eq, and, sql } from '@bv/db';
@@ -91,7 +93,6 @@ export async function logCompletedTrip(form: FormData) {
   const loadTonnes = form.get('loadTonnes') ? Number(form.get('loadTonnes')) : null;
   const loadBales = form.get('loadBales') ? Number(form.get('loadBales')) : null;
   const fuelLitres = form.get('fuelLitres') ? Number(form.get('fuelLitres')) : null;
-  const fuelCost = form.get('fuelCost') ? Number(form.get('fuelCost')) : null;
 
   const stops = stopsRaw
     .split('\n')
@@ -133,8 +134,11 @@ export async function logCompletedTrip(form: FormData) {
 
   if (!(await vehicleIsUsable(vehicleId))) return { error: 'That vehicle is not available' };
 
-  const when = dateStr ? new Date(`${dateStr}T12:00:00`) : new Date();
-  if (Number.isNaN(when.getTime())) return { error: 'That date looks wrong' };
+  const noon = dateStr ? new Date(`${dateStr}T12:00:00`) : new Date();
+  if (Number.isNaN(noon.getTime())) return { error: 'That date looks wrong' };
+  // never stamp a trip in the future - it would fall outside every 'last N days' report
+  const now = new Date();
+  const when = noon > now ? now : noon;
 
   const id = randomUUID();
   await db.insert(schema.trips).values({
@@ -142,7 +146,7 @@ export async function logCompletedTrip(form: FormData) {
     reference_code: await nextTripRef(),
     vehicle_id: vehicleId,
     driver_id: me.driverId,
-    status: 'completed',
+    status: 'submitted',
     loading_point_address: loadingAddress || 'Not recorded',
     load_tonnes: loadTonnes != null && !Number.isNaN(loadTonnes) ? String(loadTonnes) : null,
     load_bales: loadBales != null && !Number.isNaN(loadBales) ? Math.round(loadBales) : null,
@@ -161,6 +165,7 @@ export async function logCompletedTrip(form: FormData) {
         destination_address: address,
         po_number: poNumbers[i] || null,
         status: failedSet.has(i) ? ('failed' as const) : ('delivered' as const),
+        signee_name: String(form.get(`signee_${i}`) ?? '').trim() || null,
         completed_at: when,
         geofence_skipped: true,
       })),
@@ -191,14 +196,25 @@ export async function logCompletedTrip(form: FormData) {
       driver_id: me.driverId,
       trip_id: id,
       litres: String(fuelLitres),
-      total_cost: fuelCost != null && !Number.isNaN(fuelCost) ? String(fuelCost) : '0',
+      total_cost: '0', // the price is filled in by the office when they approve the trip
       odometer_km: null,
       filled_at: when,
       source: 'dashboard',
       created_by: me.userId,
-      notes: fuelCost == null ? 'Cost not reported - fill in from receipt' : null,
+      notes: 'Litres reported by driver; cost added at approval',
     });
   }
+
+  // tell the approvers there is a trip waiting (best effort, after the response)
+  const ref = (await db.select({ r: schema.trips.reference_code }).from(schema.trips).where(eq(schema.trips.id, id)).limit(1))[0]?.r ?? '';
+  const [veh] = await db.select({ reg: schema.vehicles.registration }).from(schema.vehicles).where(eq(schema.vehicles.id, vehicleId)).limit(1);
+  after(async () => {
+    try {
+      await notifyTripSubmitted({ ref, driver: me.name, vehicle: veh?.reg ?? '', stops: stops.length, failed: failedSet.size, fuelLitres: fuelLitres && !Number.isNaN(fuelLitres) ? fuelLitres : null });
+    } catch (e) {
+      console.error('approval email failed', e);
+    }
+  });
 
   revalidatePath('/d');
   return { ok: true, id };

@@ -122,6 +122,8 @@ export async function tripDetail(db: DB, id: string) {
       endedAt: trips.ended_at,
       startOdo: trips.start_odometer_km,
       endOdo: trips.end_odometer_km,
+      loadTonnes: trips.load_tonnes,
+      loadBales: trips.load_bales,
       cargo: trips.cargo_description,
       notes: trips.notes,
     })
@@ -286,7 +288,7 @@ export async function tripsSummary(db: DB, from: Date, to: Date) {
       inProgress: sql<number>`count(*) filter (where ${trips.status} in ('in_progress','pre_check'))::int`,
     })
     .from(trips)
-    .where(and(gte(trips.started_at, from), lt(trips.started_at, to)));
+    .where(and(gte(trips.started_at, from), lt(trips.started_at, to), sql`${trips.status} <> 'submitted'`));
   return {
     total: r?.total ?? 0,
     completed: r?.completed ?? 0,

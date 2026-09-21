@@ -34,16 +34,22 @@ export async function updateOfficeUser(form: FormData) {
   const role = String(form.get('role') ?? '');
   const status = String(form.get('status') ?? 'active');
   const password = String(form.get('password') ?? '');
+  const email = String(form.get('email') ?? '').trim().toLowerCase();
   if (!(OFFICE_ROLES as readonly string[]).includes(role)) fail('Pick a role');
+  if (!email.includes('@')) fail('Enter a valid email');
   if (id === actor.id && (role !== actor.role || status !== 'active')) fail("You can't change your own role or suspend yourself");
   if (password && password.length < 8) fail('Password must be at least 8 characters');
 
-  await db
-    .update(schema.user)
-    .set({ role: role as 'admin', status: status === 'suspended' ? 'suspended' : 'active', updatedAt: new Date() })
-    .where(eq(schema.user.id, id));
+  try {
+    await db
+      .update(schema.user)
+      .set({ email, role: role as 'admin', status: status === 'suspended' ? 'suspended' : 'active', updatedAt: new Date() })
+      .where(eq(schema.user.id, id));
+  } catch {
+    fail('That email already has a login');
+  }
   if (password) await setLoginPassword(id, password);
-  await writeAudit(actor, 'update', 'user', id, null, { role, status, passwordReset: !!password });
+  await writeAudit(actor, 'update', 'user', id, null, { email, role, status, passwordReset: !!password });
   revalidatePath('/team');
   redirect('/team');
 }

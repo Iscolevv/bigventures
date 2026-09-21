@@ -15,6 +15,7 @@ const STATUS_TONE: Record<string, 'ok' | 'warn' | 'crit' | 'muted' | 'brand'> = 
   flagged: 'crit',
   cancelled: 'muted',
   draft: 'muted',
+  submitted: 'warn',
 };
 
 export default async function TripsPage({

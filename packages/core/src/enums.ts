@@ -44,6 +44,7 @@ export type VehicleStatus = (typeof VEHICLE_STATUSES)[number];
 
 export const TRIP_STATUSES = asConst([
   'draft', // created, not yet started
+  'submitted', // logged by the driver, waiting for the office to approve before it counts
   'pre_check', // vehicle check in progress
   'in_progress', // left loading point
   'completed', // all drops closed + trip closed

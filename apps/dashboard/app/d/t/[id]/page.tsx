@@ -57,7 +57,7 @@ export default async function DriverTrip({ params }: { params: Promise<{ id: str
       <p className="wrap-anywhere text-sm text-muted">
         {vehicle?.reg} · {trip.loading_point_address}
       </p>
-      <p className="mt-1 text-sm font-medium capitalize text-brand">{trip.status.replace('_', ' ')}</p>
+      <p className="mt-1 text-sm font-medium capitalize text-brand">{trip.status === 'submitted' ? 'Sent to the office' : trip.status === 'completed' ? 'Approved' : trip.status.replace('_', ' ')}</p>
 
       {trip.status === 'in_progress' && <TrailTracker tripId={id} />}
 

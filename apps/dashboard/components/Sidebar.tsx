@@ -22,6 +22,7 @@ import {
   Sheet,
   Building2,
   UserCog,
+  CheckCheck,
 } from 'lucide-react';
 import type { AppRole } from '@/lib/auth';
 import { can } from '@bv/core/rbac';
@@ -29,12 +30,13 @@ import { signOut } from '@/lib/auth-client';
 
 const NAV: Array<{ href: string; label: string; icon: typeof Truck; perm: Parameters<typeof can>[1] }> = [
   { href: '/', label: 'Overview', icon: LayoutDashboard, perm: 'report:read' },
+  { href: '/approvals', label: 'Approvals', icon: CheckCheck, perm: 'trip:approve' },
   { href: '/fleet', label: 'Fleet', icon: Truck, perm: 'vehicle:read' },
   { href: '/drivers', label: 'Drivers', icon: Users, perm: 'driver:read' },
   { href: '/daily', label: 'Daily sheet', icon: Sheet, perm: 'trip:read' },
   { href: '/trips', label: 'Trips', icon: Route, perm: 'trip:read' },
   { href: '/pos', label: 'PO search', icon: ClipboardCheck, perm: 'trip:read' },
-  { href: '/fuel', label: 'Fuel & consumption', icon: Fuel, perm: 'fuel:read' },
+  { href: '/fuel', label: 'Fuel', icon: Fuel, perm: 'fuel:read' },
   { href: '/costs', label: 'Costs & advances', icon: Wallet, perm: 'cost:read' },
   { href: '/roi', label: 'ROI & routes', icon: BarChart3, perm: 'report:read' },
   { href: '/incentives', label: 'Incentives', icon: Coins, perm: 'payroll:read' },
@@ -47,7 +49,7 @@ const NAV: Array<{ href: string; label: string; icon: typeof Truck; perm: Parame
   { href: '/settings', label: 'Settings', icon: Settings, perm: 'settings:read' },
 ];
 
-export function Sidebar({ role, name }: { role: AppRole; name: string }) {
+export function Sidebar({ role, name, pendingApprovals = 0 }: { role: AppRole; name: string; pendingApprovals?: number }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const items = NAV.filter((n) => can(role, n.perm));
@@ -78,6 +80,9 @@ export function Sidebar({ role, name }: { role: AppRole; name: string }) {
             >
               <Icon size={16} />
               {n.label}
+              {n.href === '/approvals' && pendingApprovals > 0 && (
+                <span className="ml-auto rounded-full bg-warn px-2 py-0.5 text-xs font-bold text-white">{pendingApprovals}</span>
+              )}
             </Link>
           );
         })}
