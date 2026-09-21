@@ -1,6 +1,7 @@
 import { requirePermission, can } from '@/lib/session';
 import { db, schema, desc, eq } from '@bv/db';
 import { COST_CATEGORIES, PAYMENT_METHODS } from '@bv/core/enums';
+import { CostKindField } from '@/components/CostKindField';
 import { addCost, deleteCost, addAdvance, deleteAdvance } from './actions';
 import * as q from '@bv/db/queries';
 import { PageHeader, Card, DataTable, StatTile, Badge, kes, dateShort, ExportLink, type Column } from '@/components/ui';
@@ -98,15 +99,7 @@ export default async function CostsPage({
         <div className="mb-6 grid gap-4 lg:grid-cols-2">
           <Card title="Record a cost">
             <form action={addCost} className="grid gap-3 sm:grid-cols-2">
-              <label className="text-sm font-medium">
-                What kind
-                <select name="category" required defaultValue="" className={`${fieldCls} capitalize`}>
-                  <option value="" disabled>Pick a category…</option>
-                  {COST_CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </label>
+              <CostKindField categories={COST_CATEGORIES} />
               <label className="text-sm font-medium">
                 Amount (Ksh)
                 <input name="amount" inputMode="decimal" required className={fieldCls} />

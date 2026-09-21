@@ -16,10 +16,13 @@ export async function addCost(form: FormData) {
   const date = String(form.get('date') ?? '') || new Date().toISOString().slice(0, 10);
   const vehicleId = String(form.get('vehicleId') ?? '') || null;
   const driverId = String(form.get('driverId') ?? '') || null;
-  const description = String(form.get('description') ?? '').trim() || null;
+  const note = String(form.get('description') ?? '').trim();
+  const otherDetail = String(form.get('otherDetail') ?? '').trim();
   const vendor = String(form.get('vendor') ?? '').trim() || null;
   if (!(COST_CATEGORIES as readonly string[]).includes(category)) back('Pick a category');
   if (!(amount > 0)) back('Enter the amount (Ksh)');
+  if (category === 'other' && !otherDetail) back('Describe what this cost was');
+  const description = [otherDetail, note].filter(Boolean).join(' - ') || null;
 
   const [row] = await db
     .insert(schema.costEntries)

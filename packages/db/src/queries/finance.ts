@@ -9,6 +9,7 @@ import {
   advances,
   invoices,
   invoiceLines,
+  payments,
   clients,
   routes,
 } from '../schema';
@@ -462,11 +463,21 @@ export async function unbilledTrips(db: DB) {
 }
 
 export async function financeSummary(db: DB, p: Period) {
+  // Revenue = what was invoiced in the period, before VAT (drafts and voids excluded).
   const [rev] = await db
-    .select({ total: sql<string>`coalesce(sum(${invoiceLines.line_total}),0)` })
-    .from(invoiceLines)
-    .innerJoin(trips, eq(trips.id, invoiceLines.trip_id))
-    .where(and(gte(trips.started_at, p.from), lt(trips.started_at, p.to)));
+    .select({ total: sql<string>`coalesce(sum(${invoices.subtotal}),0)` })
+    .from(invoices)
+    .where(
+      and(
+        gte(invoices.issue_date, p.from.toISOString().slice(0, 10)),
+        lt(invoices.issue_date, endExclusive(p.to)),
+        sql`${invoices.status} not in ('draft','void')`,
+      ),
+    );
+  const [rec] = await db
+    .select({ total: sql<string>`coalesce(sum(${payments.amount}),0)` })
+    .from(payments)
+    .where(and(gte(payments.paid_at, p.from.toISOString().slice(0, 10)), lt(payments.paid_at, endExclusive(p.to))));
   const [fuel] = await db
     .select({ total: sql<string>`coalesce(sum(${fuelEntries.total_cost}),0)` })
     .from(fuelEntries)
@@ -488,6 +499,7 @@ export async function financeSummary(db: DB, p: Period) {
     .from(invoices);
   return {
     revenue: money(rev?.total),
+    received: money(rec?.total),
     fuelCost: money(fuel?.total),
     runningCost: money(cost?.total),
     receivablesOutstanding: money(ar?.outstanding),

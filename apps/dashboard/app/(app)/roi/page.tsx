@@ -58,7 +58,7 @@ export default async function RoiPage({
 
   return (
     <>
-      <PageHeader title="ROI & route analytics" subtitle={p.label} actions={<PeriodTabs current={p.key} />} />
+      <PageHeader title="ROI & route analytics" subtitle={`${p.label} · per-vehicle figures count invoiced trips only; one-off invoices are not tied to a vehicle`} actions={<PeriodTabs current={p.key} />} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile label="Revenue" value={kes(revenue)} />
