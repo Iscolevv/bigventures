@@ -28,9 +28,9 @@ export function proxy(req: NextRequest) {
   if (!isAuthed && !isPublic) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
-  if (isAuthed && pathname === '/login') {
-    return NextResponse.redirect(new URL('/', req.url));
-  }
+  // Never bounce /login on the cookie alone: the cookie can outlive its session
+  // (account removed, session expired), and the app then redirects back to /login
+  // -> infinite loop. Signing in simply replaces the stale cookie.
   return NextResponse.next();
 }
 
