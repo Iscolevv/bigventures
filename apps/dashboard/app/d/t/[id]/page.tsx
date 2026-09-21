@@ -36,7 +36,8 @@ export default async function DriverTrip({ params }: { params: Promise<{ id: str
       seq: schema.drops.sequence,
       address: schema.drops.destination_address,
       status: schema.drops.status,
-      photos: sql<number>`(select count(*)::int from ${schema.podPhotos} where ${schema.podPhotos.drop_id} = ${schema.drops.id})`,
+      po: schema.drops.po_number,
+      photos: sql<number>`(select count(*)::int from bigventures.pod_photos pp where pp.drop_id = bigventures.drops.id)`,
     })
     .from(schema.drops)
     .where(eq(schema.drops.trip_id, id))
@@ -81,7 +82,7 @@ export default async function DriverTrip({ params }: { params: Promise<{ id: str
                 {d.seq}. {d.address}
               </p>
               <p className="mt-0.5 text-xs text-muted">
-                {d.photos > 0 ? `${d.photos} photo${d.photos > 1 ? 's' : ''}` : 'no photo'}
+                {d.po ? `PO ${d.po} · ` : ''}{d.photos > 0 ? `${d.photos} photo${d.photos > 1 ? 's' : ''}` : 'no photo'}
               </p>
             </div>
             <span className={`shrink-0 text-xs font-semibold capitalize ${DROP[d.status] ?? 'text-muted'}`}>{d.status}</span>

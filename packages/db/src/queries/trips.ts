@@ -149,7 +149,7 @@ export async function tripDetail(db: DB, id: string) {
       completedAt: drops.completed_at,
       geofenceEnteredAt: drops.geofence_entered_at,
       geofenceSkipped: drops.geofence_skipped,
-      photos: sql<number>`(select count(*)::int from ${podPhotos} where ${podPhotos.drop_id} = ${drops.id})`,
+      photos: sql<number>`(select count(*)::int from bigventures.pod_photos pp where pp.drop_id = bigventures.drops.id)`,
     })
     .from(drops)
     .where(eq(drops.trip_id, id))

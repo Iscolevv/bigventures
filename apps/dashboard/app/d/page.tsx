@@ -30,8 +30,8 @@ export default async function DriverHome() {
       status: schema.trips.status,
       address: schema.trips.loading_point_address,
       startedAt: schema.trips.started_at,
-      drops: sql<number>`(select count(*)::int from ${schema.drops} where ${schema.drops.trip_id} = ${schema.trips.id})`,
-      done: sql<number>`(select count(*)::int from ${schema.drops} where ${schema.drops.trip_id} = ${schema.trips.id} and ${schema.drops.status} not in ('pending','arrived'))`,
+      drops: sql<number>`(select count(*)::int from bigventures.drops dd where dd.trip_id = bigventures.trips.id)`,
+      done: sql<number>`(select count(*)::int from bigventures.drops dd where dd.trip_id = bigventures.trips.id and dd.status not in ('pending','arrived'))`,
     })
     .from(schema.trips)
     .where(eq(schema.trips.driver_id, me.driverId))
