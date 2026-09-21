@@ -35,16 +35,16 @@ export async function generateInvoiceForClient(clientId: string) {
       id: schema.trips.id,
       ref: schema.trips.reference_code,
       billed: schema.trips.billed_amount,
-      stops: sql<number>`(select count(*)::int from bigventures.drops d where d.trip_id = ${schema.trips.id} and d.status in ('delivered','partial'))`,
-      issues: sql<number>`(select count(*)::int from bigventures.drops d where d.trip_id = ${schema.trips.id} and d.issue_category is not null)`,
+      stops: sql<number>`(select count(*)::int from bigventures.drops d where d.trip_id = bigventures.trips.id and d.status in ('delivered','partial'))`,
+      issues: sql<number>`(select count(*)::int from bigventures.drops d where d.trip_id = bigventures.trips.id and d.issue_category is not null)`,
     })
     .from(schema.trips)
     .where(
       and(
         eq(schema.trips.client_id, clientId),
         eq(schema.trips.status, 'completed'),
-        sql`not exists (select 1 from bigventures.invoice_lines il where il.trip_id = ${schema.trips.id})`,
-        sql`exists (select 1 from bigventures.drops d where d.trip_id = ${schema.trips.id} and d.status in ('delivered','partial'))`,
+        sql`not exists (select 1 from bigventures.invoice_lines il where il.trip_id = bigventures.trips.id)`,
+        sql`exists (select 1 from bigventures.drops d where d.trip_id = bigventures.trips.id and d.status in ('delivered','partial'))`,
       ),
     );
 
