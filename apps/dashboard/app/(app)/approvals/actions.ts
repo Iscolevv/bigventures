@@ -23,10 +23,18 @@ export async function approveTrip(form: FormData) {
   const bales = num(form.get('bales'));
   const litres = num(form.get('litres'));
   const cost = num(form.get('cost'));
+  const clientId = String(form.get('clientId') ?? '') || null;
+  let billed = num(form.get('billed'));
   const fail = (m: string): never => redirect(`/approvals?error=${encodeURIComponent(m)}&trip=${id}`);
 
-  if ([tonnes, bales, litres, cost].some((n) => Number.isNaN(n))) fail('Numbers only, and not negative');
+  if ([tonnes, bales, litres, cost, billed].some((n) => Number.isNaN(n))) fail('Numbers only, and not negative');
   if (litres && litres > 0 && (cost == null || cost <= 0)) fail('Enter what the fuel cost (Ksh) before approving');
+
+  // blank amount -> the client's usual rate, if one is set
+  if (clientId && billed == null) {
+    const [c] = await db.select({ r: schema.clients.default_trip_rate }).from(schema.clients).where(eq(schema.clients.id, clientId)).limit(1);
+    if (c?.r != null) billed = Number(c.r);
+  }
 
   const [trip] = await db
     .select({ id: schema.trips.id, status: schema.trips.status, vehicleId: schema.trips.vehicle_id, driverId: schema.trips.driver_id, startedAt: schema.trips.started_at })
@@ -40,6 +48,8 @@ export async function approveTrip(form: FormData) {
     .set({
       load_tonnes: tonnes != null ? String(tonnes) : null,
       load_bales: bales != null ? Math.round(bales) : null,
+      client_id: clientId,
+      billed_amount: billed != null ? String(billed) : null,
       status: 'completed',
       updated_at: new Date(),
     })
@@ -62,7 +72,7 @@ export async function approveTrip(form: FormData) {
     });
   }
 
-  await writeAudit(user, 'approve', 'trip', id, null, { tonnes, bales, litres, cost });
+  await writeAudit(user, 'approve', 'trip', id, null, { tonnes, bales, litres, cost, clientId, billed });
   revalidatePath('/approvals');
   revalidatePath('/');
   redirect('/approvals?approved=1');

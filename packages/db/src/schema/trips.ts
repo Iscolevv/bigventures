@@ -74,6 +74,8 @@ export const trips = bv.table(
     // uses (weight for bulk/liquid loads, a bale/bag count for feed runs).
     load_tonnes: numeric('load_tonnes', { precision: 8, scale: 2 }),
     load_bales: integer('load_bales'),
+    /** what the client is billed for this trip (Ksh, before tax); set by the office at approval */
+    billed_amount: numeric('billed_amount', { precision: 14, scale: 2 }),
     // Soft FK to clients - kept as text to avoid a trips↔finance import cycle;
     // the relation is declared in relations.ts. App-enforced.
     client_id: text('client_id'),

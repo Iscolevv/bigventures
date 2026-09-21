@@ -34,6 +34,8 @@ export const clients = bv.table('clients', {
   email: text('email'),
   address: text('address'),
   payment_terms_days: integer('payment_terms_days').notNull().default(30),
+  /** pre-fills the billed amount when a trip for this client is approved */
+  default_trip_rate: numeric('default_trip_rate', { precision: 14, scale: 2 }),
   active: boolean('active').notNull().default(true),
   notes: text('notes'),
   ...timestamps,

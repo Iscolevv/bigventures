@@ -17,7 +17,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
       <PageHeader title="Clients" subtitle="Who you deliver for and invoice" />
       {canEdit && (
         <Card title="Add a client" className="mb-4 max-w-2xl">
-          <form action={saveClient} className="grid gap-3 sm:grid-cols-[1fr_1fr_8rem_auto] sm:items-end">
+          <form action={saveClient} className="grid gap-3 sm:grid-cols-[1fr_1fr_8rem_9rem_auto] sm:items-end">
             <label className="text-sm font-medium">
               Name
               <input name="name" required className={input} placeholder="e.g. Ajab Flour Mills" />
@@ -29,6 +29,10 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
             <label className="text-sm font-medium">
               Pays in (days)
               <input name="payment_terms_days" type="number" min={0} defaultValue={30} className={input} />
+            </label>
+            <label className="text-sm font-medium">
+              Usual rate per trip (Ksh)
+              <input name="default_trip_rate" inputMode="decimal" className={input} placeholder="optional" />
             </label>
             <button className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white">Add</button>
           </form>
@@ -47,7 +51,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
               </span>
             </summary>
             {canEdit && (
-              <form action={saveClient} className="grid gap-3 border-t p-4 sm:grid-cols-[1fr_1fr_8rem_8rem_auto] sm:items-end">
+              <form action={saveClient} className="grid gap-3 border-t p-4 sm:grid-cols-[1fr_1fr_8rem_9rem_8rem_auto] sm:items-end">
                 <input type="hidden" name="id" value={c.id} />
                 <label className="text-sm font-medium">
                   Name
@@ -60,6 +64,10 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
                 <label className="text-sm font-medium">
                   Pays in (days)
                   <input name="payment_terms_days" type="number" min={0} defaultValue={c.payment_terms_days} className={input} />
+                </label>
+                <label className="text-sm font-medium">
+                  Usual rate per trip (Ksh)
+                  <input name="default_trip_rate" inputMode="decimal" defaultValue={c.default_trip_rate ?? ''} className={input} />
                 </label>
                 <label className="text-sm font-medium">
                   Status

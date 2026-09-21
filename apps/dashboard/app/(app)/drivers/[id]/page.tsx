@@ -25,12 +25,13 @@ export default async function DriverEditPage({
     .from(schema.vehicles)
     .orderBy(schema.vehicles.registration);
 
-  let d: { name: string; status: string; email: string | null; vehicleId: string | null } | null = null;
+  let d: { name: string; status: string; email: string | null; vehicleId: string | null; salary: string } | null = null;
   if (id !== 'new') {
     const [row] = await db
       .select({
         name: schema.drivers.full_name,
         status: schema.drivers.status,
+        salary: schema.drivers.base_salary,
         email: schema.user.email,
         vehicleId: sql<string | null>`(select a.vehicle_id from bigventures.vehicle_assignments a where a.driver_id = ${schema.drivers.id} and a.end_date is null limit 1)`,
       })
@@ -78,6 +79,10 @@ export default async function DriverEditPage({
               </select>
             </label>
           </div>
+          <label className="block text-sm font-medium">
+            Monthly base salary (Ksh) - used by payroll and incentives
+            <input name="baseSalary" inputMode="decimal" defaultValue={d && Number(d.salary) > 0 ? Number(d.salary) : ''} className={input} placeholder="e.g. 20000" />
+          </label>
           <div className="border-t pt-4">
             <p className="text-sm font-medium">Login</p>
             {d ? (

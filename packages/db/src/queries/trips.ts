@@ -122,6 +122,8 @@ export async function tripDetail(db: DB, id: string) {
       endedAt: trips.ended_at,
       startOdo: trips.start_odometer_km,
       endOdo: trips.end_odometer_km,
+      clientId: trips.client_id,
+      billedAmount: trips.billed_amount,
       loadTonnes: trips.load_tonnes,
       loadBales: trips.load_bales,
       cargo: trips.cargo_description,

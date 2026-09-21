@@ -26,7 +26,7 @@ export function GenerateInvoice({ clients }: { clients: { id: string; name: stri
         onClick={() =>
           start(async () => {
             const r = await generateInvoiceForClient(clientId);
-            setMsg(r.error ? `✗ ${r.error}` : `✓ ${r.lines} lines${r.flagged ? ' - flagged (unresolved issues)' : ''}`);
+            setMsg(r.error ? `✗ ${r.error}` : `✓ ${r.lines} trip(s) drafted${r.skipped ? ` (${r.skipped} skipped: no amount)` : ''}${r.flagged ? ' - flagged (unresolved issues)' : ''}`);
           })
         }
         className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white disabled:opacity-60"

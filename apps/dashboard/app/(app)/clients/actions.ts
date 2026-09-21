@@ -12,9 +12,11 @@ export async function saveClient(form: FormData) {
   const contact = String(form.get('contact_name') ?? '').trim() || null;
   const terms = Math.max(0, Math.min(365, Number(form.get('payment_terms_days') ?? 30) || 30));
   const active = form.get('active') !== 'off';
+  const rateRaw = String(form.get('default_trip_rate') ?? '').trim();
+  const rate = rateRaw && Number(rateRaw) >= 0 ? String(Number(rateRaw)) : null;
   if (!name) redirect(`/clients?error=${encodeURIComponent('Client name is required')}`);
 
-  const values = { name, contact_name: contact, payment_terms_days: terms, active };
+  const values = { name, contact_name: contact, payment_terms_days: terms, default_trip_rate: rate, active };
   if (id) {
     await db.update(schema.clients).set({ ...values, updated_at: new Date() }).where(eq(schema.clients.id, id));
     await writeAudit(user, 'update', 'client', id, null, values);

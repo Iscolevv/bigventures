@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { requirePermission, can } from '@/lib/session';
 import { objectUrl } from '@/lib/storage';
 import { RemovePodButton } from '@/components/RemovePodButton';
-import { db } from '@bv/db';
+import { db, schema } from '@bv/db';
+import { setTripBilling } from './actions';
 import * as q from '@bv/db/queries';
 import { PageHeader, Card, Badge, StatTile, kes, dateTime, type Column, DataTable } from '@/components/ui';
 
@@ -18,10 +19,18 @@ const DROP_TONE: Record<string, 'ok' | 'warn' | 'crit' | 'muted'> = {
   arrived: 'muted',
 };
 
-export default async function TripDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TripDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string; msg?: string }>;
+}) {
   const user = await requirePermission('trip:read');
   const canRemovePod = can(user.role, 'pod:delete');
   const { id } = await params;
+  const sp = await searchParams;
+  const clients = await db.select({ id: schema.clients.id, name: schema.clients.name }).from(schema.clients).orderBy(schema.clients.name);
   const detail = await q.tripDetail(db, id);
   if (!detail) notFound();
 
@@ -68,6 +77,30 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
         <Link href="/approvals" className="mt-4 block rounded-xl border border-warn bg-warn/10 px-4 py-3 text-sm font-semibold text-warn">
           Waiting for approval - it is not counted in the numbers yet. Review and approve →
         </Link>
+      )}
+
+      {sp.msg && <p className="mt-4 rounded-lg border border-ok/40 bg-ok/10 px-3 py-2 text-sm text-ok">{sp.msg}</p>}
+      {sp.error && <p className="mt-4 rounded-lg border border-crit/40 bg-crit/10 px-3 py-2 text-sm text-crit">{sp.error}</p>}
+      {can(user.role, 'trip:update') && (
+        <Card title="Billing" className="mt-4 max-w-2xl">
+          <form action={setTripBilling} className="grid gap-3 sm:grid-cols-[1fr_11rem_auto] sm:items-end">
+            <input type="hidden" name="id" value={trip.id} />
+            <label className="text-sm font-medium">
+              Client
+              <select name="clientId" defaultValue={trip.clientId ?? ''} className="mt-1 w-full rounded-md border bg-surface px-3 py-2 text-sm">
+                <option value="">Not billed</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm font-medium">
+              Amount (Ksh, before tax)
+              <input name="billed" inputMode="decimal" defaultValue={trip.billedAmount ? Number(trip.billedAmount) : ''} className="mt-1 w-full rounded-md border bg-surface px-3 py-2 text-sm" />
+            </label>
+            <button className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white">Save</button>
+          </form>
+        </Card>
       )}
 
       <h2 className="mb-2 mt-6 text-sm font-semibold">Drops</h2>

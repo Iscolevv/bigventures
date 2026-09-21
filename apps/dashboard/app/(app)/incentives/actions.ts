@@ -2,7 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { requirePermission } from '@/lib/session';
 import { writeAudit } from '@/lib/audit';
-import { db, schema, eq } from '@bv/db';
+import { db, schema, eq, and } from '@bv/db';
 import * as q from '@bv/db/queries';
 import { incentiveRuleConfigSchema } from '@bv/core/calc';
 import { periodKey } from '@bv/core/reference';
@@ -39,7 +39,7 @@ export async function generatePayrollRun(period: string | undefined) {
     const existing = await db
       .select({ id: schema.payrollRuns.id, status: schema.payrollRuns.status })
       .from(schema.payrollRuns)
-      .where(eq(schema.payrollRuns.driver_id, row.driverId))
+      .where(and(eq(schema.payrollRuns.driver_id, row.driverId), eq(schema.payrollRuns.period_key, pkey)))
       .limit(1);
     const hit = existing.find(() => true);
     const values = {

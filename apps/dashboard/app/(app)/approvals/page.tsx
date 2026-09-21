@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { requirePermission } from '@/lib/session';
 import { objectUrl } from '@/lib/storage';
-import { db } from '@bv/db';
+import { db, schema, eq } from '@bv/db';
 import * as q from '@bv/db/queries';
 import { PageHeader, Card, Badge, dateTime } from '@/components/ui';
 import { approveTrip } from './actions';
@@ -21,6 +21,11 @@ export default async function ApprovalsPage({
   await requirePermission('trip:approve');
   const sp = await searchParams;
   const trips = await q.pendingTrips(db);
+  const clients = await db
+    .select({ id: schema.clients.id, name: schema.clients.name, rate: schema.clients.default_trip_rate })
+    .from(schema.clients)
+    .where(eq(schema.clients.active, true))
+    .orderBy(schema.clients.name);
 
   const withUrls = await Promise.all(
     trips.map(async (t) => ({
@@ -75,7 +80,7 @@ export default async function ApprovalsPage({
               ))}
             </ul>
 
-            <form action={approveTrip} className="mt-4 grid gap-3 border-t pt-4 sm:grid-cols-[repeat(4,minmax(0,1fr))_auto] sm:items-end">
+            <form action={approveTrip} className="mt-4 grid gap-3 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
               <input type="hidden" name="id" value={t.id} />
               <label className="text-sm font-medium">
                 Tonnes
@@ -93,7 +98,22 @@ export default async function ApprovalsPage({
                 Fuel cost (Ksh)
                 <input name="cost" inputMode="decimal" defaultValue={t.fuelCost ? t.fuelCost : ''} className={input} placeholder="total paid" />
               </label>
-              <button className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white">Approve</button>
+              <label className="text-sm font-medium">
+                Client
+                <select name="clientId" defaultValue="" className={input}>
+                  <option value="">No client (not billed)</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}{c.rate ? ` - usual Ksh ${Number(c.rate).toLocaleString()}` : ''}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm font-medium">
+                Amount to bill (Ksh)
+                <input name="billed" inputMode="decimal" className={input} placeholder="blank = client's usual rate" />
+              </label>
+              <div className="flex items-end lg:col-span-2">
+                <button className="rounded-md bg-brand px-6 py-2 text-sm font-semibold text-white">Approve</button>
+              </div>
             </form>
             {sp.error && sp.trip === t.id && <p className="mt-2 text-sm text-crit">{sp.error}</p>}
           </Card>
