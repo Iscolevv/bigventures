@@ -345,6 +345,116 @@ export async function vehicleRoiTable(db: DB, p: Period): Promise<VehicleRoiRow[
   });
 }
 
+export interface VehicleTripLine {
+  id: string;
+  ref: string;
+  date: Date | null;
+  driver: string;
+  status: string;
+  billedAmount: number | null;
+  fuelLitres: number;
+  fuelCost: number;
+  distanceKm: number | null;
+}
+
+export interface VehicleCostLine {
+  id: string;
+  date: string;
+  category: string;
+  description: string | null;
+  vendor: string | null;
+  amount: number;
+}
+
+export interface VehicleManualInvoiceLine {
+  id: string;
+  invoiceNumber: string;
+  issueDate: string | null;
+  description: string;
+  amount: number;
+}
+
+/** Every trip, running cost and one-off invoice line behind one vehicle's ROI row - what "clicking in" shows. */
+export async function vehicleCostBreakdown(
+  db: DB,
+  vehicleId: string,
+  p: Period,
+): Promise<{ trips: VehicleTripLine[]; costs: VehicleCostLine[]; manualInvoices: VehicleManualInvoiceLine[] }> {
+  const tripRows = await db
+    .select({
+      id: trips.id,
+      ref: trips.reference_code,
+      date: trips.started_at,
+      driver: drivers.full_name,
+      status: trips.status,
+      billedAmount: trips.billed_amount,
+      startOdo: trips.start_odometer_km,
+      endOdo: trips.end_odometer_km,
+      fuelLitres: sql<string>`coalesce((select sum(${fuelEntries.litres}) from ${fuelEntries} where ${fuelEntries.trip_id} = ${trips.id}),0)`,
+      fuelCost: sql<string>`coalesce((select sum(${fuelEntries.total_cost}) from ${fuelEntries} where ${fuelEntries.trip_id} = ${trips.id}),0)`,
+    })
+    .from(trips)
+    .innerJoin(drivers, eq(drivers.id, trips.driver_id))
+    .where(and(eq(trips.vehicle_id, vehicleId), gte(trips.started_at, p.from), lt(trips.started_at, p.to)))
+    .orderBy(desc(trips.started_at));
+
+  const costRows = await db
+    .select({
+      id: costEntries.id,
+      date: costEntries.incurred_at,
+      category: costEntries.category,
+      description: costEntries.description,
+      vendor: costEntries.vendor,
+      amount: costEntries.amount,
+    })
+    .from(costEntries)
+    .where(
+      and(
+        eq(costEntries.vehicle_id, vehicleId),
+        gte(costEntries.incurred_at, p.from.toISOString().slice(0, 10)),
+        lt(costEntries.incurred_at, endExclusive(p.to)),
+      ),
+    )
+    .orderBy(desc(costEntries.incurred_at));
+
+  const manualRows = await db
+    .select({
+      id: invoiceLines.id,
+      invoiceNumber: invoices.invoice_number,
+      issueDate: invoices.issue_date,
+      description: invoiceLines.description,
+      amount: invoiceLines.line_total,
+    })
+    .from(invoiceLines)
+    .innerJoin(invoices, eq(invoices.id, invoiceLines.invoice_id))
+    .where(
+      and(
+        eq(invoiceLines.vehicle_id, vehicleId),
+        sql`${invoiceLines.trip_id} is null`,
+        sql`${invoices.status} not in ('draft','void')`,
+        gte(invoices.issue_date, p.from.toISOString().slice(0, 10)),
+        lt(invoices.issue_date, endExclusive(p.to)),
+      ),
+    )
+    .orderBy(desc(invoices.issue_date));
+
+  return {
+    trips: tripRows.map((r) => ({
+      id: r.id,
+      ref: r.ref,
+      date: r.date,
+      driver: r.driver,
+      status: r.status,
+      billedAmount: r.billedAmount != null ? money(r.billedAmount) : null,
+      fuelLitres: money(r.fuelLitres),
+      fuelCost: money(r.fuelCost),
+      distanceKm: r.startOdo != null && r.endOdo != null ? Math.max(0, money(r.endOdo) - money(r.startOdo)) : null,
+    })),
+    costs: costRows.map((r) => ({ ...r, amount: money(r.amount) })),
+    manualInvoices: manualRows.map((r) => ({ ...r, amount: money(r.amount) })),
+  };
+}
+
 // ---- Route analytics -------------------------------------------
 
 export async function routeAnalytics(db: DB, p: Period) {

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { requirePermission } from '@/lib/session';
 import { db } from '@bv/db';
 import * as q from '@bv/db/queries';
@@ -27,7 +28,15 @@ export default async function RoiPage({
   const overhead = roi.reduce((s, r) => s + r.overhead, 0);
 
   const roiCols: Column<(typeof roi)[number]>[] = [
-    { key: 'reg', header: 'Vehicle', render: (r) => <span className="font-medium">{r.registration}</span> },
+    {
+      key: 'reg',
+      header: 'Vehicle',
+      render: (r) => (
+        <Link href={`/roi/${r.vehicleId}${p.key !== '30d' ? `?period=${p.key}` : ''}`} className="font-medium text-brand hover:underline">
+          {r.registration}
+        </Link>
+      ),
+    },
     { key: 'trips', header: 'Trips', align: 'right', render: (r) => r.tripCount },
     { key: 'rev', header: 'Revenue', align: 'right', render: (r) => kes(r.revenue) },
     { key: 'fuel', header: 'Fuel', align: 'right', render: (r) => kes(r.fuelCost) },

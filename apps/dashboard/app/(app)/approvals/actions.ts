@@ -25,10 +25,13 @@ export async function approveTrip(form: FormData) {
   const cost = num(form.get('cost'));
   const clientId = String(form.get('clientId') ?? '') || null;
   let billed = num(form.get('billed'));
+  const startOdo = num(form.get('startOdometer'));
+  const endOdo = num(form.get('endOdometer'));
   const fail = (m: string): never => redirect(`/approvals?error=${encodeURIComponent(m)}&trip=${id}`);
 
-  if ([tonnes, bales, litres, cost, billed].some((n) => Number.isNaN(n))) fail('Numbers only, and not negative');
+  if ([tonnes, bales, litres, cost, billed, startOdo, endOdo].some((n) => Number.isNaN(n))) fail('Numbers only, and not negative');
   if (litres && litres > 0 && (cost == null || cost <= 0)) fail('Enter what the fuel cost (Ksh) before approving');
+  if (startOdo != null && endOdo != null && endOdo < startOdo) fail('End odometer is before the start - check the readings');
 
   // blank amount -> the client's usual rate, if one is set
   if (clientId && billed == null) {
@@ -50,6 +53,8 @@ export async function approveTrip(form: FormData) {
       load_bales: bales != null ? Math.round(bales) : null,
       client_id: clientId,
       billed_amount: billed != null ? String(billed) : null,
+      start_odometer_km: startOdo != null ? String(startOdo) : null,
+      end_odometer_km: endOdo != null ? String(endOdo) : null,
       status: 'completed',
       updated_at: new Date(),
     })
@@ -72,7 +77,7 @@ export async function approveTrip(form: FormData) {
     });
   }
 
-  await writeAudit(user, 'approve', 'trip', id, null, { tonnes, bales, litres, cost, clientId, billed });
+  await writeAudit(user, 'approve', 'trip', id, null, { tonnes, bales, litres, cost, clientId, billed, startOdo, endOdo });
   revalidatePath('/approvals');
   revalidatePath('/');
   redirect('/approvals?approved=1');

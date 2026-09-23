@@ -111,6 +111,14 @@ export default async function ApprovalsPage({
                 Amount to bill (Ksh)
                 <input name="billed" inputMode="decimal" className={input} placeholder="blank = client's usual rate" />
               </label>
+              <label className="text-sm font-medium">
+                Start odometer (km, optional)
+                <input name="startOdometer" inputMode="numeric" className={input} placeholder="for cost/km" />
+              </label>
+              <label className="text-sm font-medium">
+                End odometer (km, optional)
+                <input name="endOdometer" inputMode="numeric" className={input} placeholder="for cost/km" />
+              </label>
               <div className="flex items-end lg:col-span-2">
                 <button className="rounded-md bg-brand px-6 py-2 text-sm font-semibold text-white">Approve</button>
               </div>
