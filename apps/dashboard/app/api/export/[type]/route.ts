@@ -1,6 +1,6 @@
 import { requirePermission } from '@/lib/session';
 import { db, sql } from '@bv/db';
-import { dailyRows } from '@bv/db/queries';
+import { dailyRows, weeklySheet, mondayOf } from '@bv/db/queries';
 import { toCsv } from '@/lib/csv';
 
 export const dynamic = 'force-dynamic';
@@ -53,6 +53,37 @@ const QUERIES: Record<string, string> = {
 export async function GET(req: Request, { params }: { params: Promise<{ type: string }> }) {
   await requirePermission('report:export');
   const { type } = await params;
+
+  if (type === 'weekly') {
+    const url = new URL(req.url);
+    const pick = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('week') ?? '') ? url.searchParams.get('week')! : new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+    const start = mondayOf(pick);
+    const sheet = await weeklySheet(db, start);
+    const label = (k: string) => `${k.slice(8, 10)}/${k.slice(5, 7)}/${k.slice(0, 4)}`;
+    const rows: Record<string, unknown>[] = sheet.rows.map((r) => {
+      const out: Record<string, unknown> = { Vehicle: r.registration };
+      sheet.days.forEach((d, i) => {
+        const c = r.cells[i]!;
+        out[label(d)] = c.income > 0 ? c.income : (c.note ?? (c.pending ? 'awaiting approval' : ''));
+      });
+      out['Income'] = r.income || '';
+      out['Expenses/Fuel'] = r.expenses || '';
+      out['Total'] = r.income || r.expenses ? r.total : '';
+      return out;
+    });
+    const totalRow: Record<string, unknown> = { Vehicle: 'WEEK TOTAL' };
+    sheet.days.forEach((d) => (totalRow[label(d)] = ''));
+    totalRow['Income'] = sheet.totals.income;
+    totalRow['Expenses/Fuel'] = sheet.totals.expenses;
+    totalRow['Total'] = sheet.totals.total;
+    rows.push(totalRow);
+    return new Response('﻿' + toCsv(rows), {
+      headers: {
+        'content-type': 'text/csv; charset=utf-8',
+        'content-disposition': `attachment; filename="bigventures-week-${start}.csv"`,
+      },
+    });
+  }
 
   if (type === 'daily') {
     // The office's daily sheet: one row per stop, columns in the order Kevin keeps them in Excel.

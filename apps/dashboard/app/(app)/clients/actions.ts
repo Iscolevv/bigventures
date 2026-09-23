@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { requirePermission } from '@/lib/session';
 import { writeAudit } from '@/lib/audit';
-import { db, schema, eq } from '@bv/db';
+import { db, schema, eq, sql } from '@bv/db';
 
 export async function saveClient(form: FormData) {
   const id = String(form.get('id') ?? '');
@@ -26,4 +26,26 @@ export async function saveClient(form: FormData) {
   }
   revalidatePath('/clients');
   redirect('/clients');
+}
+
+/** Remove a client with no invoices or trips. Otherwise mark them Inactive so history stays intact. */
+export async function deleteClient(form: FormData) {
+  const actor = await requirePermission('client:delete');
+  const id = String(form.get('id') ?? '');
+  const back = (m: string): never => redirect(`/clients?error=${encodeURIComponent(m)}`);
+
+  const [c] = await db.select({ name: schema.clients.name }).from(schema.clients).where(eq(schema.clients.id, id)).limit(1);
+  if (!c) redirect('/clients');
+  const used = await db.execute(sql`
+    select (select count(*)::int from bigventures.invoices where client_id = ${id})
+         + (select count(*)::int from bigventures.trips where client_id = ${id}) as n`);
+  if (Number((used.rows[0] as { n: number }).n) > 0) back(`${c!.name} has invoices or trips on record, so can't be deleted. Mark them Inactive instead.`);
+  try {
+    await db.delete(schema.clients).where(eq(schema.clients.id, id));
+  } catch {
+    back(`${c!.name} has other records attached. Mark them Inactive instead.`);
+  }
+  await writeAudit(actor, 'delete', 'client', id, { name: c!.name }, null);
+  revalidatePath('/clients');
+  redirect('/clients?msg=' + encodeURIComponent(`${c!.name} removed`));
 }

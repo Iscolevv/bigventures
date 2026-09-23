@@ -4,7 +4,8 @@ import { requirePermission } from '@/lib/session';
 import { db, schema, eq, sql } from '@bv/db';
 import { DRIVER_STATUSES } from '@bv/core/enums';
 import { PageHeader, Card } from '@/components/ui';
-import { saveDriver } from '../actions';
+import { saveDriver, deleteDriver } from '../actions';
+import { ConfirmSubmit } from '@/components/ConfirmSubmit';
 
 export const dynamic = 'force-dynamic';
 const input = 'mt-1 w-full rounded-md border bg-surface px-3 py-2 text-sm';
@@ -25,13 +26,12 @@ export default async function DriverEditPage({
     .from(schema.vehicles)
     .orderBy(schema.vehicles.registration);
 
-  let d: { name: string; status: string; email: string | null; vehicleId: string | null; salary: string } | null = null;
+  let d: { name: string; status: string; email: string | null; vehicleId: string | null } | null = null;
   if (id !== 'new') {
     const [row] = await db
       .select({
         name: schema.drivers.full_name,
         status: schema.drivers.status,
-        salary: schema.drivers.base_salary,
         email: schema.user.email,
         vehicleId: sql<string | null>`(select a.vehicle_id from bigventures.vehicle_assignments a where a.driver_id = ${schema.drivers.id} and a.end_date is null limit 1)`,
       })
@@ -79,10 +79,6 @@ export default async function DriverEditPage({
               </select>
             </label>
           </div>
-          <label className="block text-sm font-medium">
-            Monthly base salary (Ksh) - used by payroll and incentives
-            <input name="baseSalary" inputMode="decimal" defaultValue={d && Number(d.salary) > 0 ? Number(d.salary) : ''} className={input} placeholder="e.g. 20000" />
-          </label>
           <div className="border-t pt-4">
             <p className="text-sm font-medium">Login</p>
             {d ? (
@@ -103,6 +99,14 @@ export default async function DriverEditPage({
           {error && <p className="text-sm text-crit">{error}</p>}
           <button className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white">Save</button>
         </form>
+        {d && (
+          <form action={deleteDriver} className="mt-4 border-t pt-4">
+            <input type="hidden" name="id" value={id} />
+            <ConfirmSubmit message={'Delete ' + d.name + '? This removes their login too. Only possible if they have no trips.'} className="text-sm text-crit hover:underline">
+              Delete this driver
+            </ConfirmSubmit>
+          </form>
+        )}
       </Card>
     </>
   );

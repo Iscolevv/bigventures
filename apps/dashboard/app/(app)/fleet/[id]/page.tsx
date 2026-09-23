@@ -4,7 +4,8 @@ import { requirePermission } from '@/lib/session';
 import { db, schema, eq } from '@bv/db';
 import { VEHICLE_TYPES, VEHICLE_STATUSES } from '@bv/core/enums';
 import { PageHeader, Card } from '@/components/ui';
-import { saveVehicle } from '../actions';
+import { saveVehicle, deleteVehicle } from '../actions';
+import { ConfirmSubmit } from '@/components/ConfirmSubmit';
 
 export const dynamic = 'force-dynamic';
 const input = 'mt-1 w-full rounded-md border bg-surface px-3 py-2 text-sm';
@@ -64,6 +65,14 @@ export default async function VehicleEditPage({
           {error && <p className="text-sm text-crit">{error}</p>}
           <button className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white">Save</button>
         </form>
+        {v && (
+          <form action={deleteVehicle} className="mt-4 border-t pt-4">
+            <input type="hidden" name="id" value={v.id} />
+            <ConfirmSubmit message={'Delete ' + v.registration + '? Only possible if it has never been used.'} className="text-sm text-crit hover:underline">
+              Delete this vehicle
+            </ConfirmSubmit>
+          </form>
+        )}
       </Card>
     </>
   );

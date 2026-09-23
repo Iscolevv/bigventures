@@ -43,6 +43,13 @@
       "when": 1789984998440,
       "tag": "0005_massive_northstar",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790187856452,
+      "tag": "0006_flimsy_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }

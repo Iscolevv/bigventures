@@ -95,3 +95,22 @@ export const vehicleAssignments = bv.table(
       .where(sql`${t.end_date} is null`),
   ],
 );
+
+/**
+ * The status word Kevin types into a truck's day on the weekly sheet when it
+ * earned nothing that day: "PKD JGRD", "GARAGED", "ENROUTE", "OFFLOADING"...
+ */
+export const vehicleDayNotes = bv.table(
+  'vehicle_day_notes',
+  {
+    id: pk(),
+    vehicle_id: text('vehicle_id')
+      .notNull()
+      .references(() => vehicles.id, { onDelete: 'cascade' }),
+    day: date('day').notNull(),
+    note: text('note').notNull(),
+    updated_by: text('updated_by').references(() => user.id, { onDelete: 'set null' }),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex('vehicle_day_notes_vehicle_day_key').on(t.vehicle_id, t.day)],
+);

@@ -9,6 +9,7 @@ export * from './trips';
 export * from './pods';
 export * from './daily';
 export * from './approvals';
+export * from './weekly';
 export * from './finance';
 export * from './alerts';
 export * from './incentives';

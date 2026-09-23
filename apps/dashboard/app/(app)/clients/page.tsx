@@ -1,20 +1,23 @@
 import { requirePermission, can } from '@/lib/session';
 import { db, schema } from '@bv/db';
 import { PageHeader, Card, Badge } from '@/components/ui';
-import { saveClient } from './actions';
+import { saveClient, deleteClient } from './actions';
+import { ConfirmSubmit } from '@/components/ConfirmSubmit';
 
 export const dynamic = 'force-dynamic';
 const input = 'mt-1 w-full rounded-md border bg-surface px-3 py-2 text-sm';
 
-export default async function ClientsPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function ClientsPage({ searchParams }: { searchParams: Promise<{ error?: string; msg?: string }> }) {
   const user = await requirePermission('client:read');
   const canEdit = can(user.role, 'client:update');
-  const { error } = await searchParams;
+  const { error, msg } = await searchParams;
   const clients = await db.select().from(schema.clients).orderBy(schema.clients.name);
 
   return (
     <>
       <PageHeader title="Clients" subtitle="Who you deliver for and invoice" />
+      {msg && <p className="mb-3 rounded-lg border border-ok/40 bg-ok/10 px-3 py-2 text-sm text-ok">{msg}</p>}
+      {error && !canEdit && <p className="mb-3 text-sm text-crit">{error}</p>}
       {canEdit && (
         <Card title="Add a client" className="mb-4 max-w-2xl">
           <form action={saveClient} className="grid gap-3 sm:grid-cols-[1fr_1fr_8rem_9rem_auto] sm:items-end">
@@ -77,6 +80,14 @@ export default async function ClientsPage({ searchParams }: { searchParams: Prom
                   </select>
                 </label>
                 <button className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white">Save</button>
+              </form>
+            )}
+            {canEdit && (
+              <form action={deleteClient} className="border-t px-4 py-3">
+                <input type="hidden" name="id" value={c.id} />
+                <ConfirmSubmit message={'Delete ' + c.name + '? Only possible if they have no invoices or trips.'} className="text-sm text-crit hover:underline">
+                  Delete this client
+                </ConfirmSubmit>
               </form>
             )}
           </details>
