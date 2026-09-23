@@ -17,21 +17,22 @@ export default async function FleetPage() {
   const user = await requirePermission('vehicle:read');
   const canEdit = can(user.role, 'vehicle:update');
 
-  const vehicles = await db
-    .select({
-      id: schema.vehicles.id,
-      registration: schema.vehicles.registration,
-      type: schema.vehicles.vehicle_type,
-      status: schema.vehicles.status,
-      driver: schema.drivers.full_name,
-    })
-    .from(schema.vehicles)
-    .leftJoin(
-      schema.vehicleAssignments,
-      sql`${schema.vehicleAssignments.vehicle_id} = ${schema.vehicles.id} and ${schema.vehicleAssignments.end_date} is null`,
-    )
-    .leftJoin(schema.drivers, sql`${schema.drivers.id} = ${schema.vehicleAssignments.driver_id}`)
-    .orderBy(schema.vehicles.registration);
+  // usual driver: the one set by hand, else whoever drove it most in the last 30 days
+  const res = await db.execute(sql`
+    select v.id, v.registration, v.vehicle_type as type, v.status,
+      d.full_name as assigned,
+      (select dr.full_name from bigventures.trips t join bigventures.drivers dr on dr.id = t.driver_id
+        where t.vehicle_id = v.id and t.started_at > now() - interval '30 days' and t.status <> 'cancelled'
+        group by dr.full_name order by count(*) desc limit 1) as recent
+    from bigventures.vehicles v
+    left join bigventures.vehicle_assignments a on a.vehicle_id = v.id and a.end_date is null
+    left join bigventures.drivers d on d.id = a.driver_id
+    order by v.registration`);
+  const vehicles = (res.rows as { id: string; registration: string; type: string; status: string; assigned: string | null; recent: string | null }[]).map((r) => ({
+    ...r,
+    driver: r.assigned,
+    auto: !r.assigned && !!r.recent,
+  }));
 
   return (
     <>
@@ -65,7 +66,7 @@ export default async function FleetPage() {
                 <td className="px-4 py-3">
                   <Badge tone={STATUS_TONE[v.status] ?? 'muted'}>{v.status.replace('_', ' ')}</Badge>
                 </td>
-                <td className="px-4 py-3 text-muted">{v.driver ?? '-'}</td>
+                <td className="px-4 py-3 text-muted">{v.driver ?? (v.recent ? <span title="Not set - shown because they drove it most in the last 30 days">{v.recent} <span className="text-xs">(most used lately)</span></span> : '-')}</td>
                 <td className="px-4 py-3 text-right">
                   {canEdit && (
                     <Link href={`/fleet/${v.id}`} className="text-brand hover:underline">

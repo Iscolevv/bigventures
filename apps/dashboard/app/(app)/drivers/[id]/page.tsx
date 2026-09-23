@@ -79,6 +79,9 @@ export default async function DriverEditPage({
               </select>
             </label>
           </div>
+          <p className="-mt-1 text-xs text-muted">
+            The usual vehicle is only a label and a shortcut: it is listed first when this driver logs a trip. They can still use any truck. If you leave it blank, the list shows the truck they have driven most in the last 30 days.
+          </p>
           <div className="border-t pt-4">
             <p className="text-sm font-medium">Login</p>
             {d ? (

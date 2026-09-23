@@ -1,6 +1,6 @@
 import { requirePermission } from '@/lib/session';
 import { db, sql } from '@bv/db';
-import { dailyRows, weeklySheet, mondayOf } from '@bv/db/queries';
+import { dailyRows, weeklySheet, rangeSheet, mondayOf } from '@bv/db/queries';
 import { toCsv } from '@/lib/csv';
 
 export const dynamic = 'force-dynamic';
@@ -53,6 +53,36 @@ const QUERIES: Record<string, string> = {
 export async function GET(req: Request, { params }: { params: Promise<{ type: string }> }) {
   await requirePermission('report:export');
   const { type } = await params;
+
+  if (type === 'weekly' && ['month', 'year'].includes(new URL(req.url).searchParams.get('view') ?? '')) {
+    const url = new URL(req.url);
+    const view = url.searchParams.get('view') as 'month' | 'year';
+    const today = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+    const anchor = view === 'month'
+      ? (/^\d{4}-\d{2}$/.test(url.searchParams.get('month') ?? '') ? url.searchParams.get('month')! : today.slice(0, 7))
+      : (/^\d{4}$/.test(url.searchParams.get('year') ?? '') ? url.searchParams.get('year')! : today.slice(0, 4));
+    const sheet = await rangeSheet(db, view, anchor, today);
+    const rows: Record<string, unknown>[] = sheet.rows.map((r) => {
+      const out: Record<string, unknown> = { Vehicle: r.registration };
+      sheet.columns.forEach((c, i) => (out[c.label] = r.cells[i] || ''));
+      out['Income'] = r.income || '';
+      out['Expenses/Fuel'] = r.expenses || '';
+      out['Total'] = r.income || r.expenses ? r.total : '';
+      return out;
+    });
+    const totalRow: Record<string, unknown> = { Vehicle: view === 'month' ? 'MONTH TOTAL' : 'YEAR TOTAL' };
+    sheet.columns.forEach((c, i) => (totalRow[c.label] = sheet.columnTotals[i] || ''));
+    totalRow['Income'] = sheet.totals.income;
+    totalRow['Expenses/Fuel'] = sheet.totals.expenses;
+    totalRow['Total'] = sheet.totals.total;
+    rows.push(totalRow);
+    return new Response('﻿' + toCsv(rows), {
+      headers: {
+        'content-type': 'text/csv; charset=utf-8',
+        'content-disposition': `attachment; filename="bigventures-${view}-${anchor}.csv"`,
+      },
+    });
+  }
 
   if (type === 'weekly') {
     const url = new URL(req.url);

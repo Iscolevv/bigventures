@@ -30,7 +30,7 @@ const NAV: Array<{ href: string; label: string; icon: typeof Truck; perm: Parame
   { href: '/approvals', label: 'Approvals', icon: CheckCheck, perm: 'trip:approve' },
   { href: '/fleet', label: 'Fleet', icon: Truck, perm: 'vehicle:read' },
   { href: '/drivers', label: 'Drivers', icon: Users, perm: 'driver:read' },
-  { href: '/weekly', label: 'Weekly sheet', icon: Sheet, perm: 'trip:read' },
+  { href: '/weekly', label: 'Income sheet', icon: Sheet, perm: 'trip:read' },
   { href: '/trips', label: 'Trips', icon: Route, perm: 'trip:read' },
   { href: '/pos', label: 'PO search', icon: ClipboardCheck, perm: 'trip:read' },
   { href: '/costs', label: 'Costs & advances', icon: Wallet, perm: 'cost:read' },

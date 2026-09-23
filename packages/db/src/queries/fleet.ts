@@ -23,6 +23,7 @@ export interface DriverRow {
   advanceBalance: number;
   lossBalance: number;
   assignedVehicle: string | null;
+  recentVehicle: string | null;
   tripsLast30: number;
   qualityScore: number | null;
 }
@@ -42,6 +43,7 @@ export async function driverRoster(db: DB): Promise<DriverRow[]> {
       advanceBalance: drivers.advance_balance,
       lossBalance: drivers.loss_balance,
       assignedVehicle: vehicles.registration,
+      recentVehicle: sql<string | null>`(select v2.registration from ${trips} t2 join ${vehicles} v2 on v2.id = t2.vehicle_id where t2.driver_id = ${drivers.id} and t2.started_at >= now() - interval '30 days' and t2.status <> 'cancelled' group by v2.registration order by count(*) desc limit 1)`,
       tripsLast30: sql<number>`(
         select count(*)::int from ${trips}
         where ${trips.driver_id} = ${drivers.id}

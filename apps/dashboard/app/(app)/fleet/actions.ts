@@ -5,6 +5,7 @@ import { requirePermission } from '@/lib/session';
 import { writeAudit } from '@/lib/audit';
 import { db, schema, eq, sql } from '@bv/db';
 import { VEHICLE_TYPES, VEHICLE_STATUSES } from '@bv/core/enums';
+import { assignVehicle, unassignVehicle } from '@/lib/people';
 
 /** "kcd448e" / "KCD 448E" -> "KCD 448E" */
 function normalizeReg(raw: string) {
@@ -20,24 +21,30 @@ export async function saveVehicle(form: FormData) {
   const type = String(form.get('vehicle_type') ?? 'truck');
   const status = String(form.get('status') ?? 'active');
   const notes = String(form.get('notes') ?? '').trim() || null;
+  const driverId = String(form.get('driverId') ?? '');
   const back = id ? `/fleet/${id}` : '/fleet/new';
   if (!registration) redirect(`${back}?error=${encodeURIComponent('Registration is required')}`);
   if (!(VEHICLE_TYPES as readonly string[]).includes(type) || !(VEHICLE_STATUSES as readonly string[]).includes(status)) {
     redirect(`${back}?error=${encodeURIComponent('Invalid type or status')}`);
   }
   const values = { registration, vehicle_type: type as 'truck', status: status as 'active', notes };
+  let vehicleId = id;
   try {
     if (id) {
       await db.update(schema.vehicles).set({ ...values, updated_at: new Date() }).where(eq(schema.vehicles.id, id));
       await writeAudit(user, 'update', 'vehicle', id, null, values);
     } else {
       const [row] = await db.insert(schema.vehicles).values(values).returning({ id: schema.vehicles.id });
+      vehicleId = row!.id;
       await writeAudit(user, 'create', 'vehicle', row!.id, null, values);
     }
   } catch {
     redirect(`${back}?error=${encodeURIComponent('That registration already exists')}`);
   }
+  if (driverId) await assignVehicle(driverId, vehicleId, user.id);
+  else if (id) await unassignVehicle(id);
   revalidatePath('/fleet');
+  revalidatePath('/drivers');
   redirect('/fleet');
 }
 

@@ -14,7 +14,7 @@ export default async function DriversPage() {
   const columns: Column<(typeof rows)[number]>[] = [
     { key: 'name', header: 'Driver', render: (r) => <span className="font-medium">{r.name}</span> },
     { key: 'login', header: 'Login', render: (r) => <span className="text-muted">{r.email}</span> },
-    { key: 'vehicle', header: 'Usual vehicle', render: (r) => r.assignedVehicle ?? <span className="text-muted">-</span> },
+    { key: 'vehicle', header: 'Usual vehicle', render: (r) => r.assignedVehicle ?? (r.recentVehicle ? <span className="text-muted" title="Not set - shown because they drove it most in the last 30 days">{r.recentVehicle} <span className="text-xs">(most used lately)</span></span> : <span className="text-muted">-</span>) },
     {
       key: 'status',
       header: 'Status',

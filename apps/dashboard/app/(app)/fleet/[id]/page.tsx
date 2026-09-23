@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requirePermission } from '@/lib/session';
-import { db, schema, eq } from '@bv/db';
+import { db, schema, eq, sql } from '@bv/db';
 import { VEHICLE_TYPES, VEHICLE_STATUSES } from '@bv/core/enums';
 import { PageHeader, Card } from '@/components/ui';
 import { saveVehicle, deleteVehicle } from '../actions';
@@ -22,6 +22,10 @@ export default async function VehicleEditPage({
   const { error } = await searchParams;
   const v = id === 'new' ? null : (await db.select().from(schema.vehicles).where(eq(schema.vehicles.id, id)).limit(1))[0];
   if (id !== 'new' && !v) notFound();
+  const driverList = await db.select({ id: schema.drivers.id, name: schema.drivers.full_name }).from(schema.drivers).orderBy(schema.drivers.full_name);
+  const currentDriver = v
+    ? ((await db.execute(sql`select driver_id from bigventures.vehicle_assignments where vehicle_id = ${v.id} and end_date is null limit 1`)).rows[0] as { driver_id: string } | undefined)?.driver_id ?? ''
+    : '';
 
   return (
     <>
@@ -58,6 +62,18 @@ export default async function VehicleEditPage({
               </select>
             </label>
           </div>
+          <label className="block text-sm font-medium">
+            Usual driver (optional)
+            <select name="driverId" defaultValue={currentDriver} className={input}>
+              <option value="">None</option>
+              {driverList.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
+            <span className="mt-1 block text-xs font-normal text-muted">
+              Only a label and a shortcut: this driver sees this truck first when logging a trip. Any driver can still use any truck. If you leave it blank, the list shows whoever has driven it most in the last 30 days.
+            </span>
+          </label>
           <label className="block text-sm font-medium">
             Notes (optional)
             <input name="notes" defaultValue={v?.notes ?? ''} className={input} />

@@ -94,3 +94,11 @@ export async function unassignDriver(driverId: string) {
       where end_date is null and driver_id = ${driverId}`,
   );
 }
+
+export async function unassignVehicle(vehicleId: string) {
+  const today = new Date().toISOString().slice(0, 10);
+  await db.execute(
+    (await import('@bv/db')).sql`update bigventures.vehicle_assignments set end_date = ${today}
+      where end_date is null and vehicle_id = ${vehicleId}`,
+  );
+}
