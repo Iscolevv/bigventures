@@ -38,7 +38,7 @@ export default async function OverviewPage() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile href="/trips" label="Trips (30d)" value={tripsSum.total} hint={`${tripsSum.flagged} flagged · ${tripsSum.inProgress} live`} tone={tripsSum.flagged > 0 ? 'warn' : 'default'} />
-        <StatTile href="/roi" label="Revenue (30d)" value={kes(fin.revenue)} hint={`invoiced, before VAT · ${kes(fin.received)} received`} />
+        <StatTile href="/roi" label="Revenue (30d)" value={kes(fin.revenue)} hint={`billed on completed trips · ${kes(fin.received)} received`} />
         <StatTile href="/roi" label="Gross profit (30d)" value={kes(grossProfit)} hint={`fuel ${kes(fin.fuelCost)} · running ${kes(fin.runningCost)}`} tone={grossProfit >= 0 ? 'ok' : 'crit'} />
         <StatTile href="/alerts" label="Open alerts" value={alerts.total} hint={`${alerts.critical} critical · ${alerts.warning} warning`} tone={alerts.critical > 0 ? 'crit' : alerts.total > 0 ? 'warn' : 'ok'} />
       </div>

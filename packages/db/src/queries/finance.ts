@@ -283,10 +283,14 @@ export async function vehicleRoiTable(db: DB, p: Period): Promise<VehicleRoiRow[
       v.registration,
       v.monthly_finance_cost as monthly_finance,
       coalesce((
+        select sum(t2.billed_amount::numeric) from bigventures.trips t2
+        where t2.vehicle_id = v.id and t2.status = 'completed' and t2.billed_amount is not null
+          and t2.started_at >= ${from} and t2.started_at < ${to}
+      ), 0)
+      + coalesce((
         select sum(il.line_total::numeric) from bigventures.invoice_lines il
         join bigventures.invoices inv on inv.id = il.invoice_id
-        left join bigventures.trips t2 on t2.id = il.trip_id
-        where (t2.vehicle_id = v.id or il.vehicle_id = v.id)
+        where il.vehicle_id = v.id and il.trip_id is null
           and inv.status not in ('draft','void')
           and inv.issue_date >= ${fromD} and inv.issue_date < ${toD}
       ), 0) as revenue,
@@ -466,15 +470,30 @@ export async function unbilledTrips(db: DB) {
 }
 
 export async function financeSummary(db: DB, p: Period) {
-  // Revenue = what was invoiced in the period, before VAT (drafts and voids excluded).
-  const [rev] = await db
-    .select({ total: sql<string>`coalesce(sum(${invoices.subtotal}),0)` })
-    .from(invoices)
+  // Revenue is recognised as soon as a trip is approved and billed - not only once an
+  // invoice has been drafted for it - so a vehicle's contribution shows immediately
+  // alongside its costs. One-off (non-trip) invoices still count once issued.
+  const [tripRev] = await db
+    .select({ total: sql<string>`coalesce(sum(${trips.billed_amount}),0)` })
+    .from(trips)
     .where(
       and(
+        eq(trips.status, 'completed'),
+        sql`${trips.billed_amount} is not null`,
+        gte(trips.started_at, p.from),
+        lt(trips.started_at, p.to),
+      ),
+    );
+  const [manualRev] = await db
+    .select({ total: sql<string>`coalesce(sum(${invoiceLines.line_total}),0)` })
+    .from(invoiceLines)
+    .innerJoin(invoices, eq(invoices.id, invoiceLines.invoice_id))
+    .where(
+      and(
+        sql`${invoiceLines.trip_id} is null`,
+        sql`${invoices.status} not in ('draft','void')`,
         gte(invoices.issue_date, p.from.toISOString().slice(0, 10)),
         lt(invoices.issue_date, endExclusive(p.to)),
-        sql`${invoices.status} not in ('draft','void')`,
       ),
     );
   const [rec] = await db
@@ -501,7 +520,7 @@ export async function financeSummary(db: DB, p: Period) {
     })
     .from(invoices);
   return {
-    revenue: money(rev?.total),
+    revenue: money(tripRev?.total) + money(manualRev?.total),
     received: money(rec?.total),
     fuelCost: money(fuel?.total),
     runningCost: money(cost?.total),
