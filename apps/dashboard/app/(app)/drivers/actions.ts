@@ -5,7 +5,7 @@ import { requirePermission } from '@/lib/session';
 import { writeAudit } from '@/lib/audit';
 import { db, schema, eq, sql } from '@bv/db';
 import { DRIVER_STATUSES } from '@bv/core/enums';
-import { createDriver, assignVehicle, unassignDriver, setLoginPassword } from '@/lib/people';
+import { createDriver, assignVehicle, unassignDriver, setLoginPassword, isValidEmail } from '@/lib/people';
 
 export async function saveDriver(form: FormData) {
   const id = String(form.get('id') ?? '');
@@ -19,6 +19,7 @@ export async function saveDriver(form: FormData) {
   const fail = (m: string): never => redirect(`${back}?error=${encodeURIComponent(m)}`);
 
   if (!name) fail('Name is required');
+  if (email && !isValidEmail(email)) fail('Enter the full email address, like name@company.com');
   if (!(DRIVER_STATUSES as readonly string[]).includes(status)) fail('Invalid status');
 
   if (!id) {

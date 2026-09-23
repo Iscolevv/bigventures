@@ -6,6 +6,11 @@ import type { Role } from '@bv/core/enums';
 /** Placeholder login domain until staff have real emails; editable per person. */
 export const LOGIN_DOMAIN = 'bigventures.demo';
 
+/** The sign-in system rejects anything without a real domain (kevin@bigventures), which would lock the person out. */
+export function isValidEmail(email: string) {
+  return /^[^@\s]+@[^@\s.]+(\.[^@\s.]+)*\.[A-Za-z]{2,}$/.test(email.trim());
+}
+
 export function loginEmailFor(name: string) {
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '.').replace(/^\.+|\.+$/g, '');
   return `${slug}@${LOGIN_DOMAIN}`;
@@ -18,6 +23,7 @@ async function hash(password: string) {
 
 /** Create a user with an email+password credential. Returns the new user id. */
 export async function createLogin(input: { name: string; email: string; role: Role; password: string }) {
+  if (!isValidEmail(input.email)) throw new Error('invalid email');
   const id = randomUUID();
   const now = new Date();
   await db.insert(schema.user).values({
