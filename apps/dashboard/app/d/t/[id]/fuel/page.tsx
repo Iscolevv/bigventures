@@ -1,3 +1,4 @@
+import { BackLink } from '@/components/driver/BackLink';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireDriver } from '@/lib/driver-session';
@@ -14,9 +15,7 @@ export default async function FuelPage({ params }: { params: Promise<{ id: strin
 
   return (
     <>
-      <Link href={`/d/t/${id}`} className="-m-2 inline-block p-2 text-sm text-muted">
-        ← Trip
-      </Link>
+      <BackLink href={`/d/t/${id}`}>Trip</BackLink>
       <h1 className="mt-2 text-lg font-semibold">Fuel entry</h1>
       <FuelForm tripId={id} />
     </>

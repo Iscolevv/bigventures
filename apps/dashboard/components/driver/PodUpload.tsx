@@ -1,4 +1,5 @@
 'use client';
+import { Camera } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { uploadPod } from '@/app/d/actions';
@@ -30,6 +31,7 @@ export function PodUpload({ dropId }: { dropId: string }) {
   return (
     <div className="mt-3">
       <button type="button" className={dBtnPrimary} disabled={busy} onClick={() => ref.current?.click()}>
+        <Camera size={20} />
         {busy ? 'Uploading…' : 'Upload PO photo'}
       </button>
       <input ref={ref} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFile} />

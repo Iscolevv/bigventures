@@ -1,4 +1,5 @@
 'use client';
+import { Check, Minus, ShieldCheck, X } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { submitVehicleCheck } from '@/app/d/actions';
@@ -88,10 +89,11 @@ export function VehicleCheckForm({
                 <button
                   key={r}
                   onClick={() => set(i.key, { result: r })}
-                  className={`min-h-[46px] rounded-lg border text-sm font-semibold active:opacity-90 ${
+                  className={`inline-flex min-h-[46px] items-center justify-center gap-1 rounded-xl border text-sm font-semibold active:opacity-90 ${
                     st.result === r ? 'border-brand bg-brand text-white' : 'text-fg'
                   }`}
                 >
+                  {r === 'pass' ? <Check size={16} /> : r === 'fail' ? <X size={16} /> : <Minus size={16} />}
                   {r.toUpperCase()}
                 </button>
               ))}
@@ -123,6 +125,7 @@ export function VehicleCheckForm({
       )}
       {err && <p className="wrap-anywhere text-sm text-crit">{err}</p>}
       <button onClick={submit} disabled={pending} className={dBtnPrimary}>
+        <ShieldCheck size={20} />
         {pending ? 'Submitting…' : 'Submit today’s check'}
       </button>
     </div>

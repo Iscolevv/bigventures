@@ -1,4 +1,5 @@
 'use client';
+import { CheckCircle2, Upload, XCircle } from 'lucide-react';
 import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { uploadDriverDoc } from '@/app/d/actions';
@@ -33,9 +34,9 @@ export function DriverDocForm({
       if (issueDate) fd.set('issueDate', issueDate);
       if (expiryDate) fd.set('expiryDate', expiryDate);
       const r = await uploadDriverDoc(fd);
-      if (r.error) setMsg(`✗ ${r.error}`);
+      if (r.error) setMsg(`ERR:${r.error}`);
       else {
-        setMsg('✓ Sent for review');
+        setMsg('OK:Sent for review');
         if (fileRef.current) fileRef.current.value = '';
         router.refresh();
       }
@@ -60,11 +61,18 @@ export function DriverDocForm({
       <button
         onClick={submit}
         disabled={pending}
-        className="min-h-[44px] rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white active:opacity-90 disabled:opacity-60"
+        className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white active:opacity-90 disabled:opacity-60"
       >
+        <Upload size={16} />
         {pending ? 'Uploading…' : replace ? 'Replace' : 'Upload'}
       </button>
-      {msg && <span className="wrap-anywhere ml-2 text-xs text-muted">{msg}</span>}
+      {msg && (
+        <span className={`wrap-anywhere ml-2 inline-flex items-center gap-1 text-xs ${msg.startsWith('OK:') ? 'text-ok' : msg.startsWith('ERR:') ? 'text-crit' : 'text-muted'}`}>
+          {msg.startsWith('OK:') && <CheckCircle2 size={14} />}
+          {msg.startsWith('ERR:') && <XCircle size={14} />}
+          {msg.replace(/^(OK|ERR):/, '')}
+        </span>
+      )}
     </div>
   );
 }

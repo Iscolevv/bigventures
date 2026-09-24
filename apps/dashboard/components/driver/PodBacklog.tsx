@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Camera } from 'lucide-react';
 import type { PodBacklogItem } from '@bv/db/queries';
 
 const fmt = (d: Date) =>
@@ -15,7 +16,7 @@ export function PodBacklog({ items }: { items: PodBacklogItem[] }) {
           className={`block rounded-xl border p-3 text-sm active:opacity-80 ${b.overdue ? 'border-crit bg-crit/10' : 'border-warn bg-warn/10'}`}
         >
           <div className="flex items-start justify-between gap-2">
-            <span className="font-semibold">PO {b.po ?? '(no number)'}</span>
+            <span className="flex items-center gap-2 font-semibold"><Camera size={16} className={b.overdue ? 'text-crit' : 'text-warn'} />PO {b.po ?? '(no number)'}</span>
             <span className={`shrink-0 text-xs font-semibold ${b.overdue ? 'text-crit' : 'text-warn'}`}>
               {b.overdue ? 'OVERDUE' : `due ${fmt(b.dueAt)}`}
             </span>

@@ -41,7 +41,7 @@ export function AddDropForm({ tripId }: { tripId: string }) {
         onChange={(e) => setAddress(e.target.value)}
         placeholder="Shop / customer / area"
       />
-      <GeoButton onFix={(c) => setPin({ lat: c.lat, lng: c.lng })} label={pin ? 'Location pinned ✓' : "Pin (if you're there now)"} />
+      <GeoButton onFix={(c) => setPin({ lat: c.lat, lng: c.lng })} label={pin ? 'Location pinned' : "Pin (if you're there now)"} />
       {err && <p className="wrap-anywhere text-sm text-crit">{err}</p>}
       <button onClick={submit} disabled={pending} className={dBtnPrimary}>
         {pending ? 'Adding…' : 'Add drop'}

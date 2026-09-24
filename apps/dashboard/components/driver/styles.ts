@@ -4,7 +4,7 @@ export const dInput =
   'mt-1 w-full rounded-lg border border-border bg-surface px-3.5 py-3 text-base leading-normal outline-none focus:border-brand';
 export const dLabel = 'block text-sm font-medium';
 export const dBtn =
-  'w-full rounded-lg px-4 py-3.5 text-center text-base font-semibold active:opacity-90 disabled:opacity-50';
+  'inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-center text-base font-semibold shadow-sm transition active:scale-[0.98] active:opacity-90 disabled:opacity-50';
 export const dBtnPrimary = `${dBtn} bg-brand text-white`;
 export const dBtnOutline = `${dBtn} border border-brand bg-transparent text-brand active:bg-brand/10`;
 export const dBtnOk = `${dBtn} bg-ok text-white`;

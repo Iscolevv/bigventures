@@ -1,3 +1,4 @@
+import { BackLink } from '@/components/driver/BackLink';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireDriver } from '@/lib/driver-session';
@@ -20,9 +21,7 @@ export default async function DropsPage({ params }: { params: Promise<{ id: stri
 
   return (
     <>
-      <Link href={`/d/t/${id}`} className="-m-2 inline-block p-2 text-sm text-muted">
-        ← Trip
-      </Link>
+      <BackLink href={`/d/t/${id}`}>Trip</BackLink>
       <h1 className="mt-1 text-lg font-semibold">Drops</h1>
 
       <div className="mt-3 space-y-2">

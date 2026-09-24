@@ -1,4 +1,5 @@
 'use client';
+import { CheckCircle2, ClipboardCheck, Clock, Flag, Fuel, Play } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { startTrip, closeTrip } from '@/app/d/actions';
@@ -27,6 +28,7 @@ export function TripActions({
 
       {(status === 'draft' || status === 'pre_check') && !hasCheck && (
         <Link href="/d/check" className={dBtnPrimary}>
+          <ClipboardCheck size={20} />
           Do today&apos;s vehicle check
         </Link>
       )}
@@ -42,6 +44,7 @@ export function TripActions({
             })
           }
         >
+          <Play size={20} />
           {dropCount === 0 ? 'Add a drop first' : 'Start driving'}
         </button>
       )}
@@ -49,6 +52,7 @@ export function TripActions({
       {status === 'in_progress' && (
         <>
           <Link href={`/d/t/${tripId}/fuel`} className={dBtnOutline}>
+            <Fuel size={20} />
             Log fuel
           </Link>
           <div className="rounded-xl border bg-surface p-3.5">
@@ -72,14 +76,15 @@ export function TripActions({
                 })
               }
             >
+              <Flag size={20} />
               {allClosed ? 'Finish trip' : 'Close all drops first'}
             </button>
           </div>
         </>
       )}
 
-      {status === 'submitted' && <p className="text-center text-sm text-warn">Sent to the office. It counts once they approve it.</p>}
-      {status === 'completed' && <p className="text-center text-sm text-ok">Approved ✓</p>}
+      {status === 'submitted' && <p className="flex items-center justify-center gap-2 text-center text-sm text-warn"><Clock size={16} /> Sent to the office. It counts once they approve it.</p>}
+      {status === 'completed' && <p className="flex items-center justify-center gap-2 text-center text-sm font-medium text-ok"><CheckCircle2 size={18} /> Approved</p>}
     </div>
   );
 }

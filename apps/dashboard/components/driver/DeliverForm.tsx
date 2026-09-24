@@ -1,4 +1,5 @@
 'use client';
+import { Camera, CheckCircle2, CircleAlert, XCircle } from 'lucide-react';
 import { useState, useRef, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { DELIVERY_ISSUE_CATEGORIES } from '@bv/core/enums';
@@ -87,8 +88,9 @@ export function DeliverForm({
           {photos.map((p) => (
             <img key={p.id} src={p.url} alt="POD" className="aspect-square w-full rounded-lg object-cover" />
           ))}
-          <label className="grid aspect-square w-full place-items-center rounded-lg border-2 border-dashed border-brand text-xs font-semibold text-brand active:bg-brand/10">
-            {busy ? 'Uploading…' : '+ Photo'}
+          <label className="grid aspect-square w-full place-items-center place-content-center gap-1 rounded-xl border-2 border-dashed border-brand text-xs font-semibold text-brand active:bg-brand/10">
+            <Camera size={22} />
+            {busy ? 'Uploading…' : 'Add photo'}
             <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhoto} />
           </label>
         </div>
@@ -126,12 +128,15 @@ export function DeliverForm({
 
       <div className="space-y-2.5">
         <button onClick={() => close('delivered')} disabled={pending} className={dBtnOk}>
+          <CheckCircle2 size={20} />
           Delivered in full
         </button>
         <button onClick={() => close('partial')} disabled={pending} className={dBtnWarn}>
+          <CircleAlert size={20} />
           Partial delivery
         </button>
         <button onClick={() => close('failed')} disabled={pending} className={dBtnCrit}>
+          <XCircle size={20} />
           Failed / returned
         </button>
       </div>

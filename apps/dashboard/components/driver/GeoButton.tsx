@@ -1,4 +1,5 @@
 'use client';
+import { Check, MapPin } from 'lucide-react';
 import { useState } from 'react';
 
 export function GeoButton({
@@ -37,9 +38,10 @@ export function GeoButton({
       <button
         type="button"
         onClick={go}
-        className="min-h-[48px] w-full rounded-lg border px-4 py-3 text-sm font-medium active:bg-bg"
+        className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium active:bg-bg"
       >
-        {state === 'busy' ? 'Getting GPS…' : state === 'ok' ? `Pinned ✓ (${detail})` : label}
+        {state === 'ok' ? <Check size={18} className="text-ok" /> : <MapPin size={18} />}
+        {state === 'busy' ? 'Getting GPS…' : state === 'ok' ? `Pinned (${detail})` : label}
       </button>
       {state === 'err' && <p className="wrap-anywhere mt-1 text-xs text-crit">Couldn&apos;t get GPS - {detail}</p>}
     </div>

@@ -1,4 +1,5 @@
 'use client';
+import { Camera, Check, Send, X, RotateCcw, CirclePlus } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { logCompletedTrip } from '@/app/d/actions';
@@ -143,13 +144,13 @@ export function QuickLogForm({
         {(lastTripStops.length > 0 || recentStops.length > 0) && (
           <div className="mt-2 flex flex-wrap gap-2">
             {lastTripStops.length > 0 && stops.length === 0 && (
-              <button type="button" className={`${dChip} border-brand text-brand`} onClick={() => setStopsText(lastTripStops.join('\n'))}>
-                Repeat my last trip ({lastTripStops.length} stops)
+              <button type="button" className={`${dChip} inline-flex items-center gap-1.5 border-brand text-brand`} onClick={() => setStopsText(lastTripStops.join('\n'))}>
+                <RotateCcw size={15} /> Repeat my last trip ({lastTripStops.length} stops)
               </button>
             )}
             {recentStops.map((r) => (
-              <button type="button" key={r} className={dChip} onClick={() => addStop(r)}>
-                + {r}
+              <button type="button" key={r} className={`${dChip} inline-flex items-center gap-1`} onClick={() => addStop(r)}>
+                <CirclePlus size={15} /> {r}
               </button>
             ))}
           </div>
@@ -170,11 +171,11 @@ export function QuickLogForm({
                   <button
                     type="button"
                     onClick={() => toggleFailed(i)}
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold active:opacity-80 ${
+                    className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold active:opacity-80 ${
                       failed.has(i) ? 'bg-crit text-white' : 'bg-ok/15 text-ok'
                     }`}
                   >
-                    {failed.has(i) ? 'Failed ✗' : 'Delivered ✓'}
+                    {failed.has(i) ? <><X size={14} /> Failed</> : <><Check size={14} /> Delivered</>}
                   </button>
                 </div>
                 {!failed.has(i) && (
@@ -199,14 +200,15 @@ export function QuickLogForm({
                     {previews[i] ? (
                       <img src={previews[i]} alt="POD" className="h-12 w-12 rounded-md object-cover" />
                     ) : (
-                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-md border-2 border-dashed border-brand text-brand">📷</span>
+                      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-md border-2 border-dashed border-brand text-brand"><Camera size={22} /></span>
                     )}
                     <button
                       type="button"
                       onClick={() => fileRefs.current[i]?.click()}
                       disabled={compressing.has(i)}
-                      className={dChip}
+                      className={`${dChip} inline-flex items-center gap-1.5`}
                     >
+                      {previews[i] ? <RotateCcw size={16} /> : <Camera size={16} />}
                       {compressing.has(i) ? 'Compressing…' : previews[i] ? 'Retake PO photo' : 'Add PO photo (or later)'}
                     </button>
                     <input
@@ -245,6 +247,7 @@ export function QuickLogForm({
 
       {err && <p className="wrap-anywhere text-sm text-crit">{err}</p>}
       <button onClick={submit} disabled={pending} className={dBtnPrimary}>
+        <Send size={20} />
         {pending ? 'Logging…' : `Log ${stops.length || ''} stop${stops.length === 1 ? '' : 's'}`}
       </button>
     </div>

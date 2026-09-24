@@ -1,3 +1,4 @@
+import { BackLink } from '@/components/driver/BackLink';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireDriver } from '@/lib/driver-session';
@@ -50,9 +51,7 @@ export default async function DriverTrip({ params }: { params: Promise<{ id: str
 
   return (
     <>
-      <Link href="/d" className="-m-2 inline-block p-2 text-sm text-muted">
-        ← My trips
-      </Link>
+      <BackLink href="/d">My trips</BackLink>
       <h1 className="mt-1 text-lg font-semibold">{trip.reference_code}</h1>
       <p className="wrap-anywhere text-sm text-muted">
         {vehicle?.reg} · {trip.loading_point_address}
