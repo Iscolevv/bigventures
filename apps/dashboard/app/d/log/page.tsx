@@ -24,6 +24,14 @@ export default async function QuickLogPage() {
     order by d.sequence`);
   const lastTripStops = (lastTrip.rows as { s: string }[]).map((r) => r.s);
 
+  const openingRows = await db.execute(sql`
+    select distinct on (vehicle_id) vehicle_id, odometer_km::float8 as km
+    from bigventures.vehicle_checks
+    where odometer_km is not null and (performed_at + interval '3 hours')::date = (now() + interval '3 hours')::date
+    order by vehicle_id, performed_at asc`);
+  const openings: Record<string, number> = {};
+  for (const r of openingRows.rows as { vehicle_id: string; km: number }[]) openings[r.vehicle_id] = r.km;
+
   const overdue = (await driverPodBacklog(db, me.driverId, PO_UPLOAD_WINDOW_HOURS)).filter((b) => b.overdue);
   if (overdue.length > 0) {
     return (
@@ -38,7 +46,7 @@ export default async function QuickLogPage() {
     <>
       <h1 className="text-lg font-semibold">Log a trip</h1>
       <p className="mt-1 text-sm text-muted">List today&apos;s stops, same as you&apos;d text the group.</p>
-      <QuickLogForm vehicles={vehicles} recentStops={recentStops} lastTripStops={lastTripStops} />
+      <QuickLogForm vehicles={vehicles} recentStops={recentStops} lastTripStops={lastTripStops} openings={openings} />
     </>
   );
 }

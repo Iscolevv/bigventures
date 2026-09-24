@@ -18,10 +18,12 @@ export function QuickLogForm({
   vehicles,
   recentStops = [],
   lastTripStops = [],
+  openings = {},
 }: {
   vehicles: { id: string; reg: string }[];
   recentStops?: string[];
   lastTripStops?: string[];
+  openings?: Record<string, number>;
 }) {
   const router = useRouter();
   const [vehicleId, setVehicleId] = useState(vehicles[0]?.id ?? '');
@@ -36,6 +38,7 @@ export function QuickLogForm({
   const [loadTonnes, setLoadTonnes] = useState('');
   const [loadBales, setLoadBales] = useState('');
   const [fuelLitres, setFuelLitres] = useState('');
+  const [endOdometer, setEndOdometer] = useState('');
   const [signees, setSignees] = useState<Record<number, string>>({});
   const [err, setErr] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -87,6 +90,10 @@ export function QuickLogForm({
     if (!vehicleId) return setErr('Pick your vehicle');
     if (stops.length === 0) return setErr('Add at least one stop, one per line');
     if (compressing.size > 0) return setErr('Still processing a photo - give it a second');
+    const opening = openings[vehicleId];
+    if (endOdometer.trim() && opening != null && Number(endOdometer) < opening) {
+      return setErr(`Closing odometer is lower than this morning's ${opening.toLocaleString()} km. Check the number.`);
+    }
     const missingPo = stops.map((_, i) => i).filter((i) => !failed.has(i) && !pos[i]?.trim());
     if (missingPo.length > 0) {
       return setErr(`Add the PO number for stop${missingPo.length > 1 ? 's' : ''} ${missingPo.map((i) => i + 1).join(', ')} - or mark it failed if it didn't go through`);
@@ -105,6 +112,7 @@ export function QuickLogForm({
     if (loadTonnes.trim()) fd.set('loadTonnes', loadTonnes.trim());
     if (loadBales.trim()) fd.set('loadBales', loadBales.trim());
     if (fuelLitres.trim()) fd.set('fuelLitres', fuelLitres.trim());
+    if (endOdometer.trim()) fd.set('endOdometer', endOdometer.trim());
     setErr(null);
     start(async () => {
       const r = await logCompletedTrip(fd);
@@ -243,6 +251,14 @@ export function QuickLogForm({
             <button type="button" key={l} className={dChip} onClick={() => setFuelLitres(String(l))}>{l}L</button>
           ))}
         </div>
+      </div>
+
+      <div>
+        <label className={dLabel}>Closing odometer (km)</label>
+        <input className={dInput} inputMode="numeric" value={endOdometer} onChange={(e) => setEndOdometer(e.target.value)} placeholder="Read it off the dash when you park" />
+        <p className="mt-1 text-xs text-muted">
+          {openings[vehicleId] != null ? `This morning's reading: ${openings[vehicleId]!.toLocaleString()} km.` : 'No morning check today for this truck, so the office will add the start reading.'}
+        </p>
       </div>
 
       {err && <p className="wrap-anywhere text-sm text-crit">{err}</p>}

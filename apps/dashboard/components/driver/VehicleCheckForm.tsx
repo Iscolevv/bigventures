@@ -37,6 +37,7 @@ export function VehicleCheckForm({
 
   function submit() {
     if (!vehicleId) return setErr('Pick your vehicle');
+    if (!odometer.trim() || !(Number(odometer) > 0)) return setErr('Enter the odometer reading');
     if (unanswered) return setErr('Answer every item');
     const items = template.map((i) => ({
       key: i.key,
@@ -73,7 +74,7 @@ export function VehicleCheckForm({
         </div>
       )}
       <div>
-        <label className={dLabel}>Odometer (km)</label>
+        <label className={dLabel}>Odometer now (km) - your opening reading</label>
         <input className={dInput} inputMode="numeric" value={odometer} onChange={(e) => setOdometer(e.target.value)} />
       </div>
 

@@ -93,6 +93,9 @@ export async function logCompletedTrip(form: FormData) {
   const loadTonnes = form.get('loadTonnes') ? Number(form.get('loadTonnes')) : null;
   const loadBales = form.get('loadBales') ? Number(form.get('loadBales')) : null;
   const fuelLitres = form.get('fuelLitres') ? Number(form.get('fuelLitres')) : null;
+  const endOdoRaw = String(form.get('endOdometer') ?? '').trim();
+  const endOdo = endOdoRaw ? Number(endOdoRaw) : null;
+  if (endOdoRaw && (endOdo == null || !Number.isFinite(endOdo) || endOdo <= 0)) return { error: 'Closing odometer must be a number' };
 
   const stops = stopsRaw
     .split('\n')
@@ -140,6 +143,24 @@ export async function logCompletedTrip(form: FormData) {
   const now = new Date();
   const when = noon > now ? now : noon;
 
+  // Opening reading: where the previous trip that day left the truck, else this morning's vehicle check.
+  const dayKey = new Date(when.getTime() + 3 * 3600_000).toISOString().slice(0, 10);
+  const prevEnd = await db.execute(sql`
+    select end_odometer_km::float8 as km from bigventures.trips
+    where vehicle_id = ${vehicleId} and (started_at + interval '3 hours')::date = ${dayKey}::date and end_odometer_km is not null
+    order by created_at desc limit 1`);
+  let startOdo = (prevEnd.rows[0] as { km: number } | undefined)?.km ?? null;
+  if (startOdo == null) {
+    const morning = await db.execute(sql`
+      select odometer_km::float8 as km from bigventures.vehicle_checks
+      where vehicle_id = ${vehicleId} and odometer_km is not null and (performed_at + interval '3 hours')::date = ${dayKey}::date
+      order by performed_at asc limit 1`);
+    startOdo = (morning.rows[0] as { km: number } | undefined)?.km ?? null;
+  }
+  if (endOdo != null && startOdo != null && endOdo < startOdo) {
+    return { error: `Closing odometer (${endOdo}) is lower than the opening reading (${startOdo}). Check the number.` };
+  }
+
   const id = randomUUID();
   await db.insert(schema.trips).values({
     id,
@@ -152,9 +173,14 @@ export async function logCompletedTrip(form: FormData) {
     load_bales: loadBales != null && !Number.isNaN(loadBales) ? Math.round(loadBales) : null,
     started_at: when,
     ended_at: when,
+    start_odometer_km: startOdo != null ? String(startOdo) : null,
+    end_odometer_km: endOdo != null ? String(endOdo) : null,
     source: 'dashboard',
     created_by: me.userId,
   });
+  if (endOdo != null) {
+    await db.execute(sql`update bigventures.vehicles set odometer_km = greatest(odometer_km, ${endOdo}) where id = ${vehicleId}`);
+  }
 
   const insertedDrops = await db
     .insert(schema.drops)
@@ -266,6 +292,7 @@ export async function submitVehicleCheck(form: FormData) {
   }[];
 
   if (!(await vehicleIsUsable(vehicleId))) return { error: 'That vehicle is not available' };
+  if (odometer == null || !Number.isFinite(odometer) || odometer <= 0) return { error: 'Enter the odometer reading' };
 
   const blockingFail = items.some((i) => BLOCKING_CHECK_KEYS.has(i.key) && i.result === 'fail');
   const anyFail = items.some((i) => i.result === 'fail');
@@ -278,8 +305,9 @@ export async function submitVehicleCheck(form: FormData) {
     driver_id: me.driverId,
     performed_at: new Date(),
     overall_result: overall,
-    odometer_km: odometer != null ? String(odometer) : null,
+    odometer_km: String(odometer),
   });
+  await db.execute(sql`update bigventures.vehicles set odometer_km = greatest(odometer_km, ${odometer}) where id = ${vehicleId}`);
   if (items.length) {
     await db
       .insert(schema.vehicleCheckItems)

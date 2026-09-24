@@ -27,6 +27,8 @@ export interface PendingTrip {
   bales: number | null;
   fuelLitres: number | null;
   fuelCost: number | null;
+  startOdometer: number | null;
+  endOdometer: number | null;
   drops: PendingDrop[];
 }
 
@@ -36,6 +38,7 @@ export async function pendingTrips(db: DB): Promise<PendingTrip[]> {
     select t.id, t.reference_code as ref, (t.started_at + interval '3 hours')::date::text as date,
       t.created_at as logged_at, dr.full_name as driver, v.registration as vehicle,
       t.load_tonnes as tonnes, t.load_bales as bales,
+      t.start_odometer_km::float8 as start_odo, t.end_odometer_km::float8 as end_odo,
       (select sum(fe.litres) from bigventures.fuel_entries fe where fe.trip_id = t.id) as fuel_litres,
       (select sum(fe.total_cost) from bigventures.fuel_entries fe where fe.trip_id = t.id) as fuel_cost
     from bigventures.trips t
@@ -68,6 +71,8 @@ export async function pendingTrips(db: DB): Promise<PendingTrip[]> {
     bales: num(t.bales),
     fuelLitres: num(t.fuel_litres),
     fuelCost: num(t.fuel_cost),
+    startOdometer: num(t.start_odo),
+    endOdometer: num(t.end_odo),
     drops: drops
       .filter((d) => d.trip_id === t.id)
       .map((d) => ({

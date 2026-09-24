@@ -112,12 +112,14 @@ export default async function ApprovalsPage({
                 <input name="billed" inputMode="decimal" className={input} placeholder="blank = client's usual rate" />
               </label>
               <label className="text-sm font-medium">
-                Start odometer (km, optional)
-                <input name="startOdometer" inputMode="numeric" className={input} placeholder="for cost/km" />
+                Start odometer (km)
+                <input name="startOdometer" inputMode="numeric" defaultValue={t.startOdometer ?? ''} className={input} placeholder={t.startOdometer == null ? 'not recorded - add if you know it' : undefined} />
+                {t.startOdometer != null && <span className="mt-1 block text-xs font-normal text-muted">from the driver's morning check</span>}
               </label>
               <label className="text-sm font-medium">
-                End odometer (km, optional)
-                <input name="endOdometer" inputMode="numeric" className={input} placeholder="for cost/km" />
+                End odometer (km)
+                <input name="endOdometer" inputMode="numeric" defaultValue={t.endOdometer ?? ''} className={input} placeholder={t.endOdometer == null ? 'not recorded - add if you know it' : undefined} />
+                {t.endOdometer != null && <span className="mt-1 block text-xs font-normal text-muted">closing reading from the driver</span>}
               </label>
               <div className="flex items-end lg:col-span-2">
                 <button className="rounded-md bg-brand px-6 py-2 text-sm font-semibold text-white">Approve</button>
