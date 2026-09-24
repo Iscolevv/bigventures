@@ -60,6 +60,8 @@ export async function deleteDriver(form: FormData) {
   if (n > 0) back(`${d!.name} has ${n} trip${n === 1 ? '' : 's'} on record, so can't be deleted. Set the status to Resigned instead.`);
 
   try {
+    // empty draft payroll rows left over from the removed payroll feature would otherwise block this
+    await db.execute(sql`delete from bigventures.payroll_runs where driver_id = ${id} and status = 'draft'`);
     await db.delete(schema.drivers).where(eq(schema.drivers.id, id));
     await db.execute(sql`delete from bigventures.session where "userId" = ${d!.userId}`);
     await db.execute(sql`delete from bigventures.account where "userId" = ${d!.userId}`);
