@@ -3,6 +3,7 @@ import { requirePermission, can } from '@/lib/session';
 import { db, schema, eq, ne, and } from '@bv/db';
 import { PageHeader, Card, Badge } from '@/components/ui';
 import { ConfirmSubmit } from '@/components/ConfirmSubmit';
+import { OfficeLoginFields } from '@/components/OfficeLoginFields';
 import { addOfficeUser, updateOfficeUser, deleteOfficeUser } from './actions';
 
 export const dynamic = 'force-dynamic';
@@ -106,14 +107,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
       {can(me.role, 'user:create') && (
         <Card title="Add an office login" className="mt-4 max-w-3xl">
           <form action={addOfficeUser} className="grid gap-3 sm:grid-cols-2">
-            <label className="text-sm font-medium">
-              Name
-              <input name="name" required className={input} />
-            </label>
-            <label className="text-sm font-medium">
-              Email
-              <input name="email" type="email" required className={input} />
-            </label>
+            <OfficeLoginFields />
             <label className="text-sm font-medium">
               Role
               <select name="role" defaultValue="admin" className={input}>

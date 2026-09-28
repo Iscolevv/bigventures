@@ -4,6 +4,8 @@ import { after } from 'next/server';
 import { notifyTripSubmitted } from '@/lib/notify';
 import { randomUUID } from 'node:crypto';
 import { getDriver } from '@/lib/driver-session';
+import { getSessionUser } from '@/lib/session';
+import { writeAudit } from '@/lib/audit';
 import { db, schema, eq, and, sql } from '@bv/db';
 import { todaysVehicleCheck, driverPodBacklog, poOwner } from '@bv/db/queries';
 import { PO_UPLOAD_WINDOW_HOURS } from '@bv/core/reference';
@@ -552,6 +554,13 @@ export async function pingTrail(tripId: string, points: { lat: number; lng: numb
     }
   }
   return { ok: true };
+}
+
+/** Better Auth's own client handles the actual password change - this just leaves a record admins can see in the Audit trail. */
+export async function logPasswordChange() {
+  const user = await getSessionUser();
+  if (!user) return;
+  await writeAudit(user, 'update', 'user', user.id, null, { passwordChanged: true, by: 'driver' });
 }
 
 function haversine(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {

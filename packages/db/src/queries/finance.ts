@@ -167,8 +167,21 @@ export async function costSummary(db: DB, p: Period) {
         lt(costEntries.incurred_at, endExclusive(p.to)),
       ),
     );
+  // Fuel is recorded separately, against a trip when the office approves it - not as a cost
+  // entry - but it is still money spent, so it belongs in this page's running total.
+  const [fuel] = await db
+    .select({ total: sql<string>`coalesce(sum(${fuelEntries.total_cost}),0)` })
+    .from(fuelEntries)
+    .where(
+      and(
+        gte(fuelEntries.filled_at, p.from),
+        lt(fuelEntries.filled_at, p.to),
+        sql`(bigventures.fuel_entries.trip_id is null or exists (select 1 from bigventures.trips tt where tt.id = bigventures.fuel_entries.trip_id and tt.status <> 'submitted'))`,
+      ),
+    );
   return {
     total: money(r?.total),
+    fuelTotal: money(fuel?.total),
     pendingCount: r?.pendingCount ?? 0,
     pendingAmount: money(r?.pendingAmount),
   };

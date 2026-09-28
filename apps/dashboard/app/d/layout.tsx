@@ -26,12 +26,14 @@ export default async function DriverLayout({ children }: { children: React.React
           </span>
         </Link>
         <div className="flex shrink-0 items-center gap-2">
-          <span
-            aria-hidden
-            className="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-sm font-semibold"
+          <Link
+            href="/d/account"
+            aria-label="Account"
+            title="Account"
+            className="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-sm font-semibold active:bg-white/30"
           >
             {initial}
-          </span>
+          </Link>
           <SignOut className="grid h-10 w-10 place-items-center rounded-full text-white/90 active:bg-white/15" />
         </div>
       </header>

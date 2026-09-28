@@ -26,7 +26,11 @@ export function proxy(req: NextRequest) {
     pathname === '/api/health';
 
   if (!isAuthed && !isPublic) {
-    return NextResponse.redirect(new URL('/login', req.url));
+    const url = new URL('/login', req.url);
+    // Send them back to where they were headed once they sign in - this is how a
+    // link in an email (e.g. "approve this trip") lands on that page, not the home screen.
+    if (pathname !== '/') url.searchParams.set('next', pathname + req.nextUrl.search);
+    return NextResponse.redirect(url);
   }
   // Never bounce /login on the cookie alone: the cookie can outlive its session
   // (account removed, session expired), and the app then redirects back to /login

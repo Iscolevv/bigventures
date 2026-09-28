@@ -43,6 +43,7 @@ export default async function CostsPage({
   const entries = entriesResult.rows;
 
   const totalCosts = summary.total;
+  const totalExpenses = summary.total + summary.fuelTotal;
   const totalAdvances = advances.reduce((s, a) => s + a.balance, 0);
   const totalLoss = advances.reduce((s, a) => s + a.lossBalance, 0);
 
@@ -188,11 +189,15 @@ export default async function CostsPage({
       )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Running costs" value={kes(totalCosts)} />
+        <StatTile label="Total expenses" value={kes(totalExpenses)} hint={`${kes(totalCosts)} running costs + ${kes(summary.fuelTotal)} fuel`} />
+        <StatTile label="Fuel (from trip approvals)" value={kes(summary.fuelTotal)} />
         <StatTile label="Pending approval" value={summary.pendingCount} tone={summary.pendingCount ? 'warn' : 'ok'} hint={kes(summary.pendingAmount)} />
         <StatTile label="Advances outstanding" value={kes(totalAdvances)} />
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatTile label="At-fault losses" value={kes(totalLoss)} tone={totalLoss ? 'crit' : 'ok'} />
       </div>
+      <p className="mt-2 text-xs text-muted">Fuel is recorded when the office approves a trip (litres and cost), not here - it shows above once approved.</p>
 
       <Card title="Cost by category" className="mt-6">
         {byCat.length ? (
