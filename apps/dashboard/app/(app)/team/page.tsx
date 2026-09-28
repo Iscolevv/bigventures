@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { requirePermission, can } from '@/lib/session';
-import { db, schema, eq, ne } from '@bv/db';
+import { db, schema, eq, ne, and } from '@bv/db';
 import { PageHeader, Card, Badge } from '@/components/ui';
 import { ConfirmSubmit } from '@/components/ConfirmSubmit';
 import { addOfficeUser, updateOfficeUser, deleteOfficeUser } from './actions';
@@ -24,7 +24,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
     db
       .select({ id: schema.user.id, name: schema.user.name, email: schema.user.email, role: schema.user.role, status: schema.user.status })
       .from(schema.user)
-      .where(ne(schema.user.role, 'driver'))
+      .where(and(ne(schema.user.role, 'driver'), eq(schema.user.hidden, false)))
       .orderBy(schema.user.name),
     db
       .select({ id: schema.drivers.id, name: schema.drivers.full_name, email: schema.user.email, status: schema.drivers.status })

@@ -3,8 +3,8 @@ import { auth } from './auth';
 import { db, schema, eq } from '@bv/db';
 import type { Role } from '@bv/core/enums';
 
-/** Placeholder login domain until staff have real emails; editable per person. */
-export const LOGIN_DOMAIN = 'bigventures.demo';
+/** Auto-generated driver login domain; editable per person. Uses the real, verified company domain. */
+export const LOGIN_DOMAIN = 'venturesbig.com';
 
 /** The sign-in system rejects anything without a real domain (kevin@bigventures), which would lock the person out. */
 export function isValidEmail(email: string) {

@@ -19,6 +19,8 @@ export const user = bv.table('user', {
   phone: text('phone'),
   role: text('role').$type<Role>().notNull().default('driver'),
   status: text('status').$type<UserStatus>().notNull().default('invited'),
+  /** The dev's own account - kept off the Team roster and out of approval-notification emails, but logs in normally. */
+  hidden: boolean('hidden').notNull().default(false),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });

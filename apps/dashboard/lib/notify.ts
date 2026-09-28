@@ -12,7 +12,7 @@ export function mailConfigured() {
 async function approverEmails(): Promise<string[]> {
   const res = await db.execute(sql`
     select email from bigventures."user"
-    where role in ('admin','operations') and status = 'active'`);
+    where role in ('admin','operations') and status = 'active' and hidden = false`);
   const fromDb = (res.rows as { email: string }[]).map((r) => r.email).filter((e) => !e.toLowerCase().endsWith(PLACEHOLDER_DOMAIN));
   const extra = (process.env.APPROVER_EMAILS ?? '').split(',').map((e) => e.trim()).filter(Boolean);
   return [...new Set([...fromDb, ...extra].map((e) => e.toLowerCase()))];
