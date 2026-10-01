@@ -556,10 +556,11 @@ export async function pingTrail(tripId: string, points: { lat: number; lng: numb
   return { ok: true };
 }
 
-/** Better Auth's own client handles the actual password change - this just leaves a record admins can see in the Audit trail. */
+/** Better Auth's own client handles the actual password change - this stamps when it happened, so Team & logins shows it, and leaves a record in the Audit trail. */
 export async function logPasswordChange() {
   const user = await getSessionUser();
   if (!user) return;
+  await db.update(schema.user).set({ password_changed_at: new Date() }).where(eq(schema.user.id, user.id));
   await writeAudit(user, 'update', 'user', user.id, null, { passwordChanged: true, by: 'driver' });
 }
 

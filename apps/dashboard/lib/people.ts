@@ -33,6 +33,7 @@ export async function createLogin(input: { name: string; email: string; role: Ro
     emailVerified: true,
     role: input.role,
     status: 'active',
+    password_changed_at: now,
     createdAt: now,
     updatedAt: now,
   });
@@ -50,15 +51,17 @@ export async function createLogin(input: { name: string; email: string; role: Ro
 
 export async function setLoginPassword(userId: string, password: string) {
   const hashed = await hash(password);
+  const now = new Date();
   const [acc] = await db.select({ id: schema.account.id }).from(schema.account).where(eq(schema.account.userId, userId)).limit(1);
   if (acc) {
-    await db.update(schema.account).set({ password: hashed, updatedAt: new Date() }).where(eq(schema.account.id, acc.id));
+    await db.update(schema.account).set({ password: hashed, updatedAt: now }).where(eq(schema.account.id, acc.id));
   } else {
     await db.insert(schema.account).values({
       id: randomUUID(), accountId: userId, providerId: 'credential', userId, password: hashed,
-      createdAt: new Date(), updatedAt: new Date(),
+      createdAt: now, updatedAt: now,
     });
   }
+  await db.update(schema.user).set({ password_changed_at: now }).where(eq(schema.user.id, userId));
 }
 
 /** A driver = a login (role driver) + a driver profile. Only the name is required. */

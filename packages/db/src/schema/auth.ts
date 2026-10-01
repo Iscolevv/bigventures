@@ -21,6 +21,8 @@ export const user = bv.table('user', {
   status: text('status').$type<UserStatus>().notNull().default('invited'),
   /** The dev's own account - kept off the Team roster and out of approval-notification emails, but logs in normally. */
   hidden: boolean('hidden').notNull().default(false),
+  /** When the login's password last changed (by the person themselves or an admin reset) - shown on Team & logins so you can see a login is current, without storing the password itself. */
+  password_changed_at: timestamp('password_changed_at'),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),
 });

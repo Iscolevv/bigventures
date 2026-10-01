@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { requirePermission, can } from '@/lib/session';
 import { db, schema, eq, ne, and } from '@bv/db';
-import { PageHeader, Card, Badge } from '@/components/ui';
+import { PageHeader, Card, Badge, dateTime } from '@/components/ui';
 import { ConfirmSubmit } from '@/components/ConfirmSubmit';
 import { OfficeLoginFields } from '@/components/OfficeLoginFields';
 import { addOfficeUser, updateOfficeUser, deleteOfficeUser } from './actions';
@@ -23,12 +23,25 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
 
   const [office, drivers] = await Promise.all([
     db
-      .select({ id: schema.user.id, name: schema.user.name, email: schema.user.email, role: schema.user.role, status: schema.user.status })
+      .select({
+        id: schema.user.id,
+        name: schema.user.name,
+        email: schema.user.email,
+        role: schema.user.role,
+        status: schema.user.status,
+        passwordChangedAt: schema.user.password_changed_at,
+      })
       .from(schema.user)
       .where(and(ne(schema.user.role, 'driver'), eq(schema.user.hidden, false)))
       .orderBy(schema.user.name),
     db
-      .select({ id: schema.drivers.id, name: schema.drivers.full_name, email: schema.user.email, status: schema.drivers.status })
+      .select({
+        id: schema.drivers.id,
+        name: schema.drivers.full_name,
+        email: schema.user.email,
+        status: schema.drivers.status,
+        passwordChangedAt: schema.user.password_changed_at,
+      })
       .from(schema.drivers)
       .leftJoin(schema.user, eq(schema.user.id, schema.drivers.user_id))
       .orderBy(schema.drivers.full_name),
@@ -49,6 +62,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
                 <span className="font-medium">{u.name}</span>
                 <span className="ml-2 text-muted">{u.email}</span>
                 {u.id === me.id && <span className="ml-2 text-xs text-muted">(you)</span>}
+                <span className="ml-2 block text-xs text-muted sm:inline sm:ml-2">Password set {dateTime(u.passwordChangedAt)}</span>
               </span>
               <span className="flex items-center gap-2">
                 <Badge tone={u.role === 'admin' ? 'brand' : 'muted'}>{u.role}</Badge>
@@ -140,6 +154,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
               <span>
                 <span className="font-medium">{d.name}</span>
                 <span className="ml-2 text-muted">{d.email}</span>
+                <span className="ml-2 block text-xs text-muted sm:inline sm:ml-2">Password set {dateTime(d.passwordChangedAt)}</span>
               </span>
               <span className="flex items-center gap-3">
                 <Badge tone={d.status === 'active' ? 'ok' : 'muted'}>{d.status.replace('_', ' ')}</Badge>

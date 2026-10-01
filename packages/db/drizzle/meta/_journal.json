@@ -57,6 +57,13 @@
       "when": 1790581780984,
       "tag": "0007_wet_justin_hammer",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790834847238,
+      "tag": "0008_pink_randall",
+      "breakpoints": true
     }
   ]
 }
