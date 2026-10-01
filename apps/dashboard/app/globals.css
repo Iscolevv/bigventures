@@ -73,3 +73,12 @@ input[type='submit'] {
   overflow-wrap: anywhere;
   word-break: break-word;
 }
+
+/* Horizontally-scrolling nav/chip rows: the scroll still works, the scrollbar just doesn't show. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
