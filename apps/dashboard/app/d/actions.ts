@@ -13,6 +13,7 @@ import { DRIVER_MUTABLE_TRIP_STATUSES } from '@bv/core/rbac';
 import { BLOCKING_CHECK_KEYS, DOCUMENT_TYPE_BY_KEY } from '@bv/core/reference';
 import { vehicleIsUsable } from '@/lib/vehicles';
 import { buildKey, uploadObject, storageConfigured } from '@/lib/storage';
+import { applyTripEdit, parseTripEdit } from '@/lib/trip-edit';
 
 const OK_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf']);
 
@@ -572,4 +573,24 @@ function haversine(a: { lat: number; lng: number }, b: { lat: number; lng: numbe
     Math.sin(dLat / 2) ** 2 +
     Math.cos((a.lat * Math.PI) / 180) * Math.cos((b.lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(s)));
+}
+
+/**
+ * Fix a trip after "Log a trip" - allowed until the office approves it. Once
+ * approved it counts in the numbers, so from then on only the office edits it.
+ */
+export async function editLoggedTrip(form: FormData) {
+  const me = await getDriver();
+  const user = await getSessionUser();
+  const input = parseTripEdit(form);
+  if (!user || !input) return { error: 'Something went wrong - reload and try again' };
+  const trip = await ownTrip(me.driverId, input.tripId);
+  if (trip.status !== 'submitted') return { error: 'The office has already approved this trip - ask them to correct it' };
+
+  const r = await applyTripEdit(input, user, 'driver');
+  if ('error' in r) return r;
+  revalidatePath('/d');
+  revalidatePath(`/d/t/${trip.id}`);
+  revalidatePath('/approvals');
+  return { ok: true, id: trip.id };
 }

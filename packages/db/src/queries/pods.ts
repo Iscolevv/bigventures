@@ -132,13 +132,14 @@ export async function driverPodBacklog(
 }
 
 /** If this PO number is already on a drop, who logged it (for the duplicate message). */
-export async function poOwner(db: DB, po: string) {
+export async function poOwner(db: DB, po: string, excludeTripId?: string) {
   const res = await db.execute(sql`
     select d.id as drop_id, t.reference_code as trip_ref, dr.full_name as driver
     from bigventures.drops d
     join bigventures.trips t on t.id = d.trip_id
     join bigventures.drivers dr on dr.id = t.driver_id
     where lower(d.po_number) = lower(${po})
+      ${excludeTripId ? sql`and t.id <> ${excludeTripId}` : sql``}
     limit 1
   `);
   const r = res.rows[0] as { drop_id: string; trip_ref: string; driver: string } | undefined;

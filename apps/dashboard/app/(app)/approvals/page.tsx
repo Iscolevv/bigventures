@@ -54,7 +54,12 @@ export default async function ApprovalsPage({
                   <Link href={`/trips/${t.id}`} className="text-brand hover:underline">{t.ref}</Link> · trip date {t.date} · logged {dateTime(t.loggedAt)}
                 </div>
               </div>
-              <Badge tone="warn">awaiting approval</Badge>
+              <div className="flex items-center gap-2">
+                <Link href={`/trips/${t.id}/edit`} className="rounded-md border px-2.5 py-1 text-xs font-medium hover:bg-bg">
+                  Edit stops / POs
+                </Link>
+                <Badge tone="warn">awaiting approval</Badge>
+              </div>
             </div>
 
             <ul className="mt-3 divide-y text-sm">

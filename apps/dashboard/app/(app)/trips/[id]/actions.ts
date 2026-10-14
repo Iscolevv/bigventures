@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { requirePermission } from '@/lib/session';
 import { writeAudit } from '@/lib/audit';
+import { applyTripEdit, parseTripEdit } from '@/lib/trip-edit';
 import { db, schema, eq } from '@bv/db';
 
 /**
@@ -49,4 +50,21 @@ export async function setTripBilling(form: FormData) {
   await writeAudit(user, 'update', 'trip', id, null, { clientId, billed });
   revalidatePath(`/trips/${id}`);
   redirect(`/trips/${id}?msg=${encodeURIComponent('Billing saved')}`);
+}
+
+/**
+ * Office correction of a trip - stops, POs, load, fuel, odometer, date - at any
+ * status, including after approval. Every change is written to the audit trail.
+ */
+export async function editTrip(form: FormData) {
+  const user = await requirePermission('trip:update');
+  const input = parseTripEdit(form);
+  if (!input) return { error: 'Something went wrong - reload and try again' };
+  const r = await applyTripEdit(input, user, 'office');
+  if ('error' in r) return r;
+  revalidatePath(`/trips/${input.tripId}`);
+  revalidatePath('/trips');
+  revalidatePath('/approvals');
+  revalidatePath('/');
+  return { ok: true, id: input.tripId };
 }

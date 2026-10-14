@@ -54,9 +54,16 @@ export default async function TripDetailPage({
         title={trip.ref}
         subtitle={`${trip.vehicle} · ${trip.driver}${trip.route ? ` · ${trip.route}` : ''}`}
         actions={
-          <Link href="/trips" className="rounded-md border px-3 py-1.5 text-sm hover:bg-bg">
-            ← All trips
-          </Link>
+          <div className="flex gap-2">
+            {can(user.role, 'trip:update') && (
+              <Link href={`/trips/${trip.id}/edit`} className="rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-white">
+                Edit trip
+              </Link>
+            )}
+            <Link href="/trips" className="rounded-md border px-3 py-1.5 text-sm hover:bg-bg">
+              ← All trips
+            </Link>
+          </div>
         }
       />
 

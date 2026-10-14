@@ -63,7 +63,7 @@ export default async function DriverTrip({ params }: { params: Promise<{ id: str
       <div className="mt-5 flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold">Drops ({drops.length})</h2>
         {trip.status !== 'completed' && trip.status !== 'cancelled' && (
-          <Link href={`/d/t/${id}/drops`} className="-m-2 shrink-0 p-2 text-sm font-medium text-brand">
+          <Link href={trip.status === 'submitted' ? `/d/t/${id}/edit` : `/d/t/${id}/drops`} className="-m-2 shrink-0 p-2 text-sm font-medium text-brand">
             + Add / edit
           </Link>
         )}
